@@ -13,6 +13,11 @@ import {
   rankNewsByImpact,
   type FilterState,
 } from "./lib/logic";
+import {
+  DEFAULT_WATCHLIST,
+  loadWatchlist,
+  saveWatchlist,
+} from "./lib/watchlist";
 import type { NewsItem } from "./types";
 
 const EMPTY_FILTERS: FilterState = {
@@ -31,6 +36,25 @@ export default function App() {
   const [view, setView] = useState<"overview" | "sector">("overview");
   const [activeSectorId, setActiveSectorId] = useState<string | null>(null);
   const [activeNews, setActiveNews] = useState<NewsItem | null>(null);
+  const [watchlistIds, setWatchlistIds] = useState<string[]>(() =>
+    loadWatchlist(SECTORS.map((s) => s.id))
+  );
+
+  useEffect(() => {
+    saveWatchlist(watchlistIds);
+  }, [watchlistIds]);
+
+  const addSector = useCallback((id: string) => {
+    setWatchlistIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  }, []);
+  const removeSector = useCallback((id: string) => {
+    setWatchlistIds((prev) => prev.filter((x) => x !== id));
+  }, []);
+  const resetWatchlist = useCallback(() => {
+    setWatchlistIds(
+      DEFAULT_WATCHLIST.filter((id) => SECTORS.some((s) => s.id === id))
+    );
+  }, []);
 
   // Filtered + ranked news (global)
   const filteredNews = useMemo(
@@ -107,6 +131,11 @@ export default function App() {
           <OverviewTab
             aggregates={aggregates}
             filteredNews={filteredNews}
+            visibleSectorIds={watchlistIds}
+            allSectors={SECTORS}
+            onAddSector={addSector}
+            onRemoveSector={removeSector}
+            onResetWatchlist={resetWatchlist}
             onOpenSector={openSector}
             onSelectNews={onSelectNews}
           />

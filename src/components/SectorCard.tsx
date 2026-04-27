@@ -1,4 +1,4 @@
-import { ArrowRight, Flame } from "lucide-react";
+import { ArrowRight, Flame, X } from "lucide-react";
 import type { SectorAggregate, NewsItem } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { SentimentBadge, ThemeChip } from "./Badges";
@@ -8,9 +8,15 @@ interface Props {
   agg: SectorAggregate;
   onOpenSector: (sectorId: string) => void;
   onSelectNews: (n: NewsItem) => void;
+  onRemove?: (sectorId: string) => void;
 }
 
-export function SectorCard({ agg, onOpenSector, onSelectNews }: Props) {
+export function SectorCard({
+  agg,
+  onOpenSector,
+  onSelectNews,
+  onRemove,
+}: Props) {
   const Icon = SECTOR_ICONS[agg.sector.iconKey];
   const accent = agg.sector.accent;
   const accentRgb = agg.sector.accentRgb;
@@ -66,6 +72,20 @@ export function SectorCard({ agg, onOpenSector, onSelectNews }: Props) {
           className="text-white/35 transition group-hover:translate-x-0.5 group-hover:text-white/70"
         />
       </button>
+
+      {onRemove && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(agg.sector.id);
+          }}
+          aria-label={`Remove ${agg.sector.shortName} from watchlist`}
+          title="Remove from watchlist"
+          className="focus-ring absolute right-2 top-2 z-10 inline-flex h-5 w-5 items-center justify-center rounded-md border border-white/[0.06] bg-ink-900/60 text-white/45 opacity-0 backdrop-blur transition hover:border-rose-400/40 hover:bg-rose-400/10 hover:text-rose-300 group-hover:opacity-100 focus-visible:opacity-100"
+        >
+          <X size={11} />
+        </button>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-2 border-t border-white/[0.05] bg-white/[0.012] px-3.5 py-2.5">
