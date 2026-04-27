@@ -84,7 +84,7 @@ export type SectorIconKey =
   | "Signal"
   | "Cog"
   | "Zap"
-  | "Brick"
+  | "BrickWall"
   | "FlaskConical"
   | "HeartPulse"
   | "Clapperboard"
