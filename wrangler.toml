@@ -1,0 +1,13 @@
+name = "sectornewsdash"
+compatibility_date = "2025-04-01"
+
+# CF Workers Builds runs `npx wrangler deploy` only — no build step is
+# configured in the dashboard. We trigger the Vite build here so wrangler
+# always has a populated `dist/` to upload as static assets.
+[build]
+command = "npm install && npm run build"
+
+# Serve the built SPA as static assets with client-side routing fallback.
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
