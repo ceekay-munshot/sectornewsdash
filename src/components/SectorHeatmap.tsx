@@ -1,5 +1,6 @@
 import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
+import { SentimentDot } from "./Badges";
 import { classNames } from "../lib/utils";
 
 interface Props {
@@ -9,64 +10,173 @@ interface Props {
 }
 
 /**
- * Compact heatmap row — one tile per sector, intensity scaled by heat score.
- * A glance gives the user the sector temperature across the market.
+ * Premium sector heatmap — info-dense tiles in a balanced grid.
+ * Each tile shows sector identity (icon + name), heat score (large mono),
+ * news volume, sentiment dot, and a fill-bar at the bottom keyed to heat.
+ * Top-3 hottest sectors get a rank badge.
  */
 export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
+  const liveCount = aggregates.filter((a) => a.newsCount > 0).length;
+  const ranked = aggregates
+    .slice()
+    .sort((a, b) => b.heatScore - a.heatScore)
+    .filter((a) => a.heatScore > 0);
+  const rankMap = new Map<string, number>();
+  ranked.slice(0, 3).forEach((a, i) => rankMap.set(a.sector.id, i + 1));
+
   return (
-    <div className="glass overflow-hidden p-3">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/45">
-          Sector heatmap
+    <div className="glass relative overflow-hidden p-3.5">
+      <div className="mb-3 flex items-center justify-between px-0.5">
+        <div className="flex items-baseline gap-2">
+          <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+            Sector heatmap
+          </div>
+          <div className="font-mono text-[10.5px] text-white/35">
+            {aggregates.length} sectors ·{" "}
+            <span className="text-emerald-300/85">{liveCount} live</span>
+          </div>
         </div>
-        <div className="text-[10.5px] text-white/35">
+        <div className="hidden text-[10.5px] text-white/35 sm:block">
           intensity = heat score · click to drill
         </div>
       </div>
-      <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-15">
-        {aggregates.map((a) => {
-          const Icon = SECTOR_ICONS[a.sector.iconKey];
-          const heat = Math.max(0, Math.min(100, a.heatScore));
-          // Map 0..100 to 0.10..0.85 for tile alpha
-          const alpha = 0.1 + (heat / 100) * 0.75;
-          const isSelected = selectedId === a.sector.id;
-          return (
-            <button
-              key={a.sector.id}
-              onClick={() => onSelect(a.sector.id)}
-              title={`${a.sector.name} · heat ${heat} · ${a.newsCount} news`}
-              className={classNames(
-                "focus-ring group relative aspect-square overflow-hidden rounded-md border transition",
-                isSelected
-                  ? "border-white/40"
-                  : "border-white/[0.06] hover:border-white/[0.18]"
-              )}
-              style={{
-                background: `linear-gradient(160deg, rgba(${a.sector.accentRgb},${alpha}) 0%, rgba(${a.sector.accentRgb},${alpha * 0.35}) 100%)`,
-              }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Icon
-                  size={12}
-                  className="text-white/85 drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]"
-                />
-              </div>
-              <div className="absolute right-[3px] top-[2px] font-mono text-[8px] text-white/70">
-                {heat || "—"}
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 h-[2px]">
-                <div
-                  className="h-full"
-                  style={{
-                    width: `${heat}%`,
-                    background: `rgba(${a.sector.accentRgb},0.95)`,
-                  }}
-                />
-              </div>
-            </button>
-          );
-        })}
+
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        {aggregates.map((a, idx) => (
+          <HeatTile
+            key={a.sector.id}
+            agg={a}
+            rank={rankMap.get(a.sector.id)}
+            isSelected={selectedId === a.sector.id}
+            onSelect={onSelect}
+            index={idx}
+          />
+        ))}
       </div>
     </div>
+  );
+}
+
+function HeatTile({
+  agg,
+  rank,
+  isSelected,
+  onSelect,
+  index,
+}: {
+  agg: SectorAggregate;
+  rank?: number;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  index: number;
+}) {
+  const Icon = SECTOR_ICONS[agg.sector.iconKey];
+  const heat = Math.max(0, Math.min(100, agg.heatScore));
+  const rgb = agg.sector.accentRgb;
+  const accent = agg.sector.accent;
+  const live = agg.newsCount > 0;
+
+  // Background tint scales with heat — cold sectors stay neutral but keep
+  // a faint accent ghost so identity is always present.
+  const tintAlpha = 0.04 + (heat / 100) * 0.32;
+  const glowAlpha = (heat / 100) * 0.5;
+
+  return (
+    <button
+      onClick={() => onSelect(agg.sector.id)}
+      title={`${agg.sector.name} · heat ${heat} · ${agg.newsCount} news`}
+      style={{
+        animationDelay: `${Math.min(index * 18, 280)}ms`,
+        background: live
+          ? `linear-gradient(160deg, rgba(${rgb},${tintAlpha}) 0%, rgba(${rgb},${tintAlpha * 0.18}) 100%)`
+          : `linear-gradient(160deg, rgba(255,255,255,0.018) 0%, rgba(255,255,255,0.01) 100%)`,
+      }}
+      className={classNames(
+        "group focus-ring relative animate-floatIn overflow-hidden rounded-lg border p-2.5 text-left transition duration-200",
+        "hover:-translate-y-[1px] hover:border-white/[0.18]",
+        isSelected ? "border-white/40" : "border-white/[0.06]"
+      )}
+    >
+      {/* Soft accent glow for hot sectors */}
+      {live && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full blur-xl"
+          style={{ background: `rgba(${rgb},${glowAlpha})` }}
+        />
+      )}
+
+      {/* Top row — icon + short name + sentiment */}
+      <div className="relative flex items-center justify-between gap-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <div
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded ring-1 ring-white/5"
+            style={{
+              background: live
+                ? `rgba(${rgb},0.22)`
+                : "rgba(255,255,255,0.04)",
+              color: live ? accent : "rgba(255,255,255,0.55)",
+            }}
+          >
+            <Icon size={10} />
+          </div>
+          <span
+            className={classNames(
+              "truncate text-[11.5px] font-semibold tracking-tight",
+              live ? "text-white/90" : "text-white/55"
+            )}
+          >
+            {agg.sector.shortName}
+          </span>
+        </div>
+        {rank && (
+          <span
+            className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm font-mono text-[9px] font-bold"
+            style={{
+              background: `rgba(${rgb},0.22)`,
+              color: accent,
+              boxShadow: `inset 0 0 0 1px rgba(${rgb},0.45)`,
+            }}
+            title={`#${rank} hottest`}
+          >
+            {rank}
+          </span>
+        )}
+        {!rank && live && <SentimentDot sentiment={agg.sentiment} />}
+      </div>
+
+      {/* Heat number */}
+      <div className="relative mt-1.5 flex items-baseline justify-between">
+        <span
+          className="font-mono text-[18px] font-semibold leading-none tracking-tight"
+          style={{ color: live ? accent : "rgba(255,255,255,0.28)" }}
+        >
+          {live ? heat : "—"}
+        </span>
+        <span
+          className={classNames(
+            "font-mono text-[10px]",
+            live ? "text-white/55" : "text-white/30"
+          )}
+        >
+          {live ? `${agg.newsCount}` : "—"}
+          <span className="ml-0.5 text-white/30">news</span>
+        </span>
+      </div>
+
+      {/* Heat fill bar */}
+      <div className="relative mt-2 h-[3px] overflow-hidden rounded-full bg-white/[0.04]">
+        <div
+          className="h-full rounded-full transition-[width] duration-300"
+          style={{
+            width: `${heat}%`,
+            background: live
+              ? `linear-gradient(90deg, rgba(${rgb},0.55), rgba(${rgb},1))`
+              : "transparent",
+            boxShadow: live ? `0 0 8px rgba(${rgb},0.55)` : undefined,
+          }}
+        />
+      </div>
+    </button>
   );
 }
