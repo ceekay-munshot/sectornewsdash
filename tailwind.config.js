@@ -59,11 +59,21 @@ export default {
           "0%": { opacity: "0", transform: "translateX(16px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
+        modalIn: {
+          "0%": { opacity: "0", transform: "scale(0.965) translateY(6px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        backdropIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
       },
       animation: {
         pulseSoft: "pulseSoft 2.4s ease-in-out infinite",
         floatIn: "floatIn 0.35s ease-out both",
         slideIn: "slideIn 0.25s ease-out both",
+        modalIn: "modalIn 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both",
+        backdropIn: "backdropIn 0.18s ease-out both",
       },
     },
   },
