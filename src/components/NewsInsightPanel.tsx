@@ -1,16 +1,9 @@
 import { useEffect } from "react";
 import {
   ArrowUpRight,
-  Building2,
-  ClipboardList,
-  ExternalLink,
-  Gauge,
-  Sparkles,
-  ShieldAlert,
   TrendingDown,
   TrendingUp,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import type { NewsItem } from "../types";
 import { sectorMetaFor } from "../lib/logic";
@@ -23,6 +16,10 @@ interface Props {
   onClose: () => void;
 }
 
+/**
+ * Centered modal — premium, dense, scannable. All 16 spec fields surface
+ * but the chrome stays minimal so the headline + thesis lead the eye.
+ */
 export function NewsInsightPanel({ item, onClose }: Props) {
   useEffect(() => {
     if (!item) return;
@@ -41,165 +38,193 @@ export function NewsInsightPanel({ item, onClose }: Props) {
   const accentRgb = sector?.accentRgb ?? "125,211,252";
 
   return (
-    <>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="News insight"
+    >
       <div
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-ink-950/60 backdrop-blur-sm animate-floatIn"
         aria-hidden
+        className="absolute inset-0 animate-backdropIn bg-ink-950/65 backdrop-blur-sm"
       />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="News insight"
-        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[560px] animate-slideIn flex-col overflow-hidden border-l border-white/[0.08] bg-ink-950/95 shadow-2xl backdrop-blur-2xl"
+
+      <div
+        className="relative z-10 flex max-h-[88vh] w-full max-w-[760px] animate-modalIn flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-900/95 shadow-2xl"
+        style={{
+          boxShadow:
+            "0 0 0 1px rgba(255,255,255,0.04), 0 30px 80px -20px rgba(0,0,0,0.65)",
+        }}
       >
         {/* Sector accent stripe */}
         <div
-          className="h-[3px] w-full"
+          className="h-[2px] w-full"
           style={{
-            background: `linear-gradient(90deg, transparent, rgba(${accentRgb},1), transparent)`,
+            background: `linear-gradient(90deg, transparent, rgba(${accentRgb},0.95), transparent)`,
           }}
         />
+        <div
+          className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-50 blur-3xl"
+          style={{ background: `rgba(${accentRgb},0.12)` }}
+        />
 
-        {/* Header */}
-        <div className="relative px-5 pb-3 pt-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              {Icon && (
-                <div
-                  className="flex h-7 w-7 items-center justify-center rounded-md ring-1 ring-white/10"
-                  style={{
-                    background: `rgba(${accentRgb},0.15)`,
-                    color: accent,
-                  }}
-                >
-                  <Icon size={13} />
-                </div>
-              )}
-              <div className="leading-tight">
-                <div className="text-[12px] font-semibold text-white">
-                  {sector?.name ?? item.sector}
-                </div>
-                <div className="text-[10.5px] text-white/40">
-                  {item.subsector}
-                </div>
+        {/* Sector + close */}
+        <div className="relative flex items-center justify-between gap-3 px-5 pt-4 sm:px-6">
+          <div className="flex items-center gap-2">
+            {Icon && (
+              <div
+                className="flex h-7 w-7 items-center justify-center rounded-md ring-1 ring-white/10"
+                style={{
+                  background: `rgba(${accentRgb},0.16)`,
+                  color: accent,
+                }}
+              >
+                <Icon size={13} />
+              </div>
+            )}
+            <div className="leading-tight">
+              <div className="text-[12px] font-semibold text-white">
+                {sector?.name ?? item.sector}
+              </div>
+              <div className="text-[10.5px] text-white/40">
+                {item.subsector} · {relativeTime(item.publishedAt)}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              aria-label="Close insight panel"
-              className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.02] text-white/60 transition hover:border-white/[0.14] hover:text-white"
-            >
-              <X size={13} />
-            </button>
           </div>
+          <button
+            onClick={onClose}
+            aria-label="Close insight"
+            className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.02] text-white/55 transition hover:border-white/[0.16] hover:text-white"
+          >
+            <X size={13} />
+          </button>
+        </div>
 
-          <h2 className="mt-3 font-display text-[18px] font-semibold leading-snug text-white">
+        {/* Scrollable body */}
+        <div className="relative flex-1 overflow-y-auto px-5 pb-5 pt-3 sm:px-6">
+          {/* Headline */}
+          <h2 className="font-display text-[19px] font-semibold leading-snug text-white sm:text-[20px]">
             {item.headline}
           </h2>
 
+          {/* Meta strip */}
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <SentimentBadge sentiment={item.sentiment} />
-            <UrgencyBadge urgency={item.urgency} />
+            <SentimentBadge sentiment={item.sentiment} size="sm" />
+            <UrgencyBadge urgency={item.urgency} size="sm" />
             <ImpactPill score={item.impactScore} />
             <ThemeChip>{item.theme}</ThemeChip>
-            <span className="chip">
-              <Gauge size={10} />
-              {item.timeHorizon}
-            </span>
+            <span className="chip">{item.timeHorizon}</span>
           </div>
 
-          <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-white/75">
+          {/* Summary — capped at 2 lines */}
+          <p className="mt-3 line-clamp-2 text-[12.5px] leading-relaxed text-white/75">
             {item.summary}
           </p>
-        </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-5 pb-5">
           {/* Source row */}
-          <Section title="Source" icon={ExternalLink}>
-            <div className="flex flex-wrap items-center gap-2 text-[11.5px]">
-              <span className="chip">{item.source}</span>
-              <span className="chip">{item.sourceType}</span>
-              <span className="chip">
-                Confidence {item.sourceConfidence}/100
+          <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-white/55">
+            <span className="font-medium text-white/80">{item.source}</span>
+            <Sep />
+            <span>{item.sourceType}</span>
+            <Sep />
+            <span>
+              Confidence{" "}
+              <span className="font-mono text-white/75">
+                {item.sourceConfidence}/100
               </span>
-              <span className="chip">{relativeTime(item.publishedAt)}</span>
-              <a
-                href={item.newsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-primary"
-              >
-                Read more
-                <ArrowUpRight size={11} />
-              </a>
-            </div>
-          </Section>
-
-          {/* Companies + KPIs */}
-          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Section title="Affected companies" icon={Building2} compact>
-              <Chips items={item.affectedCompanies} accent={accent} />
-            </Section>
-            <Section title="KPI affected" icon={ClipboardList} compact>
-              <Chips items={item.kpiAffected} accent={accent} />
-            </Section>
+            </span>
+            <span className="ml-auto" />
+            <a
+              href={item.newsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-primary"
+            >
+              Read more
+              <ArrowUpRight size={11} />
+            </a>
           </div>
 
-          {/* Why it matters */}
-          <Section title="Why it matters" icon={Sparkles}>
-            <Highlight color={accentRgb}>{item.whyItMatters}</Highlight>
-          </Section>
+          <Divider />
+
+          {/* Companies + KPIs */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Group label="Affected companies">
+              <Chips items={item.affectedCompanies} accent={accent} />
+            </Group>
+            <Group label="KPIs affected">
+              <Chips items={item.kpiAffected} accent={accent} />
+            </Group>
+          </div>
+
+          <Divider />
+
+          {/* Why it matters — lightweight callout, accent left rule */}
+          <Group label="Why it matters">
+            <div
+              className="rounded-md border-l-2 bg-white/[0.018] py-1.5 pl-3 pr-1 text-[12.5px] leading-relaxed text-white/85"
+              style={{ borderLeftColor: accent }}
+            >
+              {item.whyItMatters}
+            </div>
+          </Group>
 
           {/* Bull / Bear */}
-          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <CaseCard
               tone="bull"
-              icon={<TrendingUp size={12} />}
+              icon={<TrendingUp size={11} />}
               title="Bull case"
               body={item.bullCase}
             />
             <CaseCard
               tone="bear"
-              icon={<TrendingDown size={12} />}
+              icon={<TrendingDown size={11} />}
               title="Bear case"
               body={item.bearCase}
             />
           </div>
 
-          {/* Catalyst */}
-          <Section title="Related catalyst" icon={ShieldAlert}>
-            <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-[12.5px] text-white/80">
+          {/* Related catalyst */}
+          <div className="mt-4 flex items-start gap-2 rounded-md border border-white/[0.05] bg-white/[0.018] px-3 py-2 text-[12px] text-white/75">
+            <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
+            <div>
+              <span className="mr-1.5 text-[10.5px] uppercase tracking-[0.16em] text-white/40">
+                Catalyst
+              </span>
               {item.relatedCatalyst}
             </div>
-          </Section>
+          </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </div>
   );
 }
 
-function Section({
-  title,
-  icon: Icon,
+function Sep() {
+  return <span className="text-white/15">·</span>;
+}
+
+function Divider() {
+  return (
+    <div className="my-4 h-px w-full bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+  );
+}
+
+function Group({
+  label,
   children,
-  compact,
 }: {
-  title: string;
-  icon: LucideIcon;
+  label: string;
   children: React.ReactNode;
-  compact?: boolean;
 }) {
   return (
-    <section className={classNames("mt-3", compact && "md:mt-0")}>
-      <div className="mb-1.5 flex items-center gap-1.5">
-        <Icon size={11} className="text-white/45" />
-        <div className="text-[10.5px] font-medium uppercase tracking-[0.16em] text-white/45">
-          {title}
-        </div>
+    <section>
+      <div className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/40">
+        {label}
       </div>
-      <div>{children}</div>
+      {children}
     </section>
   );
 }
@@ -212,35 +237,15 @@ function Chips({ items, accent }: { items: string[]; accent: string }) {
       {items.map((c) => (
         <span
           key={c}
-          className="inline-flex items-center rounded-full border px-2.5 py-[3px] text-[11px] font-medium"
+          className="inline-flex items-center rounded-full border px-2 py-[3px] text-[11px] font-medium text-white/90"
           style={{
-            borderColor: `${accent}33`,
+            borderColor: `${accent}30`,
             background: `${accent}10`,
-            color: "#fff",
           }}
         >
           {c}
         </span>
       ))}
-    </div>
-  );
-}
-
-function Highlight({
-  children,
-  color,
-}: {
-  children: React.ReactNode;
-  color: string;
-}) {
-  return (
-    <div
-      className="relative rounded-lg border border-white/[0.06] px-3 py-2.5 text-[12.5px] leading-relaxed text-white/85"
-      style={{
-        background: `linear-gradient(180deg, rgba(${color},0.08), rgba(${color},0.02))`,
-      }}
-    >
-      {children}
     </div>
   );
 }
@@ -258,22 +263,22 @@ function CaseCard({
 }) {
   const styles =
     tone === "bull"
-      ? "border-emerald-400/20 bg-emerald-400/[0.04] text-emerald-100"
-      : "border-rose-400/20 bg-rose-400/[0.04] text-rose-100";
+      ? "border-emerald-400/15 bg-emerald-400/[0.035]"
+      : "border-rose-400/15 bg-rose-400/[0.035]";
   const labelStyles =
     tone === "bull" ? "text-emerald-300" : "text-rose-300";
   return (
-    <div className={classNames("rounded-lg border px-3 py-2.5", styles)}>
+    <div className={classNames("rounded-md border px-3 py-2.5", styles)}>
       <div
         className={classNames(
-          "mb-1 flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-[0.16em]",
+          "mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em]",
           labelStyles
         )}
       >
         {icon}
         {title}
       </div>
-      <div className="text-[12.5px] leading-relaxed text-white/85">{body}</div>
+      <div className="text-[12px] leading-relaxed text-white/80">{body}</div>
     </div>
   );
 }
