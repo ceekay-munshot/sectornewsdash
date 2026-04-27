@@ -1,13 +1,20 @@
 import { useMemo } from "react";
 import { Activity, Flame, Newspaper, Radar, TrendingUp } from "lucide-react";
-import type { NewsItem, SectorAggregate } from "../types";
+import type { NewsItem, SectorAggregate, SectorMeta } from "../types";
 import { KPIStatCard } from "./KPIStatCard";
 import { SectorHeatmap } from "./SectorHeatmap";
 import { SectorCard } from "./SectorCard";
+import { WatchlistControl } from "./WatchlistControl";
+import { EmptyState } from "./EmptyState";
 
 interface Props {
   aggregates: SectorAggregate[];
   filteredNews: NewsItem[];
+  visibleSectorIds: string[];
+  allSectors: SectorMeta[];
+  onAddSector: (id: string) => void;
+  onRemoveSector: (id: string) => void;
+  onResetWatchlist: () => void;
   onOpenSector: (sectorId: string) => void;
   onSelectNews: (n: NewsItem) => void;
 }
@@ -15,6 +22,11 @@ interface Props {
 export function OverviewTab({
   aggregates,
   filteredNews,
+  visibleSectorIds,
+  allSectors,
+  onAddSector,
+  onRemoveSector,
+  onResetWatchlist,
   onOpenSector,
   onSelectNews,
 }: Props) {
@@ -35,6 +47,13 @@ export function OverviewTab({
         : "—";
     return { total, sectorsCovered, hottest, mostBullish, critical, avgImpact };
   }, [aggregates, filteredNews]);
+
+  const watchlistCards = useMemo(() => {
+    const order = new Map(visibleSectorIds.map((id, i) => [id, i]));
+    return aggregates
+      .filter((a) => order.has(a.sector.id))
+      .sort((a, b) => order.get(a.sector.id)! - order.get(b.sector.id)!);
+  }, [aggregates, visibleSectorIds]);
 
   return (
     <div className="animate-floatIn space-y-4">
@@ -81,20 +100,38 @@ export function OverviewTab({
         />
       </div>
 
-      {/* Heatmap */}
+      {/* Heatmap (all 29 sectors at a glance) */}
       <SectorHeatmap aggregates={aggregates} onSelect={onOpenSector} />
 
-      {/* Sector grid */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {aggregates.map((a) => (
-          <SectorCard
-            key={a.sector.id}
-            agg={a}
-            onOpenSector={onOpenSector}
-            onSelectNews={onSelectNews}
+      {/* Watchlist controls */}
+      <WatchlistControl
+        allSectors={allSectors}
+        visibleIds={visibleSectorIds}
+        onAdd={onAddSector}
+        onReset={onResetWatchlist}
+      />
+
+      {/* Watchlist sector cards */}
+      {watchlistCards.length === 0 ? (
+        <div className="glass">
+          <EmptyState
+            title="Your watchlist is empty"
+            hint="Use the search and Add button above, or click any tile in the heatmap to open a sector."
           />
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {watchlistCards.map((a) => (
+            <SectorCard
+              key={a.sector.id}
+              agg={a}
+              onOpenSector={onOpenSector}
+              onSelectNews={onSelectNews}
+              onRemove={onRemoveSector}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
