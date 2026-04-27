@@ -127,7 +127,7 @@ export const SECTORS: SectorMeta[] = [
     id: "cement",
     name: "Cement",
     shortName: "Cement",
-    iconKey: "Brick",
+    iconKey: "BrickWall",
     accent: "#D6BCFA",
     accentRgb: "214,188,250",
     subsectors: ["Large Cap", "Mid Cap", "Regional"],
