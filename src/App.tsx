@@ -4,6 +4,7 @@ import { FilterBar } from "./components/FilterBar";
 import { OverviewTab } from "./components/OverviewTab";
 import { SectorDetail } from "./components/SectorDetail";
 import { NewsInsightPanel } from "./components/NewsInsightPanel";
+import { MethodologyPanel } from "./components/MethodologyPanel";
 import { MOCK_NEWS } from "./data/mockNews";
 import { SECTORS } from "./data/sectors";
 import {
@@ -118,6 +119,8 @@ export default function App() {
             selectedNewsId={activeNews?.id ?? null}
           />
         )}
+
+        <MethodologyPanel />
       </main>
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />
