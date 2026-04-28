@@ -1,6 +1,6 @@
-// Minimal parser for the MUNS event-stream response.
+// Minimal, defensive parser for MUNS event-stream responses.
 //
-// The MUNS /agents/run endpoint returns a single text body that looks like:
+// The /agents/run endpoint returns a single text body shaped like:
 //
 //   HTTP/2 200
 //   ...headers...
@@ -9,16 +9,24 @@
 //   <1>
 //   <tool><s>...</s></tool>
 //   ...
-//   <ans>Date | Headline | Source | ... | Link
-//   ---|---|---|---
-//   28-Apr-2026 | ... | https://...
+//   <ans>| Date | Headline | Source | ... | Link |
+//   |---|---|---|---|---|
+//   | 28-Apr-2026 | ... | https://... |
 //   ...
 //   </ans>
 //   </1>
 //   </task>
+//   <summary>...optional prose...</summary>
 //
-// Only the table inside <ans>...</ans> is the actual deliverable. Everything
-// else (HTTP headers, tool traces, task tags) is noise.
+// Only the markdown table (typically inside <ans>...</ans>, but we don't
+// require those tags) is the user-visible deliverable. The parser is
+// intentionally tolerant of:
+//   - leading/trailing pipes vs none
+//   - `<ans>` prefix on the header line
+//   - `</ans>` (and other tags) on the same line as the last data row
+//   - extra prose, tool noise, or summary blocks after the table
+//   - rows whose cell count differs from the header (skipped, not fatal)
+//   - varying date formats (28-Apr-2026, 2026-04-28, etc.)
 
 export interface MunsNewsRow {
   date: string;
@@ -28,17 +36,40 @@ export interface MunsNewsRow {
   raw: Record<string, string>;
 }
 
-const stripBold = (value: string) => value.replace(/\*\*/g, "").trim();
+export interface ParsedTable {
+  columns: string[];
+  rows: Record<string, string>[];
+}
+
+const stripBold = (value: string) =>
+  value.replace(/\*\*/g, "").replace(/^<ans>\s*/i, "").trim();
 
 const parseCells = (line: string): string[] =>
   line
+    .replace(/^<ans>\s*/i, "")
+    .replace(/\s*<\/ans>\s*$/i, "")
     .replace(/^\|/, "")
     .replace(/\|$/, "")
     .split("|")
     .map((cell) => cell.trim());
 
-const isSeparatorRow = (line: string) =>
-  /^\|?[\s|\-:]+\|?$/.test(line) && line.includes("-");
+// A markdown-table separator row, e.g. "|---|---|" or "---|---|---" or
+// "| :--- | ---: | :---: |".
+const isSeparatorRow = (line: string) => {
+  if (!line.includes("-")) return false;
+  const stripped = line.replace(/^\|/, "").replace(/\|$/, "").trim();
+  return /^[\s|\-:]+$/.test(stripped) && stripped.length > 0;
+};
+
+const isTableRow = (line: string) => {
+  // A real data row contains at least one `|` separator AND isn't a tag-only
+  // line. We allow lines that end with `</ans>` or similar trailing tags.
+  if (!line.includes("|")) return false;
+  if (/^<\/?(task|tool|summary|doc_source|graph|persisted-output|\d+)\b/i.test(line)) {
+    return false;
+  }
+  return true;
+};
 
 const findColumn = (
   columns: string[],
@@ -49,36 +80,37 @@ const findColumn = (
     return needles.some((needle) => lower.includes(needle));
   });
 
-export const extractAnswerBlock = (raw: string): string | null => {
-  const startIdx = raw.indexOf("<ans>");
-  if (startIdx === -1) return null;
-  const endIdx = raw.indexOf("</ans>", startIdx);
-  const body = endIdx === -1 ? raw.slice(startIdx + 5) : raw.slice(startIdx + 5, endIdx);
-  return body.trim();
-};
-
-export const parseMunsTable = (
-  raw: string,
-): { columns: string[]; rows: Record<string, string>[] } | null => {
-  const block = extractAnswerBlock(raw);
-  if (!block) return null;
-
-  const lines = block
-    .split("\n")
+export const parseMunsTable = (raw: string): ParsedTable | null => {
+  // Split on raw newlines, trim, drop blanks. We do NOT require an <ans>
+  // marker — the table is found by locating the separator row, which is the
+  // most distinctive line in any markdown table.
+  const lines = raw
+    .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
-  if (lines.length < 3) return null;
-  if (!isSeparatorRow(lines[1])) return null;
 
-  const columns = parseCells(lines[0]).map(stripBold);
-  const rows = lines.slice(2).map((line) => {
-    const cells = parseCells(line);
+  const sepIdx = lines.findIndex(isSeparatorRow);
+  if (sepIdx < 1) return null;
+
+  // Header is the immediately preceding line. May carry an <ans> prefix.
+  const headerLine = lines[sepIdx - 1];
+  const columns = parseCells(headerLine).map(stripBold);
+  if (columns.length < 2) return null;
+
+  const rows: Record<string, string>[] = [];
+  for (let i = sepIdx + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!isTableRow(line)) break; // table ends at first non-row line
+
+    const cells = parseCells(line).map(stripBold);
+    // Be lenient: pad short rows, truncate long rows.
+    if (cells.length < 2) continue;
     const row: Record<string, string> = {};
     columns.forEach((col, idx) => {
-      row[col] = stripBold(cells[idx] || "");
+      row[col] = cells[idx] || "";
     });
-    return row;
-  });
+    rows.push(row);
+  }
 
   return { columns, rows };
 };
