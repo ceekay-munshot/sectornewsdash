@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { ExternalLink, KeyRound, RefreshCw, X } from "lucide-react";
-import { parseMunsAutoNews, type MunsNewsRow } from "../lib/munsParse";
+import { KeyRound, RefreshCw, X } from "lucide-react";
+import { parseMunsAutoNews } from "../lib/munsParse";
+import { munsRowsToNewsItems } from "../lib/munsToNews";
 import { NewsFeed } from "./NewsFeed";
 import type { NewsItem } from "../types";
 
@@ -11,17 +12,28 @@ const NEWS_LIMIT = 20;
 type RunState = "idle" | "running" | "ok" | "error";
 
 interface Props {
-  agentLibraryId: string;
+  sectorId: string;
   sectorShortName: string;
-  fallbackNews: NewsItem[];
+  agentLibraryId: string;
+  /** Items shown in the list — typically MUNS-derived when loaded, mock otherwise. */
+  items: NewsItem[];
+  /** Whether the items currently in `items` are MUNS-derived. */
+  isLive: boolean;
+  /** Wall-clock time of the last successful run, if any. */
+  lastRunAt: Date | null;
+  onLoaded: (items: NewsItem[], at: Date) => void;
   onSelectNews: (item: NewsItem) => void;
   selectedNewsId?: string | null;
 }
 
 export function MunsSectorSection({
-  agentLibraryId,
+  sectorId,
   sectorShortName,
-  fallbackNews,
+  agentLibraryId,
+  items,
+  isLive,
+  lastRunAt,
+  onLoaded,
   onSelectNews,
   selectedNewsId,
 }: Props) {
@@ -30,10 +42,8 @@ export function MunsSectorSection({
   );
   const [draftToken, setDraftToken] = useState("");
   const [tokenOpen, setTokenOpen] = useState(false);
-  const [rows, setRows] = useState<MunsNewsRow[] | null>(null);
   const [state, setState] = useState<RunState>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [lastRunAt, setLastRunAt] = useState<Date | null>(null);
 
   useEffect(() => {
     if (token) sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
@@ -86,14 +96,13 @@ export function MunsSectorSection({
         setError(`MUNS responded ${response.status}: ${text.slice(0, 160)}`);
         return;
       }
-      const parsed = parseMunsAutoNews(text);
-      if (parsed.length === 0) {
+      const rows = parseMunsAutoNews(text);
+      if (rows.length === 0) {
         setState("error");
         setError("MUNS responded but no parseable news rows were found.");
         return;
       }
-      setRows(parsed);
-      setLastRunAt(new Date());
+      onLoaded(munsRowsToNewsItems(rows, sectorId), new Date());
       setState("ok");
     } catch (err) {
       setState("error");
@@ -101,9 +110,7 @@ export function MunsSectorSection({
     }
   };
 
-  const showMuns = rows !== null && rows.length > 0;
-  const visibleCount = showMuns ? Math.min(rows!.length, NEWS_LIMIT) : Math.min(fallbackNews.length, NEWS_LIMIT);
-  const totalCount = showMuns ? rows!.length : fallbackNews.length;
+  const visibleCount = Math.min(items.length, NEWS_LIMIT);
 
   return (
     <div className="space-y-2">
@@ -111,11 +118,15 @@ export function MunsSectorSection({
         <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
           Material news ·{" "}
           <span className="text-white/70">
-            {visibleCount} of {totalCount}
+            {visibleCount} of {items.length}
           </span>
-          {showMuns && lastRunAt ? (
+          {isLive && lastRunAt ? (
             <span className="ml-2 normal-case tracking-normal text-emerald-300/80">
-              · live · {lastRunAt.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+              · live ·{" "}
+              {lastRunAt.toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           ) : null}
         </div>
@@ -145,10 +156,13 @@ export function MunsSectorSection({
             onClick={handleRun}
             disabled={state === "running"}
             className="btn-primary"
-            title="Run MUNS auto agent"
+            title="Run MUNS agent"
           >
-            <RefreshCw size={11} className={state === "running" ? "animate-spin" : ""} />
-            {state === "running" ? "Running…" : showMuns ? "Refresh" : "Run MUNS"}
+            <RefreshCw
+              size={11}
+              className={state === "running" ? "animate-spin" : ""}
+            />
+            {state === "running" ? "Running…" : isLive ? "Refresh" : "Run MUNS"}
           </button>
         </div>
       </div>
@@ -187,55 +201,14 @@ export function MunsSectorSection({
         </div>
       ) : null}
 
-      {showMuns ? (
-        <div className="glass max-h-[520px] overflow-y-auto divide-y divide-white/[0.04] p-1">
-          {rows!.slice(0, NEWS_LIMIT).map((row, idx) => (
-            <MunsRow key={`${row.date}-${idx}`} row={row} />
-          ))}
-        </div>
-      ) : (
-        <NewsFeed
-          items={fallbackNews}
-          limit={NEWS_LIMIT}
-          onSelect={onSelectNews}
-          selectedId={selectedNewsId}
-          emptyTitle={`No news yet for ${sectorShortName}`}
-          emptyHint="Hit Run MUNS to fetch live items, or seed mock items in src/data/mockNews.ts."
-        />
-      )}
-    </div>
-  );
-}
-
-function MunsRow({ row }: { row: MunsNewsRow }) {
-  return (
-    <div className="group flex items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-2 transition hover:border-white/[0.07] hover:bg-white/[0.025]">
-      <div className="min-w-0 flex-1">
-        <div className="line-clamp-2 text-[12.5px] font-medium text-white/85 group-hover:text-white">
-          {row.headline}
-        </div>
-      </div>
-      {row.date ? (
-        <span className="hidden whitespace-nowrap font-mono text-[10.5px] text-white/45 sm:inline">
-          {row.date}
-        </span>
-      ) : null}
-      {row.link ? (
-        <a
-          href={row.link}
-          target="_blank"
-          rel="noreferrer"
-          title={`Open source: ${row.source || row.link}`}
-          className="focus-ring inline-flex items-center gap-1 rounded-md border border-white/[0.07] bg-white/[0.02] px-1.5 py-1 text-[10.5px] text-white/55 transition hover:border-white/[0.16] hover:text-white"
-        >
-          <ExternalLink size={10} />
-          <span className="max-w-[90px] truncate">{row.source || "source"}</span>
-        </a>
-      ) : row.source ? (
-        <span className="inline-flex items-center gap-1 rounded-md border border-white/[0.07] bg-white/[0.02] px-1.5 py-1 text-[10.5px] text-white/55">
-          <span className="max-w-[90px] truncate">{row.source}</span>
-        </span>
-      ) : null}
+      <NewsFeed
+        items={items}
+        limit={NEWS_LIMIT}
+        onSelect={onSelectNews}
+        selectedId={selectedNewsId}
+        emptyTitle={`No news yet for ${sectorShortName}`}
+        emptyHint="Hit Run MUNS to fetch live items, or seed mock items in src/data/mockNews.ts."
+      />
     </div>
   );
 }

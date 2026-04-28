@@ -16,6 +16,9 @@ interface Props {
   onBack: () => void;
   onSelectNews: (n: NewsItem) => void;
   selectedNewsId?: string | null;
+  isLive: boolean;
+  lastRunAt: Date | null;
+  onMunsLoaded: (sectorId: string, items: NewsItem[], at: Date) => void;
 }
 
 const NEWS_LIMIT = 20;
@@ -26,6 +29,9 @@ export function SectorDetail({
   onBack,
   onSelectNews,
   selectedNewsId,
+  isLive,
+  lastRunAt,
+  onMunsLoaded,
 }: Props) {
   const sector = aggregate.sector;
   const Icon = SECTOR_ICONS[sector.iconKey];
@@ -117,9 +123,13 @@ export function SectorDetail({
       {/* News list */}
       {SECTOR_MUNS_AGENTS[sector.id] ? (
         <MunsSectorSection
-          agentLibraryId={SECTOR_MUNS_AGENTS[sector.id]}
+          sectorId={sector.id}
           sectorShortName={sector.shortName}
-          fallbackNews={sectorNews}
+          agentLibraryId={SECTOR_MUNS_AGENTS[sector.id]}
+          items={sectorNews}
+          isLive={isLive}
+          lastRunAt={lastRunAt}
+          onLoaded={(items, at) => onMunsLoaded(sector.id, items, at)}
           onSelectNews={onSelectNews}
           selectedNewsId={selectedNewsId}
         />
