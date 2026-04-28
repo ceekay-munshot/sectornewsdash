@@ -5,19 +5,26 @@ import { NewsFeed } from "./NewsFeed";
 import type { NewsItem } from "../types";
 
 const MUNS_API_BASE = "https://devde.muns.io";
-const AUTO_AGENT_LIBRARY_ID = "081d9904-4b68-41b1-9133-dd9f02bb80f0";
 const TOKEN_STORAGE_KEY = "muns.token";
 const NEWS_LIMIT = 20;
 
 type RunState = "idle" | "running" | "ok" | "error";
 
 interface Props {
+  agentLibraryId: string;
+  sectorShortName: string;
   fallbackNews: NewsItem[];
   onSelectNews: (item: NewsItem) => void;
   selectedNewsId?: string | null;
 }
 
-export function MunsAutoSection({ fallbackNews, onSelectNews, selectedNewsId }: Props) {
+export function MunsSectorSection({
+  agentLibraryId,
+  sectorShortName,
+  fallbackNews,
+  onSelectNews,
+  selectedNewsId,
+}: Props) {
   const [token, setToken] = useState<string>(
     () => sessionStorage.getItem(TOKEN_STORAGE_KEY) || "",
   );
@@ -62,7 +69,7 @@ export function MunsAutoSection({ fallbackNews, onSelectNews, selectedNewsId }: 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          agent_library_id: AUTO_AGENT_LIBRARY_ID,
+          agent_library_id: agentLibraryId,
           metadata: {
             stock_ticker: "JIOFIN",
             stock_company_name: "Jio Financial Services Ltd.",
@@ -192,7 +199,7 @@ export function MunsAutoSection({ fallbackNews, onSelectNews, selectedNewsId }: 
           limit={NEWS_LIMIT}
           onSelect={onSelectNews}
           selectedId={selectedNewsId}
-          emptyTitle="No news yet for Auto"
+          emptyTitle={`No news yet for ${sectorShortName}`}
           emptyHint="Hit Run MUNS to fetch live items, or seed mock items in src/data/mockNews.ts."
         />
       )}

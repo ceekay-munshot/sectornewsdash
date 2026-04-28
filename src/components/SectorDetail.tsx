@@ -3,7 +3,12 @@ import type { NewsItem, SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { SentimentBadge, ThemeChip } from "./Badges";
 import { NewsFeed } from "./NewsFeed";
-import { MunsAutoSection } from "./MunsAutoSection";
+import { MunsSectorSection } from "./MunsSectorSection";
+
+const SECTOR_MUNS_AGENTS: Record<string, string> = {
+  auto: "081d9904-4b68-41b1-9133-dd9f02bb80f0",
+  defence: "3b52dc5d-9427-44c0-b7f1-34193fa365dd",
+};
 
 interface Props {
   aggregate: SectorAggregate;
@@ -110,8 +115,10 @@ export function SectorDetail({
       </div>
 
       {/* News list */}
-      {sector.id === "auto" ? (
-        <MunsAutoSection
+      {SECTOR_MUNS_AGENTS[sector.id] ? (
+        <MunsSectorSection
+          agentLibraryId={SECTOR_MUNS_AGENTS[sector.id]}
+          sectorShortName={sector.shortName}
           fallbackNews={sectorNews}
           onSelectNews={onSelectNews}
           selectedNewsId={selectedNewsId}
