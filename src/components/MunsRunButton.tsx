@@ -127,11 +127,12 @@ export function MunsRunButton() {
 
       {open ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 px-4 py-8 backdrop-blur-md"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
         >
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-ink-950 p-5 shadow-2xl ring-1 ring-white/5">
+          <div className="flex min-h-full items-start justify-center px-4 py-8 sm:items-center">
+            <div className="w-full max-w-md rounded-2xl border border-white/15 bg-ink-950 p-5 shadow-2xl ring-1 ring-white/5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-display text-sm font-semibold text-white">
@@ -204,6 +205,7 @@ export function MunsRunButton() {
                 <Play size={12} />
                 {status === "running" ? "Running…" : "Run"}
               </button>
+            </div>
             </div>
           </div>
         </div>
