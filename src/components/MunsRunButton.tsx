@@ -5,13 +5,11 @@ const MUNS_API_BASE = "https://devde.muns.io";
 
 type RunStatus = "idle" | "running" | "ok" | "error";
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-_]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-") || "agent";
+const sanitizeFilename = (value: string) => {
+  const trimmed = value.trim().replace(/[\\/:*?"<>|]+/g, "-");
+  if (!trimmed) return "muns-output.json";
+  return trimmed.toLowerCase().endsWith(".json") ? trimmed : `${trimmed}.json`;
+};
 
 const triggerDownload = (filename: string, content: string) => {
   const blob = new Blob([content], { type: "application/json" });
@@ -27,8 +25,8 @@ const triggerDownload = (filename: string, content: string) => {
 
 export function MunsRunButton() {
   const [open, setOpen] = useState(false);
-  const [agentId, setAgentId] = useState("");
-  const [agentName, setAgentName] = useState("");
+  const [libraryId, setLibraryId] = useState("");
+  const [outputFileName, setOutputFileName] = useState("");
   const [token, setToken] = useState("");
   const [status, setStatus] = useState<RunStatus>("idle");
   const [message, setMessage] = useState<string>("");
@@ -39,9 +37,9 @@ export function MunsRunButton() {
   };
 
   const handleRun = async () => {
-    if (!agentId.trim() || !agentName.trim() || !token.trim()) {
+    if (!libraryId.trim() || !outputFileName.trim() || !token.trim()) {
       setStatus("error");
-      setMessage("Agent ID, Name, and MUNS token are all required.");
+      setMessage("Agent Library ID, Output File Name, and MUNS token are all required.");
       return;
     }
 
@@ -50,7 +48,7 @@ export function MunsRunButton() {
 
     const startedAt = new Date();
     const payload = {
-      agent_library_id: agentId.trim(),
+      agent_library_id: libraryId.trim(),
       metadata: {
         to_date: startedAt.toISOString().slice(0, 10),
         timezone: "UTC",
@@ -81,13 +79,11 @@ export function MunsRunButton() {
     }
 
     const finishedAt = new Date();
-    const slug = slugify(agentName);
-    const stamp = finishedAt.toISOString().replace(/[:.]/g, "-");
-    const filename = `muns-output-${slug}-${stamp}.json`;
+    const filename = sanitizeFilename(outputFileName);
 
     const fileContents = {
-      agentId: agentId.trim(),
-      agentName: agentName.trim(),
+      agentLibraryId: libraryId.trim(),
+      outputFileName: filename,
       apiBase: MUNS_API_BASE,
       requestedAt: startedAt.toISOString(),
       completedAt: finishedAt.toISOString(),
@@ -131,23 +127,23 @@ export function MunsRunButton() {
 
       {open ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 px-4 py-8 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
         >
-          <div className="glass-strong w-full max-w-md p-5">
+          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-ink-950 p-5 shadow-2xl ring-1 ring-white/5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-display text-sm font-semibold text-white">
                   Run MUNS Agent
                 </h2>
-                <p className="mt-0.5 text-[11px] text-white/50">
+                <p className="mt-0.5 text-[11px] text-white/55">
                   Output downloads as a JSON file.
                 </p>
               </div>
               <button
                 type="button"
-                className="rounded-md p-1 text-white/50 transition hover:bg-white/[0.05] hover:text-white"
+                className="rounded-md p-1 text-white/60 transition hover:bg-white/[0.08] hover:text-white"
                 onClick={() => setOpen(false)}
                 aria-label="Close"
               >
@@ -157,18 +153,18 @@ export function MunsRunButton() {
 
             <div className="space-y-3">
               <Field
-                label="Agent ID"
-                hint="UUID from MUNS library (sent as agent_library_id)"
-                value={agentId}
-                onChange={setAgentId}
+                label="Agent Library ID"
+                hint="Sent to MUNS as agent_library_id"
+                value={libraryId}
+                onChange={setLibraryId}
                 placeholder="f8c08f67-9dc2-4960-9c87-623251f297c1"
               />
               <Field
-                label="Name"
-                hint="Used for the output filename"
-                value={agentName}
-                onChange={setAgentName}
-                placeholder="management-compensation"
+                label="Output File Name"
+                hint=".json appended automatically if missing"
+                value={outputFileName}
+                onChange={setOutputFileName}
+                placeholder="management-compensation-run-1"
               />
               <Field
                 label="MUNS Token"
