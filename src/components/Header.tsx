@@ -26,7 +26,7 @@ export function Header({ totalNews, sectorsTracked }: Props) {
               Sector News Radar
             </div>
             <div className="text-[10.5px] uppercase tracking-[0.2em] text-white/40">
-              Investor Intelligence · Mock
+              Investor Intelligence
             </div>
           </div>
         </div>

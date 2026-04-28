@@ -192,11 +192,6 @@ export default function App() {
       </main>
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />
-
-      <footer className="relative z-10 mx-auto max-w-[1400px] px-5 pb-6 pt-2 text-center text-[10.5px] text-white/35">
-        Mock data only · Replace `src/data/mockNews.ts` with your AI Agent JSON
-        when ready.
-      </footer>
     </div>
   );
 }

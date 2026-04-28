@@ -179,7 +179,7 @@ export function SectorDetail({
             onSelect={onSelectNews}
             selectedId={selectedNewsId}
             emptyTitle={`No news yet for ${sector.shortName}`}
-            emptyHint="Connect your AI Agent feed or seed mock items in src/data/mockNews.ts."
+            emptyHint="No items match the current filters."
           />
         </div>
       )}
