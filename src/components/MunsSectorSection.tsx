@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { parseMunsAutoNews } from "../lib/munsParse";
-import { munsRowsToNewsItems } from "../lib/munsToNews";
-import { AGENT_ACCESS_TOKEN, AGENT_API_BASE } from "../lib/agentConfig";
+import { runSectorAgent } from "../lib/runAgent";
 import { NewsFeed } from "./NewsFeed";
 import type { NewsItem } from "../types";
 
@@ -43,38 +41,8 @@ export function MunsSectorSection({
     setState("running");
     setError(null);
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const response = await fetch(`${AGENT_API_BASE}/agents/run`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${AGENT_ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          agent_library_id: agentLibraryId,
-          metadata: {
-            stock_ticker: "JIOFIN",
-            stock_company_name: "Jio Financial Services Ltd.",
-            context_company_name: "Jio Financial Services Ltd.",
-            stock_country: "INDIA",
-            to_date: today,
-            timezone: "UTC",
-          },
-        }),
-      });
-      const text = await response.text();
-      if (!response.ok) {
-        setState("error");
-        setError("Could not refresh news right now. Please try again.");
-        return;
-      }
-      const rows = parseMunsAutoNews(text);
-      if (rows.length === 0) {
-        setState("error");
-        setError("No news items returned for this sector.");
-        return;
-      }
-      onLoaded(munsRowsToNewsItems(rows, sectorId), new Date());
+      const items = await runSectorAgent(sectorId, agentLibraryId);
+      onLoaded(items, new Date());
       setState("ok");
     } catch {
       setState("error");

@@ -36,6 +36,20 @@ interface MunsSectorPayload {
   loadedAt: number;
 }
 
+const NEWS_STORAGE_KEY = "agent-news-by-sector-v1";
+
+function loadPersistedNews(): Record<string, MunsSectorPayload> {
+  try {
+    const raw = localStorage.getItem(NEWS_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") return parsed;
+  } catch {
+    // ignore unparseable storage
+  }
+  return {};
+}
+
 export default function App() {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [view, setView] = useState<"overview" | "sector">("overview");
@@ -44,11 +58,20 @@ export default function App() {
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() =>
     loadWatchlist(SECTORS.map((s) => s.id))
   );
-  // Live MUNS news per sector. When present, replaces mock news for that
+  // Live agent news per sector. When present, replaces mock news for that
   // sector so aggregates, heatmap, and filters all see the live items.
+  // Persisted to localStorage so a one-time bulk seed survives page reloads.
   const [munsBySector, setMunsBySector] = useState<
     Record<string, MunsSectorPayload>
-  >({});
+  >(loadPersistedNews);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(munsBySector));
+    } catch {
+      // storage may be full or disabled — silently ignore
+    }
+  }, [munsBySector]);
 
   const setMunsForSector = useCallback(
     (sectorId: string, items: NewsItem[], at: Date) => {
@@ -152,6 +175,7 @@ export default function App() {
       <Header
         totalNews={livePool.length}
         sectorsTracked={SECTORS.length}
+        onSectorLoaded={setMunsForSector}
       />
       <FilterBar
         filters={filters}

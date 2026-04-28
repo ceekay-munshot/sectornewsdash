@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Activity, Radar } from "lucide-react";
+import type { NewsItem } from "../types";
+import { SyncAllButton } from "./SyncAllButton";
 
 interface Props {
   totalNews: number;
   sectorsTracked: number;
+  onSectorLoaded: (sectorId: string, items: NewsItem[], at: Date) => void;
 }
 
-export function Header({ totalNews, sectorsTracked }: Props) {
+export function Header({ totalNews, sectorsTracked, onSectorLoaded }: Props) {
   const [now, setNow] = useState<string>(() => fmt(new Date()));
   useEffect(() => {
     const t = setInterval(() => setNow(fmt(new Date())), 1000);
@@ -39,6 +42,7 @@ export function Header({ totalNews, sectorsTracked }: Props) {
             <span className="font-mono">{sectorsTracked}</span>
             <span className="text-white/30">sectors</span>
           </div>
+          <SyncAllButton onSectorLoaded={onSectorLoaded} />
           <div className="chip">
             <Activity size={12} className="text-emerald-400" />
             <span className="hidden sm:inline">Live · {now}</span>
