@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Bot, Play, X } from "lucide-react";
 
 const MUNS_API_BASE = "https://devde.muns.io";
@@ -125,7 +126,8 @@ export function MunsRunButton() {
         <span className="hidden sm:inline">MUNS</span>
       </button>
 
-      {open ? (
+      {open
+        ? createPortal(
         <div
           className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md"
           role="dialog"
@@ -208,8 +210,10 @@ export function MunsRunButton() {
             </div>
             </div>
           </div>
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+        : null}
     </>
   );
 }
