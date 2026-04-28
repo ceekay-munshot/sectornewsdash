@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Activity, Radar } from "lucide-react";
-import { MunsRunButton } from "./MunsRunButton";
 
 interface Props {
   totalNews: number;
@@ -40,7 +39,6 @@ export function Header({ totalNews, sectorsTracked }: Props) {
             <span className="font-mono">{sectorsTracked}</span>
             <span className="text-white/30">sectors</span>
           </div>
-          <MunsRunButton />
           <div className="chip">
             <Activity size={12} className="text-emerald-400" />
             <span className="hidden sm:inline">Live · {now}</span>

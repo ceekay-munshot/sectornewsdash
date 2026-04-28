@@ -3,6 +3,7 @@ import type { NewsItem, SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { SentimentBadge, ThemeChip } from "./Badges";
 import { NewsFeed } from "./NewsFeed";
+import { MunsAutoSection } from "./MunsAutoSection";
 
 interface Props {
   aggregate: SectorAggregate;
@@ -109,27 +110,35 @@ export function SectorDetail({
       </div>
 
       {/* News list */}
-      <div className="space-y-2">
-        <div className="flex items-baseline justify-between px-1">
-          <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-            Material news ·{" "}
-            <span className="text-white/70">
-              {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
-            </span>
-          </div>
-          <div className="text-[10.5px] text-white/35">
-            ranked by impact · recency · urgency
-          </div>
-        </div>
-        <NewsFeed
-          items={sectorNews}
-          limit={NEWS_LIMIT}
-          onSelect={onSelectNews}
-          selectedId={selectedNewsId}
-          emptyTitle={`No news yet for ${sector.shortName}`}
-          emptyHint="Connect your AI Agent feed or seed mock items in src/data/mockNews.ts."
+      {sector.id === "auto" ? (
+        <MunsAutoSection
+          fallbackNews={sectorNews}
+          onSelectNews={onSelectNews}
+          selectedNewsId={selectedNewsId}
         />
-      </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between px-1">
+            <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+              Material news ·{" "}
+              <span className="text-white/70">
+                {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+              </span>
+            </div>
+            <div className="text-[10.5px] text-white/35">
+              ranked by impact · recency · urgency
+            </div>
+          </div>
+          <NewsFeed
+            items={sectorNews}
+            limit={NEWS_LIMIT}
+            onSelect={onSelectNews}
+            selectedId={selectedNewsId}
+            emptyTitle={`No news yet for ${sector.shortName}`}
+            emptyHint="Connect your AI Agent feed or seed mock items in src/data/mockNews.ts."
+          />
+        </div>
+      )}
     </div>
   );
 }
