@@ -131,7 +131,7 @@ export function MunsRunButton() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-ink-950 p-5 shadow-2xl ring-1 ring-white/5">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-ink-950 p-5 shadow-2xl ring-1 ring-white/5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-display text-sm font-semibold text-white">
