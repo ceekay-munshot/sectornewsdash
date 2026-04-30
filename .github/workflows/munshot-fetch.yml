@@ -1,0 +1,38 @@
+name: munshot-fetch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch-agent-output:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Fetch agent output from MUNS
+        run: |
+          mkdir -p munshot-outputs
+          curl -i -X POST https://devde.muns.io/agents/run \
+            -H "Authorization: Bearer ${{ secrets.MUNS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "agent_library_id": "b3b0085f-1f41-4024-a53a-1dc23589955a",
+              "metadata": {
+                "stock_ticker": "",
+                "stock_company_name": "",
+                "context_company_name": "",
+                "stock_country": "INDIA",
+                "to_date": "'$(date +%Y-%m-%d)'",
+                "timezone": "UTC"
+              }
+            }' > munshot-outputs/agent-b3b0085f-1f41-4024-a53a-1dc23589955a.txt
+
+      - name: Commit and push
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add munshot-outputs/
+          git commit -m "munshot: capture sample"
+          git push
