@@ -1,8 +1,10 @@
 import { ArrowLeft, Flame } from "lucide-react";
 import type { NewsItem, SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
+import { SECTOR_AGENTS } from "../lib/agentConfig";
 import { SentimentBadge, ThemeChip } from "./Badges";
 import { NewsFeed } from "./NewsFeed";
+import { MunsSectorSection } from "./MunsSectorSection";
 
 interface Props {
   aggregate: SectorAggregate;
@@ -10,6 +12,9 @@ interface Props {
   onBack: () => void;
   onSelectNews: (n: NewsItem) => void;
   selectedNewsId?: string | null;
+  isLive: boolean;
+  lastRunAt: Date | null;
+  onMunsLoaded: (sectorId: string, items: NewsItem[], at: Date) => void;
 }
 
 const NEWS_LIMIT = 20;
@@ -20,6 +25,9 @@ export function SectorDetail({
   onBack,
   onSelectNews,
   selectedNewsId,
+  isLive,
+  lastRunAt,
+  onMunsLoaded,
 }: Props) {
   const sector = aggregate.sector;
   const Icon = SECTOR_ICONS[sector.iconKey];
@@ -109,27 +117,41 @@ export function SectorDetail({
       </div>
 
       {/* News list */}
-      <div className="space-y-2">
-        <div className="flex items-baseline justify-between px-1">
-          <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-            Material news ·{" "}
-            <span className="text-white/70">
-              {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
-            </span>
-          </div>
-          <div className="text-[10.5px] text-white/35">
-            ranked by impact · recency · urgency
-          </div>
-        </div>
-        <NewsFeed
+      {SECTOR_AGENTS[sector.id] ? (
+        <MunsSectorSection
+          sectorId={sector.id}
+          sectorShortName={sector.shortName}
+          agentLibraryId={SECTOR_AGENTS[sector.id]}
           items={sectorNews}
-          limit={NEWS_LIMIT}
-          onSelect={onSelectNews}
-          selectedId={selectedNewsId}
-          emptyTitle={`No news yet for ${sector.shortName}`}
-          emptyHint="Connect your AI Agent feed or seed mock items in src/data/mockNews.ts."
+          isLive={isLive}
+          lastRunAt={lastRunAt}
+          onLoaded={(items, at) => onMunsLoaded(sector.id, items, at)}
+          onSelectNews={onSelectNews}
+          selectedNewsId={selectedNewsId}
         />
-      </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between px-1">
+            <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+              Material news ·{" "}
+              <span className="text-white/70">
+                {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+              </span>
+            </div>
+            <div className="text-[10.5px] text-white/35">
+              ranked by impact · recency · urgency
+            </div>
+          </div>
+          <NewsFeed
+            items={sectorNews}
+            limit={NEWS_LIMIT}
+            onSelect={onSelectNews}
+            selectedId={selectedNewsId}
+            emptyTitle={`No news yet for ${sector.shortName}`}
+            emptyHint="No items match the current filters."
+          />
+        </div>
+      )}
     </div>
   );
 }
