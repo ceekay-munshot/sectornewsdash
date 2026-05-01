@@ -1,0 +1,14 @@
+{
+  "name": "munshot",
+  "owner": {
+    "name": "ceekay-munshot",
+    "url": "https://github.com/ceekay-munshot"
+  },
+  "plugins": [
+    {
+      "name": "munshot",
+      "source": "./plugins/munshot",
+      "description": "Wire a MUNS-powered news/chat panel into any dashboard repo. Walks chat-vs-agent, prompt/UUID, GitHub Action bootstrap, parser build, runtime UI, teardown."
+    }
+  ]
+}

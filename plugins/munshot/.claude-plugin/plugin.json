@@ -1,0 +1,5 @@
+{
+  "name": "munshot",
+  "description": "Wire a MUNS-powered news/chat panel into any dashboard repo.",
+  "version": "1.0.0"
+}
