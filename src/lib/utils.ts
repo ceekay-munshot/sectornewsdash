@@ -40,6 +40,17 @@ export function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+// "MAR-27" — uppercase three-letter month, dash, zero-padded day.
+export function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  const month = d
+    .toLocaleString("en-US", { month: "short" })
+    .toUpperCase();
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${month}-${day}`;
+}
+
 export function classNames(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }

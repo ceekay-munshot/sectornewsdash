@@ -31,6 +31,25 @@ const EMPTY_FILTERS: FilterState = {
   theme: null,
 };
 
+interface MunsSectorPayload {
+  items: NewsItem[];
+  loadedAt: number;
+}
+
+const NEWS_STORAGE_KEY = "agent-news-by-sector-v1";
+
+function loadPersistedNews(): Record<string, MunsSectorPayload> {
+  try {
+    const raw = localStorage.getItem(NEWS_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") return parsed;
+  } catch {
+    // ignore unparseable storage
+  }
+  return {};
+}
+
 export default function App() {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [view, setView] = useState<"overview" | "sector">("overview");
@@ -39,6 +58,39 @@ export default function App() {
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() =>
     loadWatchlist(SECTORS.map((s) => s.id))
   );
+  // Live agent news per sector. When present, replaces mock news for that
+  // sector so aggregates, heatmap, and filters all see the live items.
+  // Persisted to localStorage so a one-time bulk seed survives page reloads.
+  const [munsBySector, setMunsBySector] = useState<
+    Record<string, MunsSectorPayload>
+  >(loadPersistedNews);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(munsBySector));
+    } catch {
+      // storage may be full or disabled — silently ignore
+    }
+  }, [munsBySector]);
+
+  const setMunsForSector = useCallback(
+    (sectorId: string, items: NewsItem[], at: Date) => {
+      setMunsBySector((prev) => ({
+        ...prev,
+        [sectorId]: { items, loadedAt: at.getTime() },
+      }));
+    },
+    []
+  );
+
+  // Pool: replace any sector's mock news with its MUNS items when present.
+  const livePool = useMemo<NewsItem[]>(() => {
+    const liveSectorIds = new Set(Object.keys(munsBySector));
+    if (liveSectorIds.size === 0) return MOCK_NEWS;
+    const filteredMock = MOCK_NEWS.filter((n) => !liveSectorIds.has(n.sector));
+    const muns = Object.values(munsBySector).flatMap((p) => p.items);
+    return [...filteredMock, ...muns];
+  }, [munsBySector]);
 
   useEffect(() => {
     saveWatchlist(watchlistIds);
@@ -58,8 +110,8 @@ export default function App() {
 
   // Filtered + ranked news (global)
   const filteredNews = useMemo(
-    () => rankNewsByImpact(filterNews(MOCK_NEWS, filters)),
-    [filters]
+    () => rankNewsByImpact(filterNews(livePool, filters)),
+    [livePool, filters]
   );
 
   // Aggregates for overview — built from filtered news so filters cascade.
@@ -73,9 +125,16 @@ export default function App() {
   // inside detail view.
   const sectorNews = useMemo(() => {
     if (!activeSectorId) return [];
-    const local = filterNews(MOCK_NEWS, { ...filters, sectorId: activeSectorId });
+    const local = filterNews(livePool, { ...filters, sectorId: activeSectorId });
     return rankNewsByImpact(local);
-  }, [activeSectorId, filters]);
+  }, [activeSectorId, livePool, filters]);
+
+  const activeMunsLoadedAt = activeSectorId
+    ? munsBySector[activeSectorId]?.loadedAt ?? null
+    : null;
+  const activeIsLive = activeSectorId
+    ? Boolean(munsBySector[activeSectorId])
+    : false;
 
   const activeAggregate = useMemo(() => {
     if (!activeSectorId) return null;
@@ -114,8 +173,9 @@ export default function App() {
   return (
     <div className="grain min-h-screen">
       <Header
-        totalNews={MOCK_NEWS.length}
+        totalNews={livePool.length}
         sectorsTracked={SECTORS.length}
+        onSectorLoaded={setMunsForSector}
       />
       <FilterBar
         filters={filters}
@@ -146,6 +206,9 @@ export default function App() {
             onBack={backToOverview}
             onSelectNews={onSelectNews}
             selectedNewsId={activeNews?.id ?? null}
+            isLive={activeIsLive}
+            lastRunAt={activeMunsLoadedAt ? new Date(activeMunsLoadedAt) : null}
+            onMunsLoaded={setMunsForSector}
           />
         )}
 
@@ -153,11 +216,6 @@ export default function App() {
       </main>
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />
-
-      <footer className="relative z-10 mx-auto max-w-[1400px] px-5 pb-6 pt-2 text-center text-[10.5px] text-white/35">
-        Mock data only · Replace `src/data/mockNews.ts` with your AI Agent JSON
-        when ready.
-      </footer>
     </div>
   );
 }

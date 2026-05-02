@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import type { NewsItem } from "../types";
 import { SentimentDot } from "./Badges";
-import { classNames, relativeTime } from "../lib/utils";
+import { classNames, formatShortDate } from "../lib/utils";
 
 interface Props {
   item: NewsItem;
@@ -11,9 +11,9 @@ interface Props {
 }
 
 /**
- * Investor-grade headline row — strictly: headline + sentiment dot + source
- * button (+ optional published time). All deeper intelligence opens in the
- * NewsInsightPanel when the row is clicked.
+ * Headline row — sentiment dot + headline + short date + outlink button.
+ * Click anywhere opens the NewsInsightPanel; the outlink button on the right
+ * is the only thing that escapes to the source URL.
  */
 export function NewsHeadlineRow({ item, onSelect, showTime, active }: Props) {
   return (
@@ -40,21 +40,23 @@ export function NewsHeadlineRow({ item, onSelect, showTime, active }: Props) {
         </div>
       </div>
       {showTime && (
-        <span className="hidden whitespace-nowrap font-mono text-[10.5px] text-white/40 sm:inline">
-          {relativeTime(item.publishedAt)}
+        <span className="hidden whitespace-nowrap font-mono text-[10.5px] text-white/45 sm:inline">
+          {formatShortDate(item.publishedAt)}
         </span>
       )}
-      <a
-        href={item.newsUrl}
-        target="_blank"
-        rel="noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        title={`Open source: ${item.source}`}
-        className="focus-ring inline-flex items-center gap-1 rounded-md border border-white/[0.07] bg-white/[0.02] px-1.5 py-1 text-[10.5px] text-white/55 transition hover:border-white/[0.16] hover:text-white"
-      >
-        <ExternalLink size={10} />
-        <span className="max-w-[80px] truncate">{item.source}</span>
-      </a>
+      {item.newsUrl ? (
+        <a
+          href={item.newsUrl}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          title={`Open source: ${item.source}`}
+          aria-label={`Open source: ${item.source}`}
+          className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.02] text-white/55 transition hover:border-white/[0.16] hover:text-white"
+        >
+          <ExternalLink size={11} />
+        </a>
+      ) : null}
     </div>
   );
 }
