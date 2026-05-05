@@ -56,15 +56,20 @@ export function classNames(...parts: (string | false | null | undefined)[]) {
 }
 
 /**
- * Map a heat score (0..100) to a green → blue → red gradient.
- * 0 = cool/green, 50 = mid/blue, 100 = hot/red.
+ * Map a heat score (0..100) to a thermal-style gradient that biases hot.
+ * Cold sectors land green, the active mid-range (40–65) walks through
+ * teal → amber → orange so realistic heat scores read vivid rather than
+ * stuck on muted blue, and 75+ saturates fully red.
  */
 export function heatToColor(heat: number): { hex: string; rgb: string } {
   const h = clamp(heat, 0, 100);
   const stops: Array<[number, [number, number, number]]> = [
     [0, [34, 197, 94]],
-    [50, [59, 130, 246]],
-    [100, [239, 68, 68]],
+    [35, [6, 182, 212]],
+    [55, [250, 204, 21]],
+    [72, [249, 115, 22]],
+    [88, [239, 68, 68]],
+    [100, [185, 28, 28]],
   ];
   let lo = stops[0];
   let hi = stops[stops.length - 1];

@@ -62,9 +62,9 @@ function HeatTile({
   const { hex: heatHex, rgb: heatRgb } = heatToColor(heat);
 
   // Tile background tints stronger as heat rises. Cold sectors render
-  // in a neutral muted treatment so the green→blue→red scale stays clean.
-  const baseAlpha = live ? 0.18 + (heat / 100) * 0.42 : 0.025;
-  const edgeAlpha = live ? 0.06 + (heat / 100) * 0.18 : 0.012;
+  // in a neutral muted treatment so the thermal scale stays vivid.
+  const baseAlpha = live ? 0.22 + (heat / 100) * 0.42 : 0.025;
+  const edgeAlpha = live ? 0.08 + (heat / 100) * 0.2 : 0.012;
   const tintRgb = live ? heatRgb : "255,255,255";
 
   return (
@@ -84,8 +84,8 @@ function HeatTile({
       <span
         className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm"
         style={{
-          background: live ? `rgba(${heatRgb},0.32)` : "rgba(255,255,255,0.04)",
-          color: live ? heatHex : "rgba(255,255,255,0.5)",
+          background: live ? `rgba(${heatRgb},0.55)` : "rgba(255,255,255,0.04)",
+          color: live ? "#0B0B0F" : "rgba(255,255,255,0.5)",
         }}
       >
         <Icon size={9} />
@@ -111,16 +111,16 @@ function HeatTile({
 }
 
 function HeatLegend() {
-  const { hex: cool } = heatToColor(0);
-  const { hex: mid } = heatToColor(50);
-  const { hex: hot } = heatToColor(100);
+  // Sample more stops so the legend strip mirrors the actual heatToColor
+  // curve rather than a 3-stop approximation.
+  const samples = [0, 25, 40, 55, 70, 85, 100]
+    .map((v) => `${heatToColor(v).hex} ${v}%`)
+    .join(", ");
   return (
     <div className="mb-2 flex items-center gap-2 px-0.5">
       <div
         className="h-1.5 flex-1 rounded-full"
-        style={{
-          background: `linear-gradient(90deg, ${cool} 0%, ${mid} 50%, ${hot} 100%)`,
-        }}
+        style={{ background: `linear-gradient(90deg, ${samples})` }}
       />
       <div className="flex items-center gap-2 font-mono text-[9.5px] text-white/45">
         <span>cool 0</span>
