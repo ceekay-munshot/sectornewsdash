@@ -1,6 +1,9 @@
+import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { classNames, heatToColor } from "../lib/utils";
+import { useSectorBreakdown } from "../lib/sectorBreakdown";
 
 interface Props {
   aggregates: SectorAggregate[];
@@ -8,11 +11,13 @@ interface Props {
   selectedId?: string | null;
 }
 
+const POPOVER_WIDTH = 240;
+
 /**
  * True heatmap — color carries the data. Each tile is a single row
- * (icon + short name + heat number); intensity of the sector accent
- * tracks heat score. Cold sectors fade to near-neutral so the live
- * sectors visibly pop.
+ * (icon + short name + heat number); intensity tracks the sector's
+ * heat score on a thermal gradient. Hovering a tile reveals a small
+ * popover with sentiment, top theme and bull/neut/bear breakdown.
  */
 export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
   const liveCount = aggregates.filter((a) => a.newsCount > 0).length;
@@ -61,16 +66,35 @@ function HeatTile({
   const live = agg.newsCount > 0;
   const { hex: heatHex, rgb: heatRgb } = heatToColor(heat);
 
-  // Tile background tints stronger as heat rises. Cold sectors render
-  // in a neutral muted treatment so the thermal scale stays vivid.
   const baseAlpha = live ? 0.22 + (heat / 100) * 0.42 : 0.025;
   const edgeAlpha = live ? 0.08 + (heat / 100) * 0.2 : 0.012;
   const tintRgb = live ? heatRgb : "255,255,255";
 
+  const tileRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  const showPopover = () => {
+    if (!tileRef.current) return;
+    const r = tileRef.current.getBoundingClientRect();
+    const left = Math.max(
+      8,
+      Math.min(
+        window.innerWidth - POPOVER_WIDTH - 8,
+        r.left + r.width / 2 - POPOVER_WIDTH / 2
+      )
+    );
+    setPos({ top: r.bottom + 6, left });
+  };
+  const hidePopover = () => setPos(null);
+
   return (
     <button
+      ref={tileRef}
       onClick={() => onSelect(agg.sector.id)}
-      title={`${agg.sector.name} · heat ${heat} · ${agg.newsCount} news · ${agg.sentiment}`}
+      onMouseEnter={showPopover}
+      onMouseLeave={hidePopover}
+      onFocus={showPopover}
+      onBlur={hidePopover}
       style={{
         animationDelay: `${Math.min(index * 14, 240)}ms`,
         background: `linear-gradient(140deg, rgba(${tintRgb},${baseAlpha}) 0%, rgba(${tintRgb},${edgeAlpha}) 100%)`,
@@ -106,13 +130,140 @@ function HeatTile({
       >
         {live ? heat : "·"}
       </span>
+
+      {pos
+        ? createPortal(
+            <SectorTilePopover agg={agg} top={pos.top} left={pos.left} />,
+            document.body
+          )
+        : null}
     </button>
   );
 }
 
+const SENT_COLOR: Record<"Bullish" | "Bearish" | "Neutral", string> = {
+  Bullish: "#34D399",
+  Bearish: "#F87171",
+  Neutral: "#94A3B8",
+};
+
+function SectorTilePopover({
+  agg,
+  top,
+  left,
+}: {
+  agg: SectorAggregate;
+  top: number;
+  left: number;
+}) {
+  const breakdown = useSectorBreakdown(agg.sector.id);
+  const heat = Math.max(0, Math.min(100, agg.heatScore));
+  const { hex: heatHex } = heatToColor(heat);
+  const sentColor = SENT_COLOR[agg.sentiment];
+  const live = agg.newsCount > 0;
+
+  const segs = [
+    { label: "Bull", count: breakdown?.bullish ?? 0, color: SENT_COLOR.Bullish },
+    { label: "Neut", count: breakdown?.neutral ?? 0, color: SENT_COLOR.Neutral },
+    { label: "Bear", count: breakdown?.bearish ?? 0, color: SENT_COLOR.Bearish },
+  ];
+
+  return (
+    <div
+      role="tooltip"
+      style={{
+        position: "fixed",
+        top,
+        left,
+        width: POPOVER_WIDTH,
+        zIndex: 60,
+      }}
+      className="pointer-events-none animate-floatIn rounded-lg border border-white/[0.08] bg-ink-950/95 p-2.5 shadow-2xl backdrop-blur-xl"
+    >
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="truncate text-[11.5px] font-semibold text-white">
+          {agg.sector.name}
+        </div>
+        <div
+          className="font-mono text-[12px] font-bold tabular-nums"
+          style={{ color: heatHex }}
+        >
+          {live ? heat : "—"}
+        </div>
+      </div>
+
+      <div className="mt-1 flex items-center gap-1.5">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+          <div
+            className="h-full rounded-full"
+            style={{ width: `${heat}%`, background: heatHex }}
+          />
+        </div>
+        <span className="font-mono text-[9.5px] uppercase tracking-wider text-white/40">
+          heat
+        </span>
+      </div>
+
+      {!live ? (
+        <div className="mt-2 text-[10.5px] text-white/45">
+          No news in scope yet.
+        </div>
+      ) : (
+        <>
+          <div className="mt-2 flex items-center justify-between gap-2 text-[10.5px]">
+            <span
+              className="inline-flex items-center gap-1 font-medium"
+              style={{ color: sentColor }}
+            >
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: sentColor }}
+              />
+              {agg.sentiment}
+              <span className="font-mono text-white/40">
+                {agg.sentimentScore > 0 ? "+" : ""}
+                {agg.sentimentScore}
+              </span>
+            </span>
+            <span className="text-white/45">
+              <span className="font-mono text-white/75">{agg.newsCount}</span> news
+            </span>
+          </div>
+
+          <div className="mt-1.5 flex items-center justify-between gap-2 text-[10.5px] text-white/55">
+            <span className="text-white/40">Top theme</span>
+            <span className="truncate text-white/85">{agg.topTheme}</span>
+          </div>
+
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            {segs.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-md border border-white/[0.05] bg-white/[0.02] px-1.5 py-1"
+              >
+                <div
+                  className="text-[9.5px] uppercase tracking-wider"
+                  style={{ color: s.color }}
+                >
+                  {s.label}
+                </div>
+                <div className="font-mono text-[12px] font-semibold tabular-nums text-white/90">
+                  {s.count}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="mt-1.5 text-right font-mono text-[9.5px] text-white/35">
+        click to drill in
+      </div>
+    </div>
+  );
+}
+
 function HeatLegend() {
-  // Sample more stops so the legend strip mirrors the actual heatToColor
-  // curve rather than a 3-stop approximation.
   const samples = [0, 25, 40, 55, 70, 85, 100]
     .map((v) => `${heatToColor(v).hex} ${v}%`)
     .join(", ");
