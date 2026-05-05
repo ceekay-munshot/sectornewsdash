@@ -4,6 +4,8 @@ import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { classNames, heatToColor, heatTier } from "../lib/utils";
 import { useSectorBreakdown } from "../lib/sectorBreakdown";
+import { HelpHint } from "./HelpHint";
+import { HEAT_SCORE_HINT } from "../lib/methodologyHints";
 
 interface Props {
   aggregates: SectorAggregate[];
@@ -25,8 +27,11 @@ export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
   return (
     <div className="glass relative overflow-hidden p-3.5">
       <div className="mb-3 flex items-center justify-between px-0.5">
-        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
-          Sector heatmap
+        <div className="flex items-center gap-1.5">
+          <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+            Sector heatmap
+          </div>
+          <HelpHint {...HEAT_SCORE_HINT} />
         </div>
         <div className="font-mono text-[10.5px] text-emerald-300/85">
           {liveCount} live

@@ -4,7 +4,6 @@ import { FilterBar } from "./components/FilterBar";
 import { OverviewTab } from "./components/OverviewTab";
 import { SectorDetail } from "./components/SectorDetail";
 import { NewsInsightPanel } from "./components/NewsInsightPanel";
-import { MethodologyPanel } from "./components/MethodologyPanel";
 import { MOCK_NEWS } from "./data/mockNews";
 import { SECTORS } from "./data/sectors";
 import {
@@ -279,8 +278,6 @@ export default function App() {
             onMunsLoaded={setMunsForSector}
           />
         )}
-
-        <MethodologyPanel />
       </main>
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />

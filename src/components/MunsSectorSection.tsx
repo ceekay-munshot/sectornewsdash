@@ -2,6 +2,8 @@ import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { runSectorAgent } from "../lib/runAgent";
 import { NewsFeed } from "./NewsFeed";
+import { HelpHint } from "./HelpHint";
+import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
 import type { NewsItem } from "../types";
 
 const NEWS_LIMIT = 20;
@@ -55,20 +57,23 @@ export function MunsSectorSection({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-          Material news ·{" "}
-          <span className="text-white/70">
-            {visibleCount} of {items.length}
-          </span>
-          {isLive && lastRunAt ? (
-            <span className="ml-2 normal-case tracking-normal text-emerald-300/80">
-              · live ·{" "}
-              {lastRunAt.toLocaleTimeString(undefined, {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+        <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+          <span>
+            Material news ·{" "}
+            <span className="text-white/70">
+              {visibleCount} of {items.length}
             </span>
-          ) : null}
+            {isLive && lastRunAt ? (
+              <span className="ml-2 normal-case tracking-normal text-emerald-300/80">
+                · live ·{" "}
+                {lastRunAt.toLocaleTimeString(undefined, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            ) : null}
+          </span>
+          <HelpHint {...NEWS_RANKING_HINT} />
         </div>
         <button
           type="button"

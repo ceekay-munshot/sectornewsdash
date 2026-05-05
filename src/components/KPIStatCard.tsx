@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { classNames } from "../lib/utils";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
   delta?: { value: string; tone?: "up" | "down" | "neutral" };
   icon?: LucideIcon;
   accent?: string; // hex
+  help?: ReactNode;
 }
 
 export function KPIStatCard({
@@ -17,6 +19,7 @@ export function KPIStatCard({
   delta,
   icon: Icon,
   accent = "#7DD3FC",
+  help,
 }: Props) {
   return (
     <div className="glass relative overflow-hidden p-3.5">
@@ -27,8 +30,11 @@ export function KPIStatCard({
         }}
       />
       <div className="flex items-center justify-between">
-        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/45">
-          {label}
+        <div className="flex items-center gap-1.5">
+          <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/45">
+            {label}
+          </div>
+          {help}
         </div>
         {Icon && (
           <div

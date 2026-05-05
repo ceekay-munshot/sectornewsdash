@@ -5,6 +5,8 @@ import { SECTOR_AGENTS } from "../lib/agentConfig";
 import { SentimentBadge, ThemeChip } from "./Badges";
 import { NewsFeed } from "./NewsFeed";
 import { MunsSectorSection } from "./MunsSectorSection";
+import { HelpHint } from "./HelpHint";
+import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
 
 interface Props {
   aggregate: SectorAggregate;
@@ -132,11 +134,14 @@ export function SectorDetail({
       ) : (
         <div className="space-y-2">
           <div className="flex items-baseline justify-between px-1">
-            <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-              Material news ·{" "}
-              <span className="text-white/70">
-                {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+              <span>
+                Material news ·{" "}
+                <span className="text-white/70">
+                  {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+                </span>
               </span>
+              <HelpHint {...NEWS_RANKING_HINT} />
             </div>
             <div className="text-[10.5px] text-white/35">
               ranked by impact · recency · urgency
