@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Activity, Flame, Newspaper, Radar, TrendingUp } from "lucide-react";
+import { Activity, Flame, TrendingUp } from "lucide-react";
 import type { NewsItem, SectorAggregate, SectorMeta } from "../types";
 import { KPIStatCard } from "./KPIStatCard";
 import { SectorHeatmap } from "./SectorHeatmap";
@@ -32,7 +32,6 @@ export function OverviewTab({
 }: Props) {
   const stats = useMemo(() => {
     const total = filteredNews.length;
-    const sectorsCovered = aggregates.filter((a) => a.newsCount > 0).length;
     const hottest = aggregates[0];
     const mostBullish = aggregates
       .slice()
@@ -45,7 +44,7 @@ export function OverviewTab({
             1
           )
         : "—";
-    return { total, sectorsCovered, hottest, mostBullish, critical, avgImpact };
+    return { hottest, mostBullish, critical, avgImpact };
   }, [aggregates, filteredNews]);
 
   const watchlistCards = useMemo(() => {
@@ -58,21 +57,7 @@ export function OverviewTab({
   return (
     <div className="animate-floatIn space-y-4">
       {/* KPI strip */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-        <KPIStatCard
-          label="Total news"
-          value={stats.total}
-          hint="In current filter scope"
-          icon={Newspaper}
-          accent="#7DD3FC"
-        />
-        <KPIStatCard
-          label="Sectors covered"
-          value={`${stats.sectorsCovered}/${aggregates.length}`}
-          hint="With at least one item"
-          icon={Radar}
-          accent="#A78BFA"
-        />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KPIStatCard
           label="Hottest sector"
           value={stats.hottest?.heatScore || "—"}
@@ -99,9 +84,6 @@ export function OverviewTab({
           accent="#F59E0B"
         />
       </div>
-
-      {/* Heatmap (all 29 sectors at a glance) */}
-      <SectorHeatmap aggregates={aggregates} onSelect={onOpenSector} />
 
       {/* Watchlist controls */}
       <WatchlistControl
@@ -132,6 +114,9 @@ export function OverviewTab({
           ))}
         </div>
       )}
+
+      {/* Heatmap (all sectors at a glance) */}
+      <SectorHeatmap aggregates={aggregates} onSelect={onOpenSector} />
     </div>
   );
 }
