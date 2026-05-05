@@ -9,6 +9,7 @@ import { NewsFeed } from "./NewsFeed";
 import { MunsSectorSection } from "./MunsSectorSection";
 import { HelpHint } from "./HelpHint";
 import { NewsSortToggle, type NewsSortMode } from "./NewsSortToggle";
+import { NewsTimeStrip } from "./NewsTimeStrip";
 import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
 
 interface Props {
@@ -153,6 +154,7 @@ export function SectorDetail({
             </div>
             <NewsSortToggle value={sortMode} onChange={setSortMode} />
           </div>
+          <NewsTimeStrip items={sectorNews} />
           <NewsFeed
             items={sortedSectorNews}
             limit={NEWS_LIMIT}

@@ -51,6 +51,39 @@ export function formatShortDate(iso: string): string {
   return `${month}-${day}`;
 }
 
+// "Mar 27" — title-case month, space, un-padded day.
+export function formatPrettyDate(d: Date): string {
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+/**
+ * Friendly "last synced" formatter — collapses to "today" / "yesterday"
+ * for recent times, full date past that. Always appends HH:MM.
+ */
+export function formatSyncStamp(d: Date): string {
+  if (Number.isNaN(d.getTime())) return "—";
+  const time = d.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  if (sameDay) return `today · ${time}`;
+  const y = new Date(today);
+  y.setDate(today.getDate() - 1);
+  const yesterday =
+    d.getFullYear() === y.getFullYear() &&
+    d.getMonth() === y.getMonth() &&
+    d.getDate() === y.getDate();
+  if (yesterday) return `yesterday · ${time}`;
+  return `${formatPrettyDate(d)} · ${time}`;
+}
+
 export function classNames(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }

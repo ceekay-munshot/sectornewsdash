@@ -5,6 +5,7 @@ import { sortNewsByDate } from "../lib/logic";
 import { NewsFeed } from "./NewsFeed";
 import { HelpHint } from "./HelpHint";
 import { NewsSortToggle, type NewsSortMode } from "./NewsSortToggle";
+import { NewsTimeStrip } from "./NewsTimeStrip";
 import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
 import type { NewsItem } from "../types";
 
@@ -71,13 +72,9 @@ export function MunsSectorSection({
             <span className="text-white/70">
               {visibleCount} of {items.length}
             </span>
-            {isLive && lastRunAt ? (
+            {isLive ? (
               <span className="ml-2 normal-case tracking-normal text-emerald-300/80">
-                · live ·{" "}
-                {lastRunAt.toLocaleTimeString(undefined, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                · live
               </span>
             ) : null}
           </span>
@@ -106,6 +103,11 @@ export function MunsSectorSection({
           {error}
         </div>
       ) : null}
+
+      <NewsTimeStrip
+        items={items}
+        lastRefreshedAt={isLive ? lastRunAt : null}
+      />
 
       <NewsFeed
         items={sortedItems}
