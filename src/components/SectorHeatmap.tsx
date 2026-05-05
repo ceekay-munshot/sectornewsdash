@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
-import { classNames, heatToColor } from "../lib/utils";
+import { classNames, heatToColor, heatTier } from "../lib/utils";
 import { useSectorBreakdown } from "../lib/sectorBreakdown";
 
 interface Props {
@@ -161,6 +161,7 @@ function SectorTilePopover({
   const { hex: heatHex } = heatToColor(heat);
   const sentColor = SENT_COLOR[agg.sentiment];
   const live = agg.newsCount > 0;
+  const tier = heatTier(heat);
 
   const segs = [
     { label: "Bull", count: breakdown?.bullish ?? 0, color: SENT_COLOR.Bullish },
@@ -185,30 +186,25 @@ function SectorTilePopover({
           {agg.sector.name}
         </div>
         <div
-          className="font-mono text-[12px] font-bold tabular-nums"
-          style={{ color: heatHex }}
+          className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wider"
+          style={{ color: live ? heatHex : "rgba(255,255,255,0.45)" }}
         >
-          {live ? heat : "—"}
+          {live ? tier.label : "Quiet"}
         </div>
       </div>
 
-      <div className="mt-1 flex items-center gap-1.5">
-        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
-          <div
-            className="h-full rounded-full"
-            style={{ width: `${heat}%`, background: heatHex }}
-          />
-        </div>
-        <span className="font-mono text-[9.5px] uppercase tracking-wider text-white/40">
-          heat
-        </span>
+      <div className="mt-1 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${heat}%`, background: heatHex }}
+        />
       </div>
 
-      {!live ? (
-        <div className="mt-2 text-[10.5px] text-white/45">
-          No news in scope yet.
-        </div>
-      ) : (
+      <div className="mt-1.5 text-[10.5px] leading-snug text-white/55">
+        {live ? tier.blurb : "No news in scope yet."}
+      </div>
+
+      {!live ? null : (
         <>
           <div className="mt-2 flex items-center justify-between gap-2 text-[10.5px]">
             <span

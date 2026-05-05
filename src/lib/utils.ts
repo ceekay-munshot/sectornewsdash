@@ -89,3 +89,40 @@ export function heatToColor(heat: number): { hex: string; rgb: string } {
     "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
   return { hex, rgb: `${r},${g},${b}` };
 }
+
+/**
+ * Bucket a heat score into a label + plain-English description of what
+ * that level of activity actually means for an investor reading the dial.
+ */
+export function heatTier(heat: number): { label: string; blurb: string } {
+  if (heat >= 85)
+    return {
+      label: "Blazing",
+      blurb:
+        "Top-priority flow — multiple market-shaping catalysts in the window.",
+    };
+  if (heat >= 70)
+    return {
+      label: "Hot",
+      blurb: "Heavy news flow with high-impact items dominating recent items.",
+    };
+  if (heat >= 55)
+    return {
+      label: "Active",
+      blurb: "Steady stream of material news; meaningful items to track.",
+    };
+  if (heat >= 40)
+    return {
+      label: "Moderate",
+      blurb: "Mid-tier activity — a few material items, mostly mid-impact.",
+    };
+  if (heat >= 20)
+    return {
+      label: "Light",
+      blurb: "Sporadic coverage; mostly background news, no big movers yet.",
+    };
+  return {
+    label: "Quiet",
+    blurb: "Background-level news only; few material moves in the window.",
+  };
+}
