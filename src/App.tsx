@@ -108,17 +108,6 @@ export default function App() {
     window.setTimeout(() => setSyncCompleted(false), 4000);
   }, [setMunsForSector]);
 
-  // First-load auto-sync: if no sector has ever been seeded on this origin
-  // (each preview/prod URL has its own localStorage), kick off a Sync All
-  // so the user sees a populated dashboard without having to click anything.
-  useEffect(() => {
-    if (Object.keys(munsBySector).length === 0 && !syncRunning) {
-      void triggerSyncAll();
-    }
-    // intentionally only on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Pool: replace any sector's mock news with its MUNS items when present.
   const livePool = useMemo<NewsItem[]>(() => {
     const liveSectorIds = new Set(Object.keys(munsBySector));
