@@ -22,6 +22,7 @@ import {
   SectorBreakdownProvider,
   buildSectorBreakdowns,
 } from "./lib/sectorBreakdown";
+import { syncAllSectors } from "./lib/syncAll";
 import type { NewsItem } from "./types";
 
 const EMPTY_FILTERS: FilterState = {
@@ -86,6 +87,37 @@ export default function App() {
     },
     []
   );
+
+  // Bulk-sync state — shared by the header button and the auto-sync
+  // that fires when nothing is persisted yet (e.g. a fresh preview URL).
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [syncDone, setSyncDone] = useState(0);
+  const [syncTotal, setSyncTotal] = useState(0);
+  const [syncCompleted, setSyncCompleted] = useState(false);
+
+  const triggerSyncAll = useCallback(async () => {
+    setSyncRunning(true);
+    setSyncCompleted(false);
+    setSyncDone(0);
+    await syncAllSectors(setMunsForSector, (d, t) => {
+      setSyncDone(d);
+      setSyncTotal(t);
+    });
+    setSyncRunning(false);
+    setSyncCompleted(true);
+    window.setTimeout(() => setSyncCompleted(false), 4000);
+  }, [setMunsForSector]);
+
+  // First-load auto-sync: if no sector has ever been seeded on this origin
+  // (each preview/prod URL has its own localStorage), kick off a Sync All
+  // so the user sees a populated dashboard without having to click anything.
+  useEffect(() => {
+    if (Object.keys(munsBySector).length === 0 && !syncRunning) {
+      void triggerSyncAll();
+    }
+    // intentionally only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Pool: replace any sector's mock news with its MUNS items when present.
   const livePool = useMemo<NewsItem[]>(() => {
@@ -184,7 +216,13 @@ export default function App() {
   return (
     <SectorBreakdownProvider value={sectorBreakdowns}>
     <div className="grain min-h-screen">
-      <Header onSectorLoaded={setMunsForSector} />
+      <Header
+        syncRunning={syncRunning}
+        syncDone={syncDone}
+        syncTotal={syncTotal}
+        syncCompleted={syncCompleted}
+        onSync={triggerSyncAll}
+      />
       <FilterBar
         filters={filters}
         onChange={setFilters}
