@@ -16,19 +16,14 @@ import {
 export function MethodologyPanel() {
   return (
     <section className="mt-8">
-      <div className="mb-3 flex items-baseline justify-between px-1">
-        <div>
-          <div className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-white/45">
-            Methodology
-          </div>
-          <div className="mt-0.5 text-[12px] text-white/55">
-            How the radar quantifies the market — every score is computed
-            client-side from the news feed.
-          </div>
+      <div className="mb-3 px-1">
+        <div className="text-[10.5px] font-medium uppercase tracking-[0.2em] text-white/45">
+          Methodology
         </div>
-        <span className="hidden font-mono text-[10.5px] text-white/30 sm:block">
-          src/lib/logic.ts
-        </span>
+        <div className="mt-0.5 text-[12px] text-white/55">
+          How the radar quantifies the market — every score is computed
+          client-side from the news feed.
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">

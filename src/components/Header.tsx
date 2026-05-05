@@ -4,12 +4,10 @@ import type { NewsItem } from "../types";
 import { SyncAllButton } from "./SyncAllButton";
 
 interface Props {
-  totalNews: number;
-  sectorsTracked: number;
   onSectorLoaded: (sectorId: string, items: NewsItem[], at: Date) => void;
 }
 
-export function Header({ totalNews, sectorsTracked, onSectorLoaded }: Props) {
+export function Header({ onSectorLoaded }: Props) {
   const [now, setNow] = useState<string>(() => fmt(new Date()));
   useEffect(() => {
     const t = setInterval(() => setNow(fmt(new Date())), 1000);
@@ -35,13 +33,6 @@ export function Header({ totalNews, sectorsTracked, onSectorLoaded }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 text-[11px] text-white/60 sm:flex">
-            <span className="font-mono">{totalNews}</span>
-            <span className="text-white/30">items</span>
-            <span className="h-3 w-px bg-white/10" />
-            <span className="font-mono">{sectorsTracked}</span>
-            <span className="text-white/30">sectors</span>
-          </div>
           <SyncAllButton onSectorLoaded={onSectorLoaded} />
           <div className="chip">
             <Activity size={12} className="text-emerald-400" />

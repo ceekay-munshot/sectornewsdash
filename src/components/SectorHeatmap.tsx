@@ -20,17 +20,11 @@ export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
   return (
     <div className="glass relative overflow-hidden p-3.5">
       <div className="mb-3 flex items-center justify-between px-0.5">
-        <div className="flex items-baseline gap-2">
-          <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
-            Sector heatmap
-          </div>
-          <div className="font-mono text-[10.5px] text-white/35">
-            {aggregates.length} sectors ·{" "}
-            <span className="text-emerald-300/85">{liveCount} live</span>
-          </div>
+        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+          Sector heatmap
         </div>
-        <div className="hidden text-[10.5px] text-white/35 sm:block">
-          color intensity = heat · click to drill
+        <div className="font-mono text-[10.5px] text-emerald-300/85">
+          {liveCount} live
         </div>
       </div>
 

@@ -172,11 +172,7 @@ export default function App() {
 
   return (
     <div className="grain min-h-screen">
-      <Header
-        totalNews={livePool.length}
-        sectorsTracked={SECTORS.length}
-        onSectorLoaded={setMunsForSector}
-      />
+      <Header onSectorLoaded={setMunsForSector} />
       <FilterBar
         filters={filters}
         onChange={setFilters}
