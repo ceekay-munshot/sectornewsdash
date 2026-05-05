@@ -248,9 +248,6 @@ export default function App() {
         filters={filters}
         onChange={setFilters}
         onClear={() => setFilters(EMPTY_FILTERS)}
-        resultCount={
-          view === "sector" ? sectorNews.length : filteredNews.length
-        }
       />
 
       <main className="relative z-10 mx-auto max-w-[1400px] px-5 py-5">
