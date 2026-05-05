@@ -63,8 +63,8 @@ function HeatTile({
 
   // Tile background tints stronger as heat rises. Cold sectors render
   // in a neutral muted treatment so the thermal scale stays vivid.
-  const baseAlpha = live ? 0.32 + (heat / 100) * 0.5 : 0.025;
-  const edgeAlpha = live ? 0.12 + (heat / 100) * 0.28 : 0.012;
+  const baseAlpha = live ? 0.22 + (heat / 100) * 0.42 : 0.025;
+  const edgeAlpha = live ? 0.08 + (heat / 100) * 0.2 : 0.012;
   const tintRgb = live ? heatRgb : "255,255,255";
 
   return (

@@ -65,11 +65,11 @@ export function heatToColor(heat: number): { hex: string; rgb: string } {
   const h = clamp(heat, 0, 100);
   const stops: Array<[number, [number, number, number]]> = [
     [0, [34, 197, 94]],
-    [30, [6, 182, 212]],
-    [50, [234, 179, 8]],
-    [65, [249, 115, 22]],
-    [80, [239, 68, 68]],
-    [100, [220, 38, 38]],
+    [35, [6, 182, 212]],
+    [55, [250, 204, 21]],
+    [72, [249, 115, 22]],
+    [88, [239, 68, 68]],
+    [100, [185, 28, 28]],
   ];
   let lo = stops[0];
   let hi = stops[stops.length - 1];
