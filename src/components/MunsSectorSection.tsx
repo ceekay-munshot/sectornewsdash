@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { runSectorAgent } from "../lib/runAgent";
+import { sortNewsByDate } from "../lib/logic";
 import { NewsFeed } from "./NewsFeed";
 import { HelpHint } from "./HelpHint";
+import { NewsSortToggle, type NewsSortMode } from "./NewsSortToggle";
 import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
 import type { NewsItem } from "../types";
 
@@ -38,6 +40,12 @@ export function MunsSectorSection({
 }: Props) {
   const [state, setState] = useState<RunState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<NewsSortMode>("impact");
+
+  const sortedItems = useMemo(
+    () => (sortMode === "latest" ? sortNewsByDate(items) : items),
+    [items, sortMode]
+  );
 
   const handleRun = async () => {
     setState("running");
@@ -75,19 +83,22 @@ export function MunsSectorSection({
           </span>
           <HelpHint {...NEWS_RANKING_HINT} />
         </div>
-        <button
-          type="button"
-          onClick={handleRun}
-          disabled={state === "running"}
-          className="btn-primary"
-          title="Refresh sector news"
-        >
-          <RefreshCw
-            size={11}
-            className={state === "running" ? "animate-spin" : ""}
-          />
-          {state === "running" ? "Refreshing…" : isLive ? "Refresh" : "Load news"}
-        </button>
+        <div className="flex items-center gap-2">
+          <NewsSortToggle value={sortMode} onChange={setSortMode} />
+          <button
+            type="button"
+            onClick={handleRun}
+            disabled={state === "running"}
+            className="btn-primary"
+            title="Refresh sector news"
+          >
+            <RefreshCw
+              size={11}
+              className={state === "running" ? "animate-spin" : ""}
+            />
+            {state === "running" ? "Refreshing…" : isLive ? "Refresh" : "Load news"}
+          </button>
+        </div>
       </div>
 
       {error ? (
@@ -97,7 +108,7 @@ export function MunsSectorSection({
       ) : null}
 
       <NewsFeed
-        items={items}
+        items={sortedItems}
         limit={NEWS_LIMIT}
         onSelect={onSelectNews}
         selectedId={selectedNewsId}

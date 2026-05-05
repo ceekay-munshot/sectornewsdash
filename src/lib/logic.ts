@@ -106,6 +106,18 @@ export function rankNewsByImpact(news: NewsItem[]): NewsItem[] {
     .sort((a, b) => itemRank(b, now) - itemRank(a, now));
 }
 
+/** sortNewsByDate — newest first (or oldest with dir="asc"). */
+export function sortNewsByDate(
+  news: NewsItem[],
+  dir: "desc" | "asc" = "desc"
+): NewsItem[] {
+  return news.slice().sort((a, b) => {
+    const ta = new Date(a.publishedAt).getTime();
+    const tb = new Date(b.publishedAt).getTime();
+    return dir === "desc" ? tb - ta : ta - tb;
+  });
+}
+
 function itemRank(n: NewsItem, now: number): number {
   const r = recencyWeight(n.publishedAt, now);
   const u = URGENCY_WEIGHT[n.urgency];
