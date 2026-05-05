@@ -18,6 +18,10 @@ import {
   loadWatchlist,
   saveWatchlist,
 } from "./lib/watchlist";
+import {
+  SectorBreakdownProvider,
+  buildSectorBreakdowns,
+} from "./lib/sectorBreakdown";
 import type { NewsItem } from "./types";
 
 const EMPTY_FILTERS: FilterState = {
@@ -120,6 +124,13 @@ export default function App() {
     [filteredNews]
   );
 
+  // Per-sector sentiment breakdown for hover popovers, keyed by sector id.
+  const sectorBreakdowns = useMemo(() => {
+    const heat: Record<string, number> = {};
+    for (const a of aggregates) heat[a.sector.id] = a.heatScore;
+    return buildSectorBreakdowns(filteredNews, heat);
+  }, [aggregates, filteredNews]);
+
   // News for the currently selected sector (filters minus sectorId, then locked
   // to that sector). This way the FilterBar's sector control isn't a no-op
   // inside detail view.
@@ -171,6 +182,7 @@ export default function App() {
   }, [view, activeSectorId, backToOverview]);
 
   return (
+    <SectorBreakdownProvider value={sectorBreakdowns}>
     <div className="grain min-h-screen">
       <Header onSectorLoaded={setMunsForSector} />
       <FilterBar
@@ -213,5 +225,6 @@ export default function App() {
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />
     </div>
+    </SectorBreakdownProvider>
   );
 }

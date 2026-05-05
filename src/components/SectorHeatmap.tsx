@@ -1,6 +1,6 @@
 import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
-import { classNames } from "../lib/utils";
+import { classNames, heatToColor } from "../lib/utils";
 
 interface Props {
   aggregates: SectorAggregate[];
@@ -27,6 +27,8 @@ export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
           {liveCount} live
         </div>
       </div>
+
+      <HeatLegend />
 
       <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
         {aggregates.map((a, idx) => (
@@ -56,14 +58,14 @@ function HeatTile({
 }) {
   const Icon = SECTOR_ICONS[agg.sector.iconKey];
   const heat = Math.max(0, Math.min(100, agg.heatScore));
-  const rgb = agg.sector.accentRgb;
-  const accent = agg.sector.accent;
   const live = agg.newsCount > 0;
+  const { hex: heatHex, rgb: heatRgb } = heatToColor(heat);
 
-  // Tile background tints stronger as heat rises. Cold sectors keep
-  // a barely-there ghost of the sector accent so identity persists.
-  const baseAlpha = live ? 0.05 + (heat / 100) * 0.4 : 0.025;
-  const edgeAlpha = live ? 0.01 + (heat / 100) * 0.18 : 0.012;
+  // Tile background tints stronger as heat rises. Cold sectors render
+  // in a neutral muted treatment so the green→blue→red scale stays clean.
+  const baseAlpha = live ? 0.18 + (heat / 100) * 0.42 : 0.025;
+  const edgeAlpha = live ? 0.06 + (heat / 100) * 0.18 : 0.012;
+  const tintRgb = live ? heatRgb : "255,255,255";
 
   return (
     <button
@@ -71,7 +73,7 @@ function HeatTile({
       title={`${agg.sector.name} · heat ${heat} · ${agg.newsCount} news · ${agg.sentiment}`}
       style={{
         animationDelay: `${Math.min(index * 14, 240)}ms`,
-        background: `linear-gradient(140deg, rgba(${rgb},${baseAlpha}) 0%, rgba(${rgb},${edgeAlpha}) 100%)`,
+        background: `linear-gradient(140deg, rgba(${tintRgb},${baseAlpha}) 0%, rgba(${tintRgb},${edgeAlpha}) 100%)`,
       }}
       className={classNames(
         "group focus-ring relative flex animate-floatIn items-center gap-1.5 overflow-hidden rounded-md border px-2 py-2 text-left transition duration-200",
@@ -82,8 +84,8 @@ function HeatTile({
       <span
         className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm"
         style={{
-          background: live ? `rgba(${rgb},0.28)` : "rgba(255,255,255,0.04)",
-          color: live ? accent : "rgba(255,255,255,0.5)",
+          background: live ? `rgba(${heatRgb},0.32)` : "rgba(255,255,255,0.04)",
+          color: live ? heatHex : "rgba(255,255,255,0.5)",
         }}
       >
         <Icon size={9} />
@@ -92,7 +94,7 @@ function HeatTile({
       <span
         className={classNames(
           "min-w-0 flex-1 truncate text-[11px] font-semibold tracking-tight",
-          live ? "text-white/90" : "text-white/55"
+          live ? "text-white/95" : "text-white/55"
         )}
       >
         {agg.sector.shortName}
@@ -100,10 +102,33 @@ function HeatTile({
 
       <span
         className="shrink-0 font-mono text-[12px] font-bold tabular-nums"
-        style={{ color: live ? accent : "rgba(255,255,255,0.28)" }}
+        style={{ color: live ? heatHex : "rgba(255,255,255,0.28)" }}
       >
         {live ? heat : "·"}
       </span>
     </button>
+  );
+}
+
+function HeatLegend() {
+  const { hex: cool } = heatToColor(0);
+  const { hex: mid } = heatToColor(50);
+  const { hex: hot } = heatToColor(100);
+  return (
+    <div className="mb-2 flex items-center gap-2 px-0.5">
+      <div
+        className="h-1.5 flex-1 rounded-full"
+        style={{
+          background: `linear-gradient(90deg, ${cool} 0%, ${mid} 50%, ${hot} 100%)`,
+        }}
+      />
+      <div className="flex items-center gap-2 font-mono text-[9.5px] text-white/45">
+        <span>cool 0</span>
+        <span>·</span>
+        <span>50</span>
+        <span>·</span>
+        <span>100 hot</span>
+      </div>
+    </div>
   );
 }
