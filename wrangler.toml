@@ -22,4 +22,4 @@ not_found_handling = "single-page-application"
 # then paste the returned id below.
 [[kv_namespaces]]
 binding = "NEWS_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "ee1b12a2913f4f7cbc092464d5f9f448"
