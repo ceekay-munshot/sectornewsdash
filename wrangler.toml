@@ -1,5 +1,6 @@
 name = "sectornewsdash"
 compatibility_date = "2025-04-01"
+main = "worker/index.ts"
 
 # CF Workers Builds runs `npx wrangler deploy` only — no build step is
 # configured in the dashboard. We trigger the Vite build here so wrangler
@@ -8,6 +9,17 @@ compatibility_date = "2025-04-01"
 command = "npm install && npm run build"
 
 # Serve the built SPA as static assets with client-side routing fallback.
+# Bound to env.ASSETS so the Worker can fall through for non-/api/* paths.
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
+
+# Persistent store for synced agent news so the dashboard stays populated
+# across deploys / preview URLs (each origin has its own localStorage).
+# Run once to provision:
+#   npx wrangler kv namespace create NEWS_KV
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "NEWS_KV"
+id = "ee1b12a2913f4f7cbc092464d5f9f448"

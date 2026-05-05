@@ -18,6 +18,16 @@ import {
   loadWatchlist,
   saveWatchlist,
 } from "./lib/watchlist";
+import {
+  SectorBreakdownProvider,
+  buildSectorBreakdowns,
+} from "./lib/sectorBreakdown";
+import { syncAllSectors } from "./lib/syncAll";
+import {
+  fetchRemoteNews,
+  persistRemoteNews,
+  type MunsSectorPayload,
+} from "./lib/newsStore";
 import type { NewsItem } from "./types";
 
 const EMPTY_FILTERS: FilterState = {
@@ -31,12 +41,8 @@ const EMPTY_FILTERS: FilterState = {
   theme: null,
 };
 
-interface MunsSectorPayload {
-  items: NewsItem[];
-  loadedAt: number;
-}
-
 const NEWS_STORAGE_KEY = "agent-news-by-sector-v1";
+const REMOTE_PUT_DEBOUNCE_MS = 500;
 
 function loadPersistedNews(): Record<string, MunsSectorPayload> {
   try {
@@ -60,10 +66,15 @@ export default function App() {
   );
   // Live agent news per sector. When present, replaces mock news for that
   // sector so aggregates, heatmap, and filters all see the live items.
-  // Persisted to localStorage so a one-time bulk seed survives page reloads.
+  // localStorage is the fast cache for instant first paint; KV (via the
+  // Worker at /api/news) is the canonical store shared across deploys
+  // and preview origins.
   const [munsBySector, setMunsBySector] = useState<
     Record<string, MunsSectorPayload>
   >(loadPersistedNews);
+  // Until the remote fetch settles we don't echo local state back to KV —
+  // otherwise a fresh tab with empty localStorage would clobber the blob.
+  const [hasFetchedRemote, setHasFetchedRemote] = useState(false);
 
   useEffect(() => {
     try {
@@ -72,6 +83,33 @@ export default function App() {
       // storage may be full or disabled — silently ignore
     }
   }, [munsBySector]);
+
+  // On mount, prefer KV over local. If KV has data, replace local; if KV
+  // is empty but local has data, mark remote as fetched so the next change
+  // gets persisted upward.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const remote = await fetchRemoteNews();
+      if (cancelled) return;
+      if (Object.keys(remote).length > 0) {
+        setMunsBySector(remote);
+      }
+      setHasFetchedRemote(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Mirror local state back to KV (debounced) once the initial fetch is in.
+  useEffect(() => {
+    if (!hasFetchedRemote) return;
+    const t = window.setTimeout(() => {
+      void persistRemoteNews(munsBySector);
+    }, REMOTE_PUT_DEBOUNCE_MS);
+    return () => window.clearTimeout(t);
+  }, [munsBySector, hasFetchedRemote]);
 
   const setMunsForSector = useCallback(
     (sectorId: string, items: NewsItem[], at: Date) => {
@@ -82,6 +120,26 @@ export default function App() {
     },
     []
   );
+
+  // Bulk-sync state — shared by the header button and the auto-sync
+  // that fires when nothing is persisted yet (e.g. a fresh preview URL).
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [syncDone, setSyncDone] = useState(0);
+  const [syncTotal, setSyncTotal] = useState(0);
+  const [syncCompleted, setSyncCompleted] = useState(false);
+
+  const triggerSyncAll = useCallback(async () => {
+    setSyncRunning(true);
+    setSyncCompleted(false);
+    setSyncDone(0);
+    await syncAllSectors(setMunsForSector, (d, t) => {
+      setSyncDone(d);
+      setSyncTotal(t);
+    });
+    setSyncRunning(false);
+    setSyncCompleted(true);
+    window.setTimeout(() => setSyncCompleted(false), 4000);
+  }, [setMunsForSector]);
 
   // Pool: replace any sector's mock news with its MUNS items when present.
   const livePool = useMemo<NewsItem[]>(() => {
@@ -119,6 +177,13 @@ export default function App() {
     () => buildSectorAggregates(filteredNews),
     [filteredNews]
   );
+
+  // Per-sector sentiment breakdown for hover popovers, keyed by sector id.
+  const sectorBreakdowns = useMemo(() => {
+    const heat: Record<string, number> = {};
+    for (const a of aggregates) heat[a.sector.id] = a.heatScore;
+    return buildSectorBreakdowns(filteredNews, heat);
+  }, [aggregates, filteredNews]);
 
   // News for the currently selected sector (filters minus sectorId, then locked
   // to that sector). This way the FilterBar's sector control isn't a no-op
@@ -171,8 +236,15 @@ export default function App() {
   }, [view, activeSectorId, backToOverview]);
 
   return (
+    <SectorBreakdownProvider value={sectorBreakdowns}>
     <div className="grain min-h-screen">
-      <Header onSectorLoaded={setMunsForSector} />
+      <Header
+        syncRunning={syncRunning}
+        syncDone={syncDone}
+        syncTotal={syncTotal}
+        syncCompleted={syncCompleted}
+        onSync={triggerSyncAll}
+      />
       <FilterBar
         filters={filters}
         onChange={setFilters}
@@ -213,5 +285,6 @@ export default function App() {
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />
     </div>
+    </SectorBreakdownProvider>
   );
 }

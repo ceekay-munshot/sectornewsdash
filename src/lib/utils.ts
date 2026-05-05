@@ -54,3 +54,33 @@ export function formatShortDate(iso: string): string {
 export function classNames(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }
+
+/**
+ * Map a heat score (0..100) to a green → blue → red gradient.
+ * 0 = cool/green, 50 = mid/blue, 100 = hot/red.
+ */
+export function heatToColor(heat: number): { hex: string; rgb: string } {
+  const h = clamp(heat, 0, 100);
+  const stops: Array<[number, [number, number, number]]> = [
+    [0, [34, 197, 94]],
+    [50, [59, 130, 246]],
+    [100, [239, 68, 68]],
+  ];
+  let lo = stops[0];
+  let hi = stops[stops.length - 1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (h >= stops[i][0] && h <= stops[i + 1][0]) {
+      lo = stops[i];
+      hi = stops[i + 1];
+      break;
+    }
+  }
+  const span = hi[0] - lo[0] || 1;
+  const t = (h - lo[0]) / span;
+  const r = Math.round(lo[1][0] + (hi[1][0] - lo[1][0]) * t);
+  const g = Math.round(lo[1][1] + (hi[1][1] - lo[1][1]) * t);
+  const b = Math.round(lo[1][2] + (hi[1][2] - lo[1][2]) * t);
+  const hex =
+    "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+  return { hex, rgb: `${r},${g},${b}` };
+}
