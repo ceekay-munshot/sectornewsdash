@@ -22,20 +22,13 @@ const POPOVER_WIDTH = 240;
  * popover with sentiment, top theme and bull/neut/bear breakdown.
  */
 export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
-  const liveCount = aggregates.filter((a) => a.newsCount > 0).length;
-
   return (
     <div className="glass relative overflow-hidden p-3.5">
-      <div className="mb-3 flex items-center justify-between px-0.5">
-        <div className="flex items-center gap-1.5">
-          <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
-            Sector heatmap
-          </div>
-          <HelpHint {...HEAT_SCORE_HINT} />
+      <div className="mb-3 flex items-center gap-1.5 px-0.5">
+        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+          Sector heatmap
         </div>
-        <div className="font-mono text-[10.5px] text-emerald-300/85">
-          {liveCount} live
-        </div>
+        <HelpHint {...HEAT_SCORE_HINT} />
       </div>
 
       <HeatLegend />
@@ -206,7 +199,7 @@ function SectorTilePopover({
       </div>
 
       <div className="mt-1.5 text-[10.5px] leading-snug text-white/55">
-        {live ? tier.blurb : "No news in scope yet."}
+        {live ? tier.blurb : "No news in scope."}
       </div>
 
       {!live ? null : (
@@ -256,10 +249,6 @@ function SectorTilePopover({
           </div>
         </>
       )}
-
-      <div className="mt-1.5 text-right font-mono text-[9.5px] text-white/35">
-        click to drill in
-      </div>
     </div>
   );
 }
@@ -270,17 +259,12 @@ function HeatLegend() {
     .join(", ");
   return (
     <div className="mb-2 flex items-center gap-2 px-0.5">
+      <span className="font-mono text-[9.5px] text-white/40">0</span>
       <div
         className="h-1.5 flex-1 rounded-full"
         style={{ background: `linear-gradient(90deg, ${samples})` }}
       />
-      <div className="flex items-center gap-2 font-mono text-[9.5px] text-white/45">
-        <span>cool 0</span>
-        <span>·</span>
-        <span>50</span>
-        <span>·</span>
-        <span>100 hot</span>
-      </div>
+      <span className="font-mono text-[9.5px] text-white/40">100</span>
     </div>
   );
 }

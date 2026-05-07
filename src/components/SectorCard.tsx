@@ -59,12 +59,6 @@ export function SectorCard({
             <span className="font-mono">{agg.sector.shortName}</span>
             <span>·</span>
             <span>{agg.newsCount} news</span>
-            {agg.newsCount > 0 && (
-              <>
-                <span>·</span>
-                <span>top theme: {agg.topTheme}</span>
-              </>
-            )}
           </div>
         </div>
         <ArrowRight
@@ -125,13 +119,8 @@ export function SectorCard({
       <div className="flex flex-1 flex-col p-1.5">
         {agg.topNews.length === 0 ? (
           <div className="flex flex-1 items-center justify-center px-3 py-6 text-center">
-            <div>
-              <div className="text-[11px] text-white/45">
-                Awaiting feed for {agg.sector.shortName}
-              </div>
-              <div className="mt-0.5 text-[10.5px] text-white/30">
-                Headlines will surface here as they arrive.
-              </div>
+            <div className="text-[11px] text-white/40">
+              No news yet
             </div>
           </div>
         ) : (
@@ -153,7 +142,7 @@ export function SectorCard({
           onClick={() => onOpenSector(agg.sector.id)}
           className="focus-ring border-t border-white/[0.05] px-3.5 py-2 text-left text-[11px] text-white/55 transition hover:bg-white/[0.03] hover:text-white"
         >
-          View all {agg.newsCount} headlines →
+          View all {agg.newsCount} →
         </button>
       )}
     </div>

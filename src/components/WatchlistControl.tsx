@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Plus, RotateCcw, Search } from "lucide-react";
 import type { SectorMeta } from "../types";
-import { SECTOR_ICONS } from "../lib/icons";
 import { classNames } from "../lib/utils";
 
 interface Props {
@@ -46,13 +45,8 @@ export function WatchlistControl({
 
   return (
     <div className="glass flex flex-wrap items-center gap-2 px-3 py-2">
-      <div className="flex items-baseline gap-2">
-        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
-          My sectors
-        </div>
-        <span className="font-mono text-[10.5px] text-white/40">
-          {visibleIds.length} / {allSectors.length}
-        </span>
+      <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+        Watchlist
       </div>
 
       <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -61,8 +55,8 @@ export function WatchlistControl({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search sectors…"
-            className="focus-ring w-[180px] rounded-lg border border-white/[0.07] bg-white/[0.025] py-1.5 pl-6 pr-2 text-[12px] text-white/85 placeholder:text-white/35"
+            placeholder="Filter…"
+            className="focus-ring w-[160px] rounded-lg border border-white/[0.07] bg-white/[0.025] py-1.5 pl-6 pr-2 text-[12px] text-white/85 placeholder:text-white/35"
           />
         </label>
 
@@ -86,12 +80,12 @@ export function WatchlistControl({
                   value={s.id}
                   className="bg-ink-900 text-white"
                 >
-                  {s.shortName} — {s.name}
+                  {s.name}
                 </option>
               ))
             ) : (
               <option value="" className="bg-ink-900 text-white">
-                {query ? "No matches" : "All sectors added"}
+                {query ? "No matches" : "All added"}
               </option>
             )}
           </select>
@@ -115,11 +109,6 @@ export function WatchlistControl({
               : "border-white/[0.04] bg-white/[0.015] text-white/35"
           )}
           aria-label="Add sector to watchlist"
-          title={
-            canAdd
-              ? `Add ${available.find((s) => s.id === effectiveSelected)?.shortName}`
-              : "Nothing to add"
-          }
         >
           <Plus size={12} />
           Add
@@ -129,36 +118,12 @@ export function WatchlistControl({
           <button
             onClick={onReset}
             className="btn-ghost focus-ring"
-            title="Reset to default watchlist"
+            title="Reset watchlist"
           >
             <RotateCcw size={11} />
-            Reset
           </button>
         )}
       </div>
-
-      {/* Quick-add chips for small screens / scanning */}
-      {query && available.length > 0 && (
-        <div className="flex w-full flex-wrap gap-1.5 border-t border-white/[0.05] pt-2">
-          {available.slice(0, 8).map((s) => {
-            const Icon = SECTOR_ICONS[s.iconKey];
-            return (
-              <button
-                key={s.id}
-                onClick={() => {
-                  onAdd(s.id);
-                  setQuery("");
-                }}
-                className="focus-ring inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.025] px-2 py-1 text-[11px] text-white/75 transition hover:border-white/[0.18] hover:text-white"
-              >
-                <Icon size={10} style={{ color: s.accent }} />
-                {s.shortName}
-                <Plus size={10} className="text-white/45" />
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

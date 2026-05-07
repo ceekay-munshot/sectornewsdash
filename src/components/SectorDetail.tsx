@@ -145,9 +145,11 @@ export function SectorDetail({
           <div className="flex flex-wrap items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
               <span>
-                Material news ·{" "}
-                <span className="text-white/70">
-                  {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+                Material news{" "}
+                <span className="ml-1 text-white/70">
+                  {sectorNews.length > NEWS_LIMIT
+                    ? `${NEWS_LIMIT} / ${sectorNews.length}`
+                    : sectorNews.length}
                 </span>
               </span>
               <HelpHint {...NEWS_RANKING_HINT} />

@@ -43,23 +43,16 @@ export function NewsTimeStrip({ items, lastRefreshedAt }: Props) {
             <span className="text-white/70">
               {formatPrettyDate(range.latest)}
             </span>
-            <span className="ml-2 text-white/30">·</span>
-            <span className="ml-2">
-              {items.length} item{items.length === 1 ? "" : "s"} in window
-            </span>
           </span>
         ) : (
           <span className="text-white/35">No items in scope</span>
         )}
       </div>
       {lastRefreshedAt ? (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" title="Last synced">
           <RefreshCw size={10} className="text-emerald-300/70" />
-          <span>
-            <span className="text-white/35">Synced</span>{" "}
-            <span className="text-white/75">
-              {formatSyncStamp(lastRefreshedAt)}
-            </span>
+          <span className="text-white/75">
+            {formatSyncStamp(lastRefreshedAt)}
           </span>
         </div>
       ) : null}

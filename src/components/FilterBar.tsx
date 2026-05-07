@@ -41,7 +41,7 @@ export function FilterBar({ filters, onChange, onClear }: Props) {
             id={inputId}
             value={filters.query || ""}
             onChange={(e) => set("query", e.target.value)}
-            placeholder="Search sector, company, theme, keyword…"
+            placeholder="Search…"
             className="focus-ring w-full rounded-lg border border-white/[0.07] bg-white/[0.025] py-1.5 pl-7 pr-2.5 text-[12px] text-white/85 placeholder:text-white/35"
           />
         </label>
@@ -60,7 +60,7 @@ export function FilterBar({ filters, onChange, onClear }: Props) {
           value={filters.timeHorizon || ""}
           onChange={(v) => set("timeHorizon", (v || null) as TimeHorizon | null)}
           options={[
-            { value: "", label: "Any time" },
+            { value: "", label: "Any horizon" },
             ...HORIZONS.map((h) => ({ value: h, label: h })),
           ]}
         />

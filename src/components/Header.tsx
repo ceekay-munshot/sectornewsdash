@@ -19,7 +19,7 @@ export function Header({
 }: Props) {
   const [now, setNow] = useState<string>(() => fmt(new Date()));
   useEffect(() => {
-    const t = setInterval(() => setNow(fmt(new Date())), 1000);
+    const t = setInterval(() => setNow(fmt(new Date())), 30_000);
     return () => clearInterval(t);
   }, []);
 
@@ -31,13 +31,8 @@ export function Header({
             <Radar size={18} className="text-white" />
             <span className="pointer-events-none absolute inset-0 animate-pulseSoft rounded-lg bg-accent-sky/10" />
           </div>
-          <div className="leading-tight">
-            <div className="font-display text-[14.5px] font-semibold tracking-tight text-white">
-              Sector News Radar
-            </div>
-            <div className="text-[10.5px] uppercase tracking-[0.2em] text-white/40">
-              Investor Intelligence
-            </div>
+          <div className="font-display text-[14.5px] font-semibold tracking-tight text-white">
+            Sector News Radar
           </div>
         </div>
 
@@ -64,7 +59,6 @@ function fmt(d: Date) {
   return d.toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
     hour12: false,
   });
 }

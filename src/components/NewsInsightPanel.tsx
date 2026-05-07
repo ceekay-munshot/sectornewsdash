@@ -117,8 +117,8 @@ export function NewsInsightPanel({ item, onClose }: Props) {
             <span className="chip">{item.timeHorizon}</span>
           </div>
 
-          {/* Summary — capped at 2 lines */}
-          <p className="mt-3 line-clamp-2 text-[12.5px] leading-relaxed text-white/75">
+          {/* Summary */}
+          <p className="mt-3 text-[12.5px] leading-relaxed text-white/75">
             {item.summary}
           </p>
 
@@ -131,7 +131,7 @@ export function NewsInsightPanel({ item, onClose }: Props) {
             <span>
               Confidence{" "}
               <span className="font-mono text-white/75">
-                {item.sourceConfidence}/100
+                {item.sourceConfidence}%
               </span>
             </span>
             <span className="ml-auto" />
@@ -141,7 +141,7 @@ export function NewsInsightPanel({ item, onClose }: Props) {
               rel="noreferrer"
               className="btn-primary"
             >
-              Read more
+              Source
               <ArrowUpRight size={11} />
             </a>
           </div>

@@ -68,15 +68,12 @@ export function MunsSectorSection({
       <div className="flex flex-wrap items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
           <span>
-            Material news ·{" "}
-            <span className="text-white/70">
-              {visibleCount} of {items.length}
+            Material news{" "}
+            <span className="ml-1 text-white/70">
+              {visibleCount < items.length
+                ? `${visibleCount} / ${items.length}`
+                : items.length}
             </span>
-            {isLive ? (
-              <span className="ml-2 normal-case tracking-normal text-emerald-300/80">
-                · live
-              </span>
-            ) : null}
           </span>
           <HelpHint {...NEWS_RANKING_HINT} />
         </div>
@@ -115,7 +112,7 @@ export function MunsSectorSection({
         onSelect={onSelectNews}
         selectedId={selectedNewsId}
         emptyTitle={`No news yet for ${sectorShortName}`}
-        emptyHint="Tap Load news to fetch the latest items for this sector."
+        emptyHint="Tap Load news to fetch the latest."
       />
     </div>
   );

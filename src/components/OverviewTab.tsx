@@ -64,9 +64,9 @@ export function OverviewTab({
       {/* KPI strip */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KPIStatCard
-          label="Hottest sector"
-          value={stats.hottest?.heatScore || "—"}
-          hint={stats.hottest?.sector.shortName ?? "Awaiting feed"}
+          label="Hottest"
+          value={stats.hottest?.sector.shortName ?? "—"}
+          hint={stats.hottest ? `Heat ${stats.hottest.heatScore}` : undefined}
           icon={Flame}
           accent="#FB7185"
           help={<HelpHint {...HEAT_SCORE_HINT} />}
@@ -77,7 +77,7 @@ export function OverviewTab({
           hint={
             stats.mostBullish
               ? `Sentiment ${stats.mostBullish.sentimentScore > 0 ? "+" : ""}${stats.mostBullish.sentimentScore}`
-              : "Awaiting feed"
+              : undefined
           }
           icon={TrendingUp}
           accent="#5EEAD4"
@@ -86,7 +86,7 @@ export function OverviewTab({
         <KPIStatCard
           label="Critical alerts"
           value={stats.critical}
-          hint={`Avg impact ${stats.avgImpact}`}
+          hint={stats.critical ? `Avg impact ${stats.avgImpact}` : undefined}
           icon={Activity}
           accent="#F59E0B"
         />
@@ -104,8 +104,8 @@ export function OverviewTab({
       {watchlistCards.length === 0 ? (
         <div className="glass">
           <EmptyState
-            title="Your watchlist is empty"
-            hint="Use the search and Add button above, or click any tile in the heatmap to open a sector."
+            title="Watchlist is empty"
+            hint="Add a sector above, or click any tile in the heatmap below."
           />
         </div>
       ) : (
