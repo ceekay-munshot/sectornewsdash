@@ -15,12 +15,13 @@ body,
 
 body {
   background:
-    radial-gradient(1200px 600px at 18% -8%, rgba(99, 102, 241, 0.08), transparent 60%),
-    radial-gradient(900px 500px at 92% 0%, rgba(20, 184, 166, 0.06), transparent 60%),
-    linear-gradient(180deg, #070a12 0%, #0a0e1a 100%);
+    radial-gradient(1100px 540px at 12% -10%, rgba(99, 102, 241, 0.07), transparent 60%),
+    radial-gradient(820px 460px at 92% 0%, rgba(20, 184, 166, 0.05), transparent 60%),
+    linear-gradient(180deg, #060911 0%, #0a0e1a 100%);
   background-attachment: fixed;
   color: #e6e8f0;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01", "ss03";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -46,49 +47,58 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* Glass card utility */
 @layer components {
   .glass {
-    @apply rounded-2xl border border-white/[0.06] bg-white/[0.025] shadow-glass backdrop-blur-md;
+    @apply rounded-xl border border-white/[0.055] bg-white/[0.022] shadow-glass backdrop-blur-md;
     background-image: linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.045) 0%,
-      rgba(255, 255, 255, 0.012) 100%
+      rgba(255, 255, 255, 0.038) 0%,
+      rgba(255, 255, 255, 0.01) 100%
     );
   }
   .glass-strong {
-    @apply rounded-2xl border border-white/[0.08] bg-white/[0.04] shadow-glass backdrop-blur-xl;
+    @apply rounded-xl border border-white/[0.075] bg-white/[0.04] shadow-glass backdrop-blur-xl;
+  }
+  .panel {
+    @apply rounded-xl border border-white/[0.05] bg-ink-900/40;
   }
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-white/70;
+    @apply inline-flex h-[22px] items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.025] px-2 text-[10.5px] font-medium tracking-tight text-white/75;
   }
   .btn-ghost {
-    @apply inline-flex items-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.02] px-2.5 py-1.5 text-xs font-medium text-white/75 transition hover:border-white/[0.14] hover:bg-white/[0.05] hover:text-white;
+    @apply inline-flex h-[28px] items-center gap-1.5 rounded-md border border-white/[0.07] bg-white/[0.02] px-2.5 text-[11.5px] font-medium text-white/75 transition hover:border-white/[0.16] hover:bg-white/[0.05] hover:text-white;
   }
   .btn-primary {
-    @apply inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-gradient-to-b from-white/[0.12] to-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white shadow-glow transition hover:from-white/[0.18];
+    @apply inline-flex h-[28px] items-center gap-1.5 rounded-md border border-white/[0.12] bg-gradient-to-b from-white/[0.14] to-white/[0.04] px-3 text-[11.5px] font-semibold text-white shadow-glow transition hover:from-white/[0.2] hover:to-white/[0.06];
   }
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-0;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-0;
+  }
+  .label-eyebrow {
+    @apply text-[10px] font-medium uppercase tracking-[0.2em] text-white/45;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "lnum";
+  }
+  .hairline {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-white/[0.07] to-transparent;
   }
 }
 
-/* Subtle scanline / grain overlay for premium feel */
+/* Subtle film grain — cleaner than scanlines, reads as photographic paper */
 .grain::after {
   content: "";
   pointer-events: none;
   position: fixed;
   inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.012) 0px,
-      rgba(255, 255, 255, 0.012) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.018) 1px,
+    transparent 1px
+  );
+  background-size: 3px 3px;
   mix-blend-mode: overlay;
-  opacity: 0.5;
+  opacity: 0.55;
   z-index: 1;
 }
 
@@ -100,4 +110,12 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* Custom select chevron — replaces blunt ▾ glyph; we still hide native arrow */
+select.select-clean {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='none'><path d='M2 4l3 3 3-3' stroke='rgba(255,255,255,0.5)' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px 10px;
 }

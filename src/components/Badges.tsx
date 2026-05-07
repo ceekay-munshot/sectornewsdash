@@ -37,12 +37,12 @@ export function SentimentBadge({
   return (
     <span
       className={classNames(
-        "inline-flex items-center gap-1.5 rounded-full border font-medium",
+        "inline-flex items-center gap-1.5 rounded-full border font-medium tracking-tight",
         s.bg,
         s.text,
         size === "sm"
-          ? "px-1.5 py-[2px] text-[10px]"
-          : "px-2 py-[3px] text-[11px]"
+          ? "h-[20px] px-1.5 text-[10px]"
+          : "h-[22px] px-2 text-[11px]"
       )}
     >
       <span className={classNames("h-1.5 w-1.5 rounded-full", s.dot)} />
@@ -56,7 +56,10 @@ export function SentimentDot({ sentiment }: { sentiment: Sentiment }) {
   return (
     <span
       title={sentiment}
-      className={classNames("h-1.5 w-1.5 shrink-0 rounded-full", s.dot)}
+      className={classNames(
+        "h-[6px] w-[6px] shrink-0 rounded-full ring-1 ring-black/20",
+        s.dot
+      )}
     />
   );
 }
@@ -72,12 +75,12 @@ export function UrgencyBadge({
   return (
     <span
       className={classNames(
-        "inline-flex items-center rounded-md border font-medium uppercase tracking-wider",
+        "inline-flex items-center rounded-md border font-semibold uppercase tracking-[0.08em]",
         u.bg,
         u.text,
         size === "sm"
-          ? "px-1.5 py-[2px] text-[9.5px]"
-          : "px-1.5 py-[3px] text-[10px]"
+          ? "h-[20px] px-1.5 text-[9.5px]"
+          : "h-[22px] px-1.5 text-[10px]"
       )}
     >
       {urgency}
@@ -97,7 +100,7 @@ export function ImpactPill({ score }: { score: number }) {
   return (
     <span
       className={classNames(
-        "inline-flex items-baseline gap-1 rounded-md border px-1.5 py-[3px] font-mono text-[11px] font-semibold",
+        "inline-flex h-[22px] items-baseline gap-1 rounded-md border px-1.5 font-mono text-[10.5px] font-semibold num",
         tone
       )}
     >

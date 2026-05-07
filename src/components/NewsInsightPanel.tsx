@@ -47,14 +47,14 @@ export function NewsInsightPanel({ item, onClose }: Props) {
       <div
         onClick={onClose}
         aria-hidden
-        className="absolute inset-0 animate-backdropIn bg-ink-950/65 backdrop-blur-sm"
+        className="absolute inset-0 animate-backdropIn bg-ink-950/70 backdrop-blur-sm"
       />
 
       <div
-        className="relative z-10 flex max-h-[88vh] w-full max-w-[760px] animate-modalIn flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-900/95 shadow-2xl"
+        className="relative z-10 flex max-h-[88vh] w-full max-w-[760px] animate-modalIn flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-900/96 shadow-2xl"
         style={{
           boxShadow:
-            "0 0 0 1px rgba(255,255,255,0.04), 0 30px 80px -20px rgba(0,0,0,0.65)",
+            "0 0 0 1px rgba(255,255,255,0.04), 0 30px 80px -20px rgba(0,0,0,0.7)",
         }}
       >
         {/* Sector accent stripe */}
@@ -65,13 +65,13 @@ export function NewsInsightPanel({ item, onClose }: Props) {
           }}
         />
         <div
-          className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-50 blur-3xl"
+          className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-40 blur-3xl"
           style={{ background: `rgba(${accentRgb},0.12)` }}
         />
 
         {/* Sector + close */}
         <div className="relative flex items-center justify-between gap-3 px-5 pt-4 sm:px-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {Icon && (
               <div
                 className="flex h-7 w-7 items-center justify-center rounded-md ring-1 ring-white/10"
@@ -80,22 +80,24 @@ export function NewsInsightPanel({ item, onClose }: Props) {
                   color: accent,
                 }}
               >
-                <Icon size={13} />
+                <Icon size={13} strokeWidth={1.85} />
               </div>
             )}
             <div className="leading-tight">
-              <div className="text-[12px] font-semibold text-white">
+              <div className="text-[12px] font-semibold tracking-tightish text-white">
                 {sector?.name ?? item.sector}
               </div>
-              <div className="text-[10.5px] text-white/40">
-                {item.subsector} · {relativeTime(item.publishedAt)}
+              <div className="text-[10.5px] text-white/45">
+                <span className="text-white/65">{item.subsector}</span>
+                <span className="mx-1.5 text-white/20">·</span>
+                <span className="num">{relativeTime(item.publishedAt)}</span>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close insight"
-            className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.02] text-white/55 transition hover:border-white/[0.16] hover:text-white"
+            className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.02] text-white/55 transition hover:border-white/[0.18] hover:bg-white/[0.04] hover:text-white"
           >
             <X size={13} />
           </button>
@@ -104,7 +106,7 @@ export function NewsInsightPanel({ item, onClose }: Props) {
         {/* Scrollable body */}
         <div className="relative flex-1 overflow-y-auto px-5 pb-5 pt-3 sm:px-6">
           {/* Headline */}
-          <h2 className="font-display text-[19px] font-semibold leading-snug text-white sm:text-[20px]">
+          <h2 className="font-display text-[19px] font-semibold leading-snug tracking-tightish text-white sm:text-[20.5px]">
             {item.headline}
           </h2>
 
@@ -117,33 +119,36 @@ export function NewsInsightPanel({ item, onClose }: Props) {
             <span className="chip">{item.timeHorizon}</span>
           </div>
 
-          {/* Summary — capped at 2 lines */}
+          {/* Summary */}
           <p className="mt-3 line-clamp-2 text-[12.5px] leading-relaxed text-white/75">
             {item.summary}
           </p>
 
           {/* Source row */}
           <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-white/55">
-            <span className="font-medium text-white/80">{item.source}</span>
+            <span className="font-medium text-white/85">{item.source}</span>
             <Sep />
             <span>{item.sourceType}</span>
             <Sep />
             <span>
               Confidence{" "}
-              <span className="font-mono text-white/75">
-                {item.sourceConfidence}/100
+              <span className="font-mono num text-white/80">
+                {item.sourceConfidence}
               </span>
+              <span className="text-white/30">/100</span>
             </span>
             <span className="ml-auto" />
-            <a
-              href={item.newsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-primary"
-            >
-              Read more
-              <ArrowUpRight size={11} />
-            </a>
+            {item.newsUrl ? (
+              <a
+                href={item.newsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary"
+              >
+                Read source
+                <ArrowUpRight size={11} />
+              </a>
+            ) : null}
           </div>
 
           <Divider />
@@ -160,10 +165,10 @@ export function NewsInsightPanel({ item, onClose }: Props) {
 
           <Divider />
 
-          {/* Why it matters — lightweight callout, accent left rule */}
+          {/* Why it matters */}
           <Group label="Why it matters">
             <div
-              className="rounded-md border-l-2 bg-white/[0.018] py-1.5 pl-3 pr-1 text-[12.5px] leading-relaxed text-white/85"
+              className="rounded-md border-l-2 bg-white/[0.022] py-2 pl-3 pr-2 text-[12.5px] leading-relaxed text-white/85"
               style={{ borderLeftColor: accent }}
             >
               {item.whyItMatters}
@@ -187,10 +192,10 @@ export function NewsInsightPanel({ item, onClose }: Props) {
           </div>
 
           {/* Related catalyst */}
-          <div className="mt-4 flex items-start gap-2 rounded-md border border-white/[0.05] bg-white/[0.018] px-3 py-2 text-[12px] text-white/75">
-            <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
+          <div className="mt-4 flex items-start gap-2 rounded-md border border-white/[0.05] bg-white/[0.02] px-3 py-2 text-[12px] text-white/75">
+            <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
             <div>
-              <span className="mr-1.5 text-[10.5px] uppercase tracking-[0.16em] text-white/40">
+              <span className="mr-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">
                 Catalyst
               </span>
               {item.relatedCatalyst}
@@ -207,9 +212,7 @@ function Sep() {
 }
 
 function Divider() {
-  return (
-    <div className="my-4 h-px w-full bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-  );
+  return <div className="my-4 hairline" />;
 }
 
 function Group({
@@ -221,9 +224,7 @@ function Group({
 }) {
   return (
     <section>
-      <div className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/40">
-        {label}
-      </div>
+      <div className="mb-1.5 label-eyebrow">{label}</div>
       {children}
     </section>
   );
@@ -237,7 +238,7 @@ function Chips({ items, accent }: { items: string[]; accent: string }) {
       {items.map((c) => (
         <span
           key={c}
-          className="inline-flex items-center rounded-full border px-2 py-[3px] text-[11px] font-medium text-white/90"
+          className="inline-flex h-[22px] items-center rounded-full border px-2 text-[10.5px] font-medium tracking-tightish text-white/90"
           style={{
             borderColor: `${accent}30`,
             background: `${accent}10`,
@@ -271,14 +272,14 @@ function CaseCard({
     <div className={classNames("rounded-md border px-3 py-2.5", styles)}>
       <div
         className={classNames(
-          "mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em]",
+          "mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]",
           labelStyles
         )}
       >
         {icon}
         {title}
       </div>
-      <div className="text-[12px] leading-relaxed text-white/80">{body}</div>
+      <div className="text-[12px] leading-relaxed text-white/82">{body}</div>
     </div>
   );
 }

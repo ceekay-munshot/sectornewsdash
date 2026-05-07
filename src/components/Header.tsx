@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Activity, Radar } from "lucide-react";
+import { Radar } from "lucide-react";
 import { SyncAllButton } from "./SyncAllButton";
 
 interface Props {
@@ -24,18 +24,17 @@ export function Header({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-ink-950/75 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-ink-950/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-3">
-        <div className="flex items-center gap-3">
-          <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-accent-sky/30 via-accent-violet/20 to-accent-mint/20 ring-1 ring-white/10">
-            <Radar size={18} className="text-white" />
-            <span className="pointer-events-none absolute inset-0 animate-pulseSoft rounded-lg bg-accent-sky/10" />
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-accent-sky/25 via-accent-violet/15 to-accent-mint/20 ring-1 ring-white/10">
+            <Radar size={15} className="text-white/95" strokeWidth={1.75} />
           </div>
           <div className="leading-tight">
-            <div className="font-display text-[14.5px] font-semibold tracking-tight text-white">
+            <div className="font-display text-[14px] font-semibold tracking-tightish text-white">
               Sector News Radar
             </div>
-            <div className="text-[10.5px] uppercase tracking-[0.2em] text-white/40">
+            <div className="text-[9.5px] font-medium uppercase tracking-[0.22em] text-white/40">
               Investor Intelligence
             </div>
           </div>
@@ -49,9 +48,14 @@ export function Header({
             completed={syncCompleted}
             onSync={onSync}
           />
-          <div className="chip">
-            <Activity size={12} className="text-emerald-400" />
-            <span className="hidden sm:inline">Live · {now}</span>
+          <div className="flex h-[28px] items-center gap-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] px-2.5 text-[11px] text-white/70">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inset-0 animate-pulseSoft rounded-full bg-emerald-400/60" />
+              <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            </span>
+            <span className="hidden font-mono num text-white/80 sm:inline">
+              {now}
+            </span>
             <span className="sm:hidden">Live</span>
           </div>
         </div>

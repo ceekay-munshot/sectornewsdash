@@ -33,7 +33,7 @@ export function NewsFeed({
   }
 
   return (
-    <div className="glass divide-y divide-white/[0.04] p-1">
+    <div className="glass divide-y divide-white/[0.035] p-1">
       {list.map((n) => (
         <NewsHeadlineRow
           key={n.id}

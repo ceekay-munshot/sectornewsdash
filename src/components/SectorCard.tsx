@@ -1,6 +1,7 @@
 import { ArrowRight, Flame, X } from "lucide-react";
 import type { SectorAggregate, NewsItem } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
+import { heatToColor } from "../lib/utils";
 import { SentimentBadge, ThemeChip } from "./Badges";
 import { NewsHeadlineRow } from "./NewsHeadlineRow";
 
@@ -21,6 +22,8 @@ export function SectorCard({
   const accent = agg.sector.accent;
   const accentRgb = agg.sector.accentRgb;
   const heat = Math.max(0, Math.min(100, agg.heatScore));
+  const heatHex = heatToColor(heat).hex;
+  const empty = agg.newsCount === 0;
 
   return (
     <div className="glass group relative flex flex-col overflow-hidden">
@@ -32,44 +35,50 @@ export function SectorCard({
       />
       <div
         className="pointer-events-none absolute -top-16 right-[-30px] h-32 w-32 rounded-full opacity-50 blur-3xl"
-        style={{ background: `rgba(${accentRgb}, 0.18)` }}
+        style={{ background: `rgba(${accentRgb}, 0.16)` }}
       />
 
       {/* Header */}
       <button
         onClick={() => onOpenSector(agg.sector.id)}
-        className="focus-ring relative flex items-center gap-3 px-3.5 py-3 text-left transition hover:bg-white/[0.02]"
+        className="focus-ring relative flex items-center gap-3 px-3.5 pb-2.5 pt-3 text-left transition hover:bg-white/[0.018]"
       >
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-white/10"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-white/10"
           style={{
             background: `linear-gradient(135deg, rgba(${accentRgb},0.32), rgba(${accentRgb},0.08))`,
             color: accent,
           }}
         >
-          <Icon size={16} />
+          <Icon size={16} strokeWidth={1.85} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <div className="truncate text-[13.5px] font-semibold text-white">
+            <div className="truncate text-[13.5px] font-semibold tracking-tightish text-white">
               {agg.sector.name}
             </div>
+            <span className="font-mono text-[10px] num uppercase tracking-wider text-white/35">
+              {agg.sector.shortName}
+            </span>
           </div>
-          <div className="mt-0.5 flex items-center gap-2 text-[10.5px] text-white/45">
-            <span className="font-mono">{agg.sector.shortName}</span>
-            <span>·</span>
-            <span>{agg.newsCount} news</span>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-white/45">
+            <span className="num">
+              <span className="font-semibold text-white/70">
+                {agg.newsCount}
+              </span>{" "}
+              {agg.newsCount === 1 ? "item" : "items"}
+            </span>
             {agg.newsCount > 0 && (
               <>
-                <span>·</span>
-                <span>top theme: {agg.topTheme}</span>
+                <span className="text-white/20">·</span>
+                <span className="truncate">{agg.topTheme}</span>
               </>
             )}
           </div>
         </div>
         <ArrowRight
           size={14}
-          className="text-white/35 transition group-hover:translate-x-0.5 group-hover:text-white/70"
+          className="text-white/30 transition group-hover:translate-x-0.5 group-hover:text-white/75"
         />
       </button>
 
@@ -88,32 +97,48 @@ export function SectorCard({
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 border-t border-white/[0.05] bg-white/[0.012] px-3.5 py-2.5">
-        <Stat
-          label="Heat"
-          value={heat || "—"}
-          accent={accent}
-          icon={<Flame size={10} />}
-        />
+      <div className="grid grid-cols-3 items-end gap-3 border-t border-white/[0.04] bg-white/[0.012] px-3.5 py-2.5">
         <div className="flex flex-col">
-          <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
-            Sentiment
+          <div className="flex items-center gap-1 label-eyebrow">
+            <Flame size={9} />
+            Heat
           </div>
-          <div className="mt-1">
-            {agg.newsCount === 0 ? (
-              <span className="text-[12px] text-white/40">—</span>
+          <div className="mt-1.5 flex items-baseline gap-1">
+            <div
+              className="font-mono text-[15px] font-semibold leading-none num"
+              style={{ color: empty ? "rgba(255,255,255,0.35)" : heatHex }}
+            >
+              {empty ? "—" : heat}
+            </div>
+            {!empty && (
+              <span className="text-[10px] text-white/30 num">/100</span>
+            )}
+          </div>
+          <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/[0.05]">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${empty ? 0 : heat}%`,
+                background: empty ? "transparent" : heatHex,
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="label-eyebrow">Sentiment</div>
+          <div className="mt-1.5">
+            {empty ? (
+              <span className="text-[12px] text-white/35">—</span>
             ) : (
               <SentimentBadge sentiment={agg.sentiment} size="sm" />
             )}
           </div>
         </div>
-        <div className="flex flex-col">
-          <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
-            Top theme
-          </div>
-          <div className="mt-1">
-            {agg.newsCount === 0 ? (
-              <span className="text-[12px] text-white/40">—</span>
+        <div className="flex min-w-0 flex-col">
+          <div className="label-eyebrow">Top theme</div>
+          <div className="mt-1.5">
+            {empty ? (
+              <span className="text-[12px] text-white/35">—</span>
             ) : (
               <ThemeChip>{agg.topTheme}</ThemeChip>
             )}
@@ -122,20 +147,20 @@ export function SectorCard({
       </div>
 
       {/* Top 5 headlines */}
-      <div className="flex flex-1 flex-col p-1.5">
+      <div className="flex flex-1 flex-col p-1">
         {agg.topNews.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center px-3 py-6 text-center">
+          <div className="flex flex-1 items-center justify-center px-3 py-8 text-center">
             <div>
               <div className="text-[11px] text-white/45">
                 Awaiting feed for {agg.sector.shortName}
               </div>
               <div className="mt-0.5 text-[10.5px] text-white/30">
-                Headlines will surface here as they arrive.
+                Headlines surface here as they arrive
               </div>
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-white/[0.035]">
             {agg.topNews.map((n) => (
               <NewsHeadlineRow
                 key={n.id}
@@ -151,38 +176,18 @@ export function SectorCard({
       {agg.newsCount > 5 && (
         <button
           onClick={() => onOpenSector(agg.sector.id)}
-          className="focus-ring border-t border-white/[0.05] px-3.5 py-2 text-left text-[11px] text-white/55 transition hover:bg-white/[0.03] hover:text-white"
+          className="focus-ring group/footer flex items-center justify-between border-t border-white/[0.05] px-3.5 py-2 text-[11px] text-white/55 transition hover:bg-white/[0.025] hover:text-white"
         >
-          View all {agg.newsCount} headlines →
+          <span>
+            View all <span className="font-semibold num">{agg.newsCount}</span>{" "}
+            headlines
+          </span>
+          <ArrowRight
+            size={11}
+            className="text-white/30 transition group-hover/footer:translate-x-0.5 group-hover/footer:text-white/70"
+          />
         </button>
       )}
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-  icon,
-}: {
-  label: string;
-  value: number | string;
-  accent: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
-        {icon}
-        {label}
-      </div>
-      <div
-        className="mt-1 font-mono text-[14px] font-semibold leading-none"
-        style={{ color: accent }}
-      >
-        {value}
-      </div>
     </div>
   );
 }
