@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HelpCircle } from "lucide-react";
 import { classNames } from "../lib/utils";
@@ -20,7 +20,11 @@ interface Props {
  */
 export function HelpHint(props: Props) {
   const ref = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [anchor, setAnchor] = useState<{
+    triggerTop: number;
+    triggerBottom: number;
+    left: number;
+  } | null>(null);
 
   const show = () => {
     if (!ref.current) return;
@@ -29,9 +33,9 @@ export function HelpHint(props: Props) {
       8,
       Math.min(window.innerWidth - POPOVER_WIDTH - 8, r.right - POPOVER_WIDTH)
     );
-    setPos({ top: r.bottom + 6, left });
+    setAnchor({ triggerTop: r.top, triggerBottom: r.bottom, left });
   };
-  const hide = () => setPos(null);
+  const hide = () => setAnchor(null);
 
   return (
     <>
@@ -51,9 +55,14 @@ export function HelpHint(props: Props) {
       >
         <HelpCircle size={9} />
       </button>
-      {pos
+      {anchor
         ? createPortal(
-            <Popover top={pos.top} left={pos.left} {...props} />,
+            <Popover
+              triggerTop={anchor.triggerTop}
+              triggerBottom={anchor.triggerBottom}
+              left={anchor.left}
+              {...props}
+            />,
             document.body
           )
         : null}
@@ -62,15 +71,29 @@ export function HelpHint(props: Props) {
 }
 
 function Popover({
-  top,
+  triggerTop,
+  triggerBottom,
   left,
   title,
   description,
   formula,
   inputs,
-}: Props & { top: number; left: number }) {
+}: Props & { triggerTop: number; triggerBottom: number; left: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [top, setTop] = useState(triggerBottom + 6);
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const h = ref.current.offsetHeight;
+    const margin = 8;
+    const fitsBelow = triggerBottom + 6 + h <= window.innerHeight - margin;
+    setTop(
+      fitsBelow ? triggerBottom + 6 : Math.max(margin, triggerTop - h - 6)
+    );
+  }, [triggerTop, triggerBottom]);
+
   return (
     <div
+      ref={ref}
       role="tooltip"
       style={{
         position: "fixed",

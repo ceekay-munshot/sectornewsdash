@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
@@ -69,7 +69,11 @@ function HeatTile({
   const tintRgb = live ? heatRgb : "255,255,255";
 
   const tileRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [anchor, setAnchor] = useState<{
+    triggerTop: number;
+    triggerBottom: number;
+    left: number;
+  } | null>(null);
 
   const showPopover = () => {
     if (!tileRef.current) return;
@@ -81,9 +85,9 @@ function HeatTile({
         r.left + r.width / 2 - POPOVER_WIDTH / 2
       )
     );
-    setPos({ top: r.bottom + 6, left });
+    setAnchor({ triggerTop: r.top, triggerBottom: r.bottom, left });
   };
-  const hidePopover = () => setPos(null);
+  const hidePopover = () => setAnchor(null);
 
   return (
     <button
@@ -129,9 +133,14 @@ function HeatTile({
         {live ? heat : "·"}
       </span>
 
-      {pos
+      {anchor
         ? createPortal(
-            <SectorTilePopover agg={agg} top={pos.top} left={pos.left} />,
+            <SectorTilePopover
+              agg={agg}
+              triggerTop={anchor.triggerTop}
+              triggerBottom={anchor.triggerBottom}
+              left={anchor.left}
+            />,
             document.body
           )
         : null}
@@ -147,11 +156,13 @@ const SENT_COLOR: Record<"Bullish" | "Bearish" | "Neutral", string> = {
 
 function SectorTilePopover({
   agg,
-  top,
+  triggerTop,
+  triggerBottom,
   left,
 }: {
   agg: SectorAggregate;
-  top: number;
+  triggerTop: number;
+  triggerBottom: number;
   left: number;
 }) {
   const breakdown = useSectorBreakdown(agg.sector.id);
@@ -167,8 +178,21 @@ function SectorTilePopover({
     { label: "Bear", count: breakdown?.bearish ?? 0, color: SENT_COLOR.Bearish },
   ];
 
+  const ref = useRef<HTMLDivElement>(null);
+  const [top, setTop] = useState(triggerBottom + 6);
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const h = ref.current.offsetHeight;
+    const margin = 8;
+    const fitsBelow = triggerBottom + 6 + h <= window.innerHeight - margin;
+    setTop(
+      fitsBelow ? triggerBottom + 6 : Math.max(margin, triggerTop - h - 6)
+    );
+  }, [triggerTop, triggerBottom]);
+
   return (
     <div
+      ref={ref}
       role="tooltip"
       style={{
         position: "fixed",
