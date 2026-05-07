@@ -51,6 +51,39 @@ export function formatShortDate(iso: string): string {
   return `${month}-${day}`;
 }
 
+// "Mar 27" — title-case month, space, un-padded day.
+export function formatPrettyDate(d: Date): string {
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+/**
+ * Friendly "last synced" formatter — collapses to "today" / "yesterday"
+ * for recent times, full date past that. Always appends HH:MM.
+ */
+export function formatSyncStamp(d: Date): string {
+  if (Number.isNaN(d.getTime())) return "—";
+  const time = d.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const today = new Date();
+  const sameDay =
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  if (sameDay) return `today · ${time}`;
+  const y = new Date(today);
+  y.setDate(today.getDate() - 1);
+  const yesterday =
+    d.getFullYear() === y.getFullYear() &&
+    d.getMonth() === y.getMonth() &&
+    d.getDate() === y.getDate();
+  if (yesterday) return `yesterday · ${time}`;
+  return `${formatPrettyDate(d)} · ${time}`;
+}
+
 export function classNames(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }
@@ -88,4 +121,41 @@ export function heatToColor(heat: number): { hex: string; rgb: string } {
   const hex =
     "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
   return { hex, rgb: `${r},${g},${b}` };
+}
+
+/**
+ * Bucket a heat score into a label + plain-English description of what
+ * that level of activity actually means for an investor reading the dial.
+ */
+export function heatTier(heat: number): { label: string; blurb: string } {
+  if (heat >= 85)
+    return {
+      label: "Blazing",
+      blurb:
+        "Top-priority flow — multiple market-shaping catalysts in the window.",
+    };
+  if (heat >= 70)
+    return {
+      label: "Hot",
+      blurb: "Heavy news flow with high-impact items dominating recent items.",
+    };
+  if (heat >= 55)
+    return {
+      label: "Active",
+      blurb: "Steady stream of material news; meaningful items to track.",
+    };
+  if (heat >= 40)
+    return {
+      label: "Moderate",
+      blurb: "Mid-tier activity — a few material items, mostly mid-impact.",
+    };
+  if (heat >= 20)
+    return {
+      label: "Light",
+      blurb: "Sporadic coverage; mostly background news, no big movers yet.",
+    };
+  return {
+    label: "Quiet",
+    blurb: "Background-level news only; few material moves in the window.",
+  };
 }

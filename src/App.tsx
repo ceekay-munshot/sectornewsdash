@@ -4,7 +4,6 @@ import { FilterBar } from "./components/FilterBar";
 import { OverviewTab } from "./components/OverviewTab";
 import { SectorDetail } from "./components/SectorDetail";
 import { NewsInsightPanel } from "./components/NewsInsightPanel";
-import { MethodologyPanel } from "./components/MethodologyPanel";
 import { MOCK_NEWS } from "./data/mockNews";
 import { SECTORS } from "./data/sectors";
 import {
@@ -249,9 +248,6 @@ export default function App() {
         filters={filters}
         onChange={setFilters}
         onClear={() => setFilters(EMPTY_FILTERS)}
-        resultCount={
-          view === "sector" ? sectorNews.length : filteredNews.length
-        }
       />
 
       <main className="relative z-10 mx-auto max-w-[1400px] px-5 py-5">
@@ -279,8 +275,6 @@ export default function App() {
             onMunsLoaded={setMunsForSector}
           />
         )}
-
-        <MethodologyPanel />
       </main>
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />

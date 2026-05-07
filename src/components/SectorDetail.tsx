@@ -1,10 +1,16 @@
+import { useMemo, useState } from "react";
 import { ArrowLeft, Flame } from "lucide-react";
 import type { NewsItem, SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { SECTOR_AGENTS } from "../lib/agentConfig";
+import { sortNewsByDate } from "../lib/logic";
 import { SentimentBadge, ThemeChip } from "./Badges";
 import { NewsFeed } from "./NewsFeed";
 import { MunsSectorSection } from "./MunsSectorSection";
+import { HelpHint } from "./HelpHint";
+import { NewsSortToggle, type NewsSortMode } from "./NewsSortToggle";
+import { NewsTimeStrip } from "./NewsTimeStrip";
+import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
 
 interface Props {
   aggregate: SectorAggregate;
@@ -33,6 +39,11 @@ export function SectorDetail({
   const Icon = SECTOR_ICONS[sector.iconKey];
   const accent = sector.accent;
   const accentRgb = sector.accentRgb;
+  const [sortMode, setSortMode] = useState<NewsSortMode>("impact");
+  const sortedSectorNews = useMemo(
+    () => (sortMode === "latest" ? sortNewsByDate(sectorNews) : sectorNews),
+    [sectorNews, sortMode]
+  );
 
   return (
     <div className="animate-floatIn space-y-4">
@@ -131,19 +142,21 @@ export function SectorDetail({
         />
       ) : (
         <div className="space-y-2">
-          <div className="flex items-baseline justify-between px-1">
-            <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-              Material news ·{" "}
-              <span className="text-white/70">
-                {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+              <span>
+                Material news ·{" "}
+                <span className="text-white/70">
+                  {Math.min(sectorNews.length, NEWS_LIMIT)} of {sectorNews.length}
+                </span>
               </span>
+              <HelpHint {...NEWS_RANKING_HINT} />
             </div>
-            <div className="text-[10.5px] text-white/35">
-              ranked by impact · recency · urgency
-            </div>
+            <NewsSortToggle value={sortMode} onChange={setSortMode} />
           </div>
+          <NewsTimeStrip items={sectorNews} />
           <NewsFeed
-            items={sectorNews}
+            items={sortedSectorNews}
             limit={NEWS_LIMIT}
             onSelect={onSelectNews}
             selectedId={selectedNewsId}

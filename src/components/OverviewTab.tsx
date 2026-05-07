@@ -6,6 +6,11 @@ import { SectorHeatmap } from "./SectorHeatmap";
 import { SectorCard } from "./SectorCard";
 import { WatchlistControl } from "./WatchlistControl";
 import { EmptyState } from "./EmptyState";
+import { HelpHint } from "./HelpHint";
+import {
+  HEAT_SCORE_HINT,
+  SECTOR_SENTIMENT_HINT,
+} from "../lib/methodologyHints";
 
 interface Props {
   aggregates: SectorAggregate[];
@@ -64,6 +69,7 @@ export function OverviewTab({
           hint={stats.hottest?.sector.shortName ?? "Awaiting feed"}
           icon={Flame}
           accent="#FB7185"
+          help={<HelpHint {...HEAT_SCORE_HINT} />}
         />
         <KPIStatCard
           label="Most bullish"
@@ -75,6 +81,7 @@ export function OverviewTab({
           }
           icon={TrendingUp}
           accent="#5EEAD4"
+          help={<HelpHint {...SECTOR_SENTIMENT_HINT} />}
         />
         <KPIStatCard
           label="Critical alerts"
