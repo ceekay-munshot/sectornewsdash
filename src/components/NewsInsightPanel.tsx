@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
+  Sparkles,
   TrendingDown,
   TrendingUp,
   X,
@@ -10,6 +11,7 @@ import { sectorMetaFor } from "../lib/logic";
 import { SECTOR_ICONS } from "../lib/icons";
 import { ImpactPill, SentimentBadge, ThemeChip, UrgencyBadge } from "./Badges";
 import { classNames, relativeTime } from "../lib/utils";
+import { NewsChatPanel } from "./NewsChatPanel";
 
 interface Props {
   item: NewsItem | null;
@@ -21,14 +23,25 @@ interface Props {
  * but the chrome stays minimal so the headline + thesis lead the eye.
  */
 export function NewsInsightPanel({ item, onClose }: Props) {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  // Close insight on Escape — but only when the chat overlay isn't on top,
+  // since the chat handles its own Escape and we don't want one keypress to
+  // dismiss both layers.
   useEffect(() => {
-    if (!item) return;
+    if (!item || chatOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [item, onClose]);
+  }, [item, chatOpen, onClose]);
+
+  // Reset the chat-open flag when the underlying news item changes or
+  // the modal is dismissed.
+  useEffect(() => {
+    if (!item) setChatOpen(false);
+  }, [item]);
 
   if (!item) return null;
 
@@ -135,6 +148,15 @@ export function NewsInsightPanel({ item, onClose }: Props) {
               </span>
             </span>
             <span className="ml-auto" />
+            <button
+              type="button"
+              onClick={() => setChatOpen(true)}
+              className="btn-ghost"
+              aria-label="Chat with GPT about this news"
+            >
+              <Sparkles size={11} style={{ color: accent }} />
+              Chat
+            </button>
             <a
               href={item.newsUrl}
               target="_blank"
@@ -198,6 +220,10 @@ export function NewsInsightPanel({ item, onClose }: Props) {
           </div>
         </div>
       </div>
+
+      {chatOpen && (
+        <NewsChatPanel item={item} onClose={() => setChatOpen(false)} />
+      )}
     </div>
   );
 }
