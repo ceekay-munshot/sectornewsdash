@@ -38,7 +38,7 @@ export function SectorCard({
       {/* Header */}
       <button
         onClick={() => onOpenSector(agg.sector.id)}
-        className="focus-ring relative flex items-center gap-3 px-3.5 py-3 text-left transition hover:bg-white/[0.02]"
+        className="focus-ring relative flex items-center gap-3 px-3.5 py-2.5 text-left transition hover:bg-white/[0.02]"
       >
         <div
           className="flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-white/10"
@@ -82,41 +82,54 @@ export function SectorCard({
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 border-t border-white/[0.05] bg-white/[0.012] px-3.5 py-2.5">
-        <Stat
-          label="Heat"
-          value={heat || "—"}
-          accent={accent}
-          icon={<Flame size={10} />}
-        />
-        <div className="flex flex-col">
+      <div className="grid grid-cols-3 items-center gap-2 border-t border-white/[0.05] bg-white/[0.012] px-3.5 py-2">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
+            <Flame size={10} />
+            Heat
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="font-mono text-[14px] font-semibold leading-none"
+              style={{ color: accent }}
+            >
+              {heat || "—"}
+            </div>
+            <div className="h-1 w-10 overflow-hidden rounded-full bg-white/[0.06]">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${heat}%`,
+                  background: `rgba(${accentRgb}, 0.9)`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
           <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
             Sentiment
           </div>
-          <div className="mt-1">
-            {agg.newsCount === 0 ? (
-              <span className="text-[12px] text-white/40">—</span>
-            ) : (
-              <SentimentBadge sentiment={agg.sentiment} size="sm" />
-            )}
-          </div>
+          {agg.newsCount === 0 ? (
+            <span className="text-[12px] text-white/40">—</span>
+          ) : (
+            <SentimentBadge sentiment={agg.sentiment} size="sm" />
+          )}
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
             Top theme
           </div>
-          <div className="mt-1">
-            {agg.newsCount === 0 ? (
-              <span className="text-[12px] text-white/40">—</span>
-            ) : (
-              <ThemeChip>{agg.topTheme}</ThemeChip>
-            )}
-          </div>
+          {agg.newsCount === 0 ? (
+            <span className="text-[12px] text-white/40">—</span>
+          ) : (
+            <ThemeChip>{agg.topTheme}</ThemeChip>
+          )}
         </div>
       </div>
 
       {/* Top 5 headlines */}
-      <div className="flex flex-1 flex-col p-1.5">
+      <div className="flex flex-1 flex-col p-1">
         {agg.topNews.length === 0 ? (
           <div className="flex flex-1 items-center justify-center px-3 py-6 text-center">
             <div className="text-[11px] text-white/40">
@@ -145,33 +158,6 @@ export function SectorCard({
           View all {agg.newsCount} →
         </button>
       )}
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-  icon,
-}: {
-  label: string;
-  value: number | string;
-  accent: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
-        {icon}
-        {label}
-      </div>
-      <div
-        className="mt-1 font-mono text-[14px] font-semibold leading-none"
-        style={{ color: accent }}
-      >
-        {value}
-      </div>
     </div>
   );
 }

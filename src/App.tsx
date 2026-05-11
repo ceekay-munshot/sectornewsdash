@@ -253,7 +253,7 @@ export default function App() {
         onClear={() => setFilters(EMPTY_FILTERS)}
       />
 
-      <main className="relative z-10 mx-auto max-w-[1400px] px-5 py-5">
+      <main className="relative z-10 mx-auto max-w-[1400px] px-5 py-3">
         {view === "overview" || !activeAggregate ? (
           <OverviewTab
             aggregates={aggregates}
