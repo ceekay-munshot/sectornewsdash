@@ -155,11 +155,14 @@ function parseBlocks(
   return out;
 }
 
-// Inline parse with a combined regex. Order matters: code first so we don't
-// process bold/italic inside backticks; links before * so [text](*emphasis*)
-// doesn't tangle.
+// Inline parse with a combined regex. No /g flag — we slice and re-exec
+// instead of using lastIndex, because renderInline recurses for bold/italic
+// content and a shared global regex would clobber the outer iterator's
+// cursor (causing an infinite loop on the first emphasis match).
+// Order in the alternation matters: code first so we don't process bold/
+// italic inside backticks; links before * so [t](*x*) doesn't tangle.
 const INLINE_RE =
-  /(`[^`\n]+`)|(\[[^\]\n]+\]\([^)\n]+\))|(\*\*[^*\n][\s\S]*?\*\*)|(__[^_\n][\s\S]*?__)|(\*[^*\n][\s\S]*?\*)|(_[^_\n][\s\S]*?_)/g;
+  /(`[^`\n]+`)|(\[[^\]\n]+\]\([^)\n]+\))|(\*\*[^*\n][\s\S]*?\*\*)|(__[^_\n][\s\S]*?__)|(\*[^*\n][\s\S]*?\*)|(_[^_\n][\s\S]*?_)/;
 
 function renderTextWithBreaks(text: string, baseKey: string): ReactNode[] {
   const out: ReactNode[] = [];
@@ -173,15 +176,17 @@ function renderTextWithBreaks(text: string, baseKey: string): ReactNode[] {
 
 function renderInline(text: string, baseKey: string): ReactNode[] {
   const out: ReactNode[] = [];
-  // reset lastIndex since we share the literal regex object
-  INLINE_RE.lastIndex = 0;
-  let last = 0;
+  let rest = text;
   let k = 0;
-  let m: RegExpExecArray | null;
-  while ((m = INLINE_RE.exec(text)) !== null) {
-    if (m.index > last) {
+  while (rest.length > 0) {
+    const m = INLINE_RE.exec(rest);
+    if (!m) {
+      out.push(...renderTextWithBreaks(rest, `${baseKey}-${k++}`));
+      break;
+    }
+    if (m.index > 0) {
       out.push(
-        ...renderTextWithBreaks(text.slice(last, m.index), `${baseKey}-${k++}`),
+        ...renderTextWithBreaks(rest.slice(0, m.index), `${baseKey}-${k++}`),
       );
     }
     const t = m[0];
@@ -236,10 +241,7 @@ function renderInline(text: string, baseKey: string): ReactNode[] {
         </em>,
       );
     }
-    last = m.index + t.length;
-  }
-  if (last < text.length) {
-    out.push(...renderTextWithBreaks(text.slice(last), `${baseKey}-${k++}`));
+    rest = rest.slice(m.index + t.length);
   }
   return out;
 }
