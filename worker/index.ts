@@ -621,6 +621,9 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
   ];
 
   const toolCallLog: Array<{ name: string; args: unknown; ok: boolean }> = [];
+  // News ids the model touched while answering, with whether we actually
+  // pulled the source body (read=true) or only the analyst metadata.
+  const touchedSources = new Map<string, { read: boolean }>();
 
   for (let round = 0; round < DASHBOARD_MAX_TOOL_ROUNDS; round++) {
     // Force a final answer (no tools) on the last round so the model can't
@@ -681,9 +684,11 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
     if (toolCalls.length === 0) {
       const content = (msg.content ?? "").trim();
       if (!content) return jsonError("OpenAI returned empty content", 502);
+      const sources = collectSources(touchedSources, corpus, catalogMap);
       return jsonOk({
         message: { role: "assistant", content },
         toolCalls: toolCallLog,
+        sources,
         model,
         rounds: round + 1,
       });
@@ -722,6 +727,7 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
         args: parsedArgs,
         ok: !result.error,
       });
+      recordTouchedSources(touchedSources, tc.function.name, parsedArgs, result);
       oaiMessages.push({
         role: "tool",
         tool_call_id: tc.id,
@@ -971,6 +977,74 @@ async function runDashboardTool(
         error: true,
       };
   }
+}
+
+function recordTouchedSources(
+  touched: Map<string, { read: boolean }>,
+  name: string,
+  args: Record<string, unknown>,
+  result: ToolResult,
+) {
+  if (name === "get_news_details" || name === "compare_news") {
+    const ids = Array.isArray(args.ids)
+      ? args.ids.filter((s): s is string => typeof s === "string")
+      : [];
+    for (const id of ids) {
+      if (!touched.has(id)) touched.set(id, { read: false });
+    }
+  } else if (name === "fetch_article") {
+    const id = typeof args.id === "string" ? args.id : "";
+    if (!id) return;
+    // The tool returns either { body, ... } when the source was read or
+    // { error, ... } when it wasn't. We mark `read` from the payload shape.
+    const payload = result.payload as { body?: unknown } | undefined;
+    const wasRead =
+      !!payload && typeof payload.body === "string" && payload.body.length > 0;
+    const existing = touched.get(id);
+    if (existing) existing.read = existing.read || wasRead;
+    else touched.set(id, { read: wasRead });
+  }
+}
+
+interface SourceRow {
+  id: string;
+  headline: string;
+  source?: string;
+  sourceType?: string;
+  publishedAt?: string;
+  newsUrl?: string;
+  sectorId: string;
+  sectorName: string;
+  read: boolean;
+}
+
+function collectSources(
+  touched: Map<string, { read: boolean }>,
+  corpus: NewsCorpus,
+  catalog: Map<string, { id: string; name: string; shortName?: string }>,
+): SourceRow[] {
+  const out: SourceRow[] = [];
+  for (const [id, info] of touched) {
+    const n = corpus.byId.get(id);
+    if (!n) continue;
+    out.push({
+      id: n.id,
+      headline: n.headline,
+      source: n.source,
+      sourceType: n.sourceType,
+      publishedAt: n.publishedAt,
+      newsUrl: n.newsUrl,
+      sectorId: n.sector,
+      sectorName: catalog.get(n.sector)?.name ?? n.sector,
+      read: info.read,
+    });
+  }
+  // Read sources first, then the rest, then alphabetical-ish stable order.
+  out.sort((a, b) => {
+    if (a.read !== b.read) return a.read ? -1 : 1;
+    return a.headline.localeCompare(b.headline);
+  });
+  return out;
 }
 
 function toolListSectors(ctx: ToolContext) {

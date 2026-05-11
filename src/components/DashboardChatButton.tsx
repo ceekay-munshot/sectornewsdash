@@ -1,4 +1,4 @@
-import { MessageSquare, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 interface Props {
   onClick: () => void;
@@ -15,19 +15,13 @@ export function DashboardChatButton({ onClick, hidden }: Props) {
     <button
       onClick={onClick}
       aria-label="Talk to dashboard"
-      className="focus-ring group fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-white/[0.1] bg-gradient-to-br from-accent-sky/40 via-accent-violet/30 to-accent-mint/30 px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-glow backdrop-blur-md transition hover:from-accent-sky/55 hover:via-accent-violet/40 hover:to-accent-mint/40 sm:bottom-6 sm:right-6"
+      className="focus-ring group fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-ink-900/85 px-3.5 py-2 text-[12px] font-medium text-white/90 backdrop-blur-md transition hover:bg-ink-900 hover:text-white sm:bottom-6 sm:right-6"
       style={{
         boxShadow:
-          "0 10px 30px -10px rgba(125,211,252,0.45), 0 0 0 1px rgba(255,255,255,0.06)",
+          "0 0 0 1px rgba(255,255,255,0.06), 0 12px 32px -12px rgba(125,211,252,0.35)",
       }}
     >
-      <span className="relative flex h-5 w-5 items-center justify-center">
-        <MessageSquare size={13} className="text-white" />
-        <Sparkles
-          size={9}
-          className="absolute -right-1 -top-1 text-white/90 transition group-hover:scale-110"
-        />
-      </span>
+      <Sparkles size={12} className="text-accent-sky" />
       <span>Talk to dashboard</span>
     </button>
   );
