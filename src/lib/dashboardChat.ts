@@ -1,13 +1,26 @@
 import type { SectorMeta } from "../types";
 
+export interface DashboardChatSource {
+  id: string;
+  headline: string;
+  source?: string;
+  sourceType?: string;
+  publishedAt?: string;
+  newsUrl?: string;
+  sectorId: string;
+  sectorName: string;
+  // True when the agent actually pulled the article body (fetch_article
+  // returned content), false when it only saw analyst metadata.
+  read: boolean;
+}
+
 export interface DashboardChatMessage {
   role: "user" | "assistant";
   content: string;
   ts: number;
-  // For assistant turns only — which tools the model called server-side
-  // so the UI can show the routing trail. Plain strings keep the storage
-  // shape simple across schema bumps.
-  toolCalls?: string[];
+  // For assistant turns only. Persisted with the conversation so the
+  // Sources button stays available across reloads.
+  sources?: DashboardChatSource[];
 }
 
 export interface DashboardChatToolCall {
@@ -19,6 +32,7 @@ export interface DashboardChatToolCall {
 export interface DashboardChatResponse {
   message: DashboardChatMessage;
   toolCalls: DashboardChatToolCall[];
+  sources: DashboardChatSource[];
   model: string;
   rounds: number;
 }
@@ -112,6 +126,7 @@ export async function sendDashboardChat(opts: {
   const data = (await res.json()) as {
     message?: { role?: string; content?: string };
     toolCalls?: Array<{ name?: unknown; args?: unknown; ok?: unknown }>;
+    sources?: Array<Record<string, unknown>>;
     model?: string;
     rounds?: number;
   };
@@ -128,14 +143,55 @@ export async function sendDashboardChat(opts: {
         }))
     : [];
 
+  const sources: DashboardChatSource[] = Array.isArray(data.sources)
+    ? data.sources
+        .filter(
+          (s) =>
+            !!s &&
+            typeof s === "object" &&
+            typeof (s as { id: unknown }).id === "string" &&
+            typeof (s as { headline: unknown }).headline === "string",
+        )
+        .map((s) => ({
+          id: String((s as { id: unknown }).id),
+          headline: String((s as { headline: unknown }).headline),
+          source:
+            typeof (s as { source?: unknown }).source === "string"
+              ? String((s as { source: unknown }).source)
+              : undefined,
+          sourceType:
+            typeof (s as { sourceType?: unknown }).sourceType === "string"
+              ? String((s as { sourceType: unknown }).sourceType)
+              : undefined,
+          publishedAt:
+            typeof (s as { publishedAt?: unknown }).publishedAt === "string"
+              ? String((s as { publishedAt: unknown }).publishedAt)
+              : undefined,
+          newsUrl:
+            typeof (s as { newsUrl?: unknown }).newsUrl === "string"
+              ? String((s as { newsUrl: unknown }).newsUrl)
+              : undefined,
+          sectorId:
+            typeof (s as { sectorId?: unknown }).sectorId === "string"
+              ? String((s as { sectorId: unknown }).sectorId)
+              : "",
+          sectorName:
+            typeof (s as { sectorName?: unknown }).sectorName === "string"
+              ? String((s as { sectorName: unknown }).sectorName)
+              : "",
+          read: Boolean((s as { read?: unknown }).read),
+        }))
+    : [];
+
   return {
     message: {
       role: "assistant",
       content,
       ts: Date.now(),
-      toolCalls: toolCalls.map((c) => c.name),
+      sources,
     },
     toolCalls,
+    sources,
     model: data.model ?? "",
     rounds: typeof data.rounds === "number" ? data.rounds : 0,
   };
