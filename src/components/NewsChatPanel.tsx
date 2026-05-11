@@ -10,6 +10,7 @@ import type { NewsItem } from "../types";
 import { sectorMetaFor } from "../lib/logic";
 import { SECTOR_ICONS } from "../lib/icons";
 import { classNames, relativeTime } from "../lib/utils";
+import { Markdown } from "../lib/markdown";
 import {
   clearChat,
   loadChat,
@@ -181,7 +182,7 @@ export function NewsChatPanel({ item, onClose }: Props) {
             <div className="min-w-0 leading-tight">
               <div className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.16em] text-white/45">
                 <Sparkles size={10} style={{ color: accent }} />
-                Chat about this news
+                Chat about this news · Muns agent
               </div>
               <div className="mt-0.5 truncate text-[13px] font-semibold text-white">
                 {item.headline}
@@ -298,9 +299,9 @@ function Bubble({
     >
       <div
         className={classNames(
-          "max-w-[85%] whitespace-pre-wrap rounded-2xl border px-3.5 py-2 text-[12.5px] leading-relaxed",
+          "max-w-[85%] rounded-2xl border px-3.5 py-2 text-[12.5px] leading-relaxed",
           isUser
-            ? "rounded-br-sm border-white/[0.08] text-white"
+            ? "whitespace-pre-wrap rounded-br-sm border-white/[0.08] text-white"
             : "rounded-bl-sm border-white/[0.06] text-white/85",
         )}
         style={{
@@ -316,10 +317,10 @@ function Bubble({
             style={{ color: accent }}
           >
             <Sparkles size={9} />
-            GPT
+            Muns agent
           </div>
         )}
-        {message.content}
+        {isUser ? message.content : <Markdown>{message.content}</Markdown>}
       </div>
     </div>
   );

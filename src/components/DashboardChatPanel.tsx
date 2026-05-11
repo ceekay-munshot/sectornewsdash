@@ -13,6 +13,7 @@ import {
 import type { SectorMeta } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 import { classNames } from "../lib/utils";
+import { Markdown } from "../lib/markdown";
 import {
   clearDashboardChat,
   loadDashboardChat,
@@ -38,11 +39,15 @@ const TOOL_LABELS: Record<string, string> = {
 };
 
 /**
- * Hovering chat panel that talks to the dashboard as a whole.
+ * Full-screen-ish chat panel that talks to the dashboard as a whole.
  *
  * The user picks any number of sectors and asks questions. The Worker uses
  * tool calling (list_headlines, get_news_details, fetch_article, compare_news,
- * search_news) so GPT only pulls what it needs into its context.
+ * search_news) so the model only pulls what it needs into its context.
+ *
+ * Layout: occupies ~90vw / ~92vh centered. On md+ the sector picker is a
+ * persistent left rail; on mobile it collapses to a chip row above the
+ * transcript.
  */
 export function DashboardChatPanel({
   open,
@@ -74,7 +79,7 @@ export function DashboardChatPanel({
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [picker, setPicker] = useState(false);
+  const [mobilePicker, setMobilePicker] = useState(false);
   const [pickerQuery, setPickerQuery] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -120,7 +125,10 @@ export function DashboardChatPanel({
   }, [sectors]);
 
   const selectedSectors = useMemo(
-    () => selectedIds.map((id) => sectorById.get(id)).filter(Boolean) as SectorMeta[],
+    () =>
+      selectedIds
+        .map((id) => sectorById.get(id))
+        .filter(Boolean) as SectorMeta[],
     [selectedIds, sectorById],
   );
 
@@ -184,23 +192,37 @@ export function DashboardChatPanel({
 
   if (!open) return null;
 
-  const pickerSectors = (() => {
+  const filteredSectors = (() => {
     const q = pickerQuery.trim().toLowerCase();
     if (!q) return sectors;
     return sectors.filter((s) =>
-      [
-        s.name,
-        s.shortName,
-        ...s.subsectors,
-        ...s.companies,
-      ]
-        .some((v) => v.toLowerCase().includes(q)),
+      [s.name, s.shortName, ...s.subsectors, ...s.companies].some((v) =>
+        v.toLowerCase().includes(q),
+      ),
     );
   })();
 
+  const scopeLabel =
+    selectedSectors.length === 0
+      ? "Whole dashboard"
+      : selectedSectors.length === 1
+        ? selectedSectors[0].name
+        : `${selectedSectors.length} sectors selected`;
+
+  const scopeDetail =
+    selectedSectors.length === 0
+      ? "Pick sectors in the sidebar to scope the chat."
+      : selectedSectors
+          .slice(0, 6)
+          .map((s) => s.shortName)
+          .join(" · ") +
+        (selectedSectors.length > 6
+          ? ` +${selectedSectors.length - 6} more`
+          : "");
+
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end justify-end p-3 sm:items-center sm:justify-end sm:p-6"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Talk to dashboard"
@@ -208,47 +230,35 @@ export function DashboardChatPanel({
       <div
         onClick={onClose}
         aria-hidden
-        className="absolute inset-0 animate-backdropIn bg-ink-950/55 backdrop-blur-sm"
+        className="absolute inset-0 animate-backdropIn bg-ink-950/65 backdrop-blur-sm"
       />
 
       <div
-        className="relative z-10 flex h-[88vh] w-full max-w-[460px] animate-modalIn flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-900/95 shadow-2xl sm:h-[84vh] sm:max-h-[820px]"
+        className="relative z-10 flex h-[94vh] w-[96vw] max-w-[1500px] animate-modalIn flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-900/95 shadow-2xl sm:h-[90vh]"
         style={{
           boxShadow:
             "0 0 0 1px rgba(255,255,255,0.04), 0 30px 80px -20px rgba(0,0,0,0.65)",
         }}
       >
         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-accent-sky/80 to-transparent" />
-        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-accent-sky/[0.08] opacity-50 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full bg-accent-sky/[0.08] opacity-50 blur-3xl" />
 
         {/* Header */}
-        <div className="relative flex items-start justify-between gap-3 border-b border-white/[0.05] px-4 pb-3 pt-4 sm:px-5">
+        <div className="relative flex items-start justify-between gap-3 border-b border-white/[0.05] px-4 pb-3 pt-4 sm:px-6">
           <div className="flex min-w-0 items-start gap-2">
-            <div className="mt-[2px] flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent-sky/[0.16] text-accent-sky ring-1 ring-white/10">
-              <MessageSquare size={13} />
+            <div className="mt-[2px] flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent-sky/[0.16] text-accent-sky ring-1 ring-white/10">
+              <MessageSquare size={14} />
             </div>
             <div className="min-w-0 leading-tight">
               <div className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.16em] text-white/45">
                 <Sparkles size={10} className="text-accent-sky" />
-                Talk to dashboard
+                Talk to dashboard · Muns agent
               </div>
-              <div className="mt-0.5 text-[13px] font-semibold text-white">
-                {selectedSectors.length === 0
-                  ? "Whole dashboard"
-                  : selectedSectors.length === 1
-                    ? selectedSectors[0].name
-                    : `${selectedSectors.length} sectors selected`}
+              <div className="mt-0.5 truncate text-[14px] font-semibold text-white">
+                {scopeLabel}
               </div>
               <div className="mt-0.5 truncate text-[10.5px] text-white/45">
-                {selectedSectors.length === 0
-                  ? "Pick sectors below to scope the chat."
-                  : selectedSectors
-                      .slice(0, 4)
-                      .map((s) => s.shortName)
-                      .join(" · ") +
-                    (selectedSectors.length > 4
-                      ? ` +${selectedSectors.length - 4} more`
-                      : "")}
+                {scopeDetail}
               </div>
             </div>
           </div>
@@ -258,9 +268,10 @@ export function DashboardChatPanel({
                 onClick={onClear}
                 title="Clear conversation"
                 aria-label="Clear conversation"
-                className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.02] text-white/55 transition hover:border-white/[0.16] hover:text-white"
+                className="focus-ring inline-flex h-7 items-center gap-1 rounded-md border border-white/[0.07] bg-white/[0.02] px-2 text-[11px] text-white/55 transition hover:border-white/[0.16] hover:text-white"
               >
-                <Eraser size={12} />
+                <Eraser size={11} />
+                Clear
               </button>
             )}
             <button
@@ -273,181 +284,269 @@ export function DashboardChatPanel({
           </div>
         </div>
 
-        {/* Sector picker — collapsible row of chips. */}
-        <div className="border-b border-white/[0.04] bg-white/[0.012] px-4 py-2.5 sm:px-5">
+        {/* Mobile scope chip row (visible <md) */}
+        <div className="border-b border-white/[0.05] bg-white/[0.012] px-4 py-2.5 md:hidden">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/45">
               <Layers size={10} />
               Scope
             </div>
             <button
-              onClick={() => setPicker((p) => !p)}
+              onClick={() => setMobilePicker((p) => !p)}
               className="focus-ring inline-flex items-center gap-1 rounded-md border border-white/[0.07] bg-white/[0.02] px-2 py-0.5 text-[10.5px] text-white/65 transition hover:border-white/[0.16] hover:text-white"
             >
-              {picker ? "Hide" : "Pick sectors"}
+              {mobilePicker ? "Hide" : "Pick sectors"}
             </button>
           </div>
           {selectedSectors.length > 0 && (
-            <div className="mt-1.5 flex flex-wrap gap-1">
-              {selectedSectors.map((s) => {
-                const Icon = SECTOR_ICONS[s.iconKey];
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => toggleSector(s.id)}
-                    title={`Remove ${s.name}`}
-                    className="group inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-medium text-white/85 transition hover:text-white"
-                    style={{
-                      borderColor: `${s.accent}40`,
-                      background: `${s.accent}12`,
-                    }}
-                  >
-                    {Icon && <Icon size={9} style={{ color: s.accent }} />}
-                    {s.shortName}
-                    <X size={9} className="opacity-50 group-hover:opacity-100" />
-                  </button>
-                );
-              })}
-              {selectedSectors.length > 1 && (
-                <button
-                  onClick={() => setSelectedIds([])}
-                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10.5px] text-white/55 transition hover:border-white/[0.14] hover:text-white"
-                >
-                  clear
-                </button>
+            <SectorChips
+              selected={selectedSectors}
+              onToggle={toggleSector}
+              onClearAll={() => setSelectedIds([])}
+            />
+          )}
+          {mobilePicker && (
+            <SectorPicker
+              sectors={filteredSectors}
+              selectedIds={selectedIds}
+              onToggle={toggleSector}
+              query={pickerQuery}
+              onQueryChange={setPickerQuery}
+              className="mt-2 max-h-[180px]"
+            />
+          )}
+        </div>
+
+        {/* Body — sidebar (md+) + chat */}
+        <div className="flex min-h-0 flex-1 flex-row">
+          {/* Sidebar */}
+          <aside className="hidden w-[300px] shrink-0 border-r border-white/[0.05] md:flex md:flex-col">
+            <div className="border-b border-white/[0.04] px-4 py-3">
+              <div className="flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/45">
+                <Layers size={10} />
+                Scope
+              </div>
+              <div className="mt-1 text-[11.5px] text-white/55">
+                Select any number of sectors. The agent routes queries through
+                only the sectors you pick.
+              </div>
+              {selectedSectors.length > 0 && (
+                <div className="mt-2.5">
+                  <SectorChips
+                    selected={selectedSectors}
+                    onToggle={toggleSector}
+                    onClearAll={() => setSelectedIds([])}
+                  />
+                </div>
               )}
             </div>
-          )}
-          {picker && (
-            <div className="mt-2 rounded-lg border border-white/[0.06] bg-ink-950/40 p-2">
-              <label className="relative mb-1.5 flex items-center">
-                <Search size={11} className="pointer-events-none absolute left-2 text-white/40" />
-                <input
-                  value={pickerQuery}
-                  onChange={(e) => setPickerQuery(e.target.value)}
-                  placeholder="Filter sectors, companies, subsectors…"
-                  className="focus-ring w-full rounded-md border border-white/[0.06] bg-white/[0.02] py-1 pl-6 pr-2 text-[11.5px] text-white/85 placeholder:text-white/35"
-                />
-              </label>
-              <div className="max-h-[180px] overflow-y-auto pr-0.5">
-                <div className="grid grid-cols-2 gap-1">
-                  {pickerSectors.map((s) => {
-                    const Icon = SECTOR_ICONS[s.iconKey];
-                    const checked = selectedIds.includes(s.id);
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => toggleSector(s.id)}
-                        className={classNames(
-                          "focus-ring flex items-center gap-1.5 rounded-md border px-1.5 py-1 text-left text-[11px] font-medium transition",
-                          checked
-                            ? "text-white"
-                            : "border-white/[0.05] bg-white/[0.015] text-white/65 hover:border-white/[0.14] hover:text-white",
-                        )}
-                        style={
-                          checked
-                            ? {
-                                borderColor: `${s.accent}50`,
-                                background: `${s.accent}15`,
-                              }
-                            : undefined
-                        }
-                      >
-                        <span
-                          className={classNames(
-                            "flex h-4 w-4 shrink-0 items-center justify-center rounded-[3px] border",
-                            checked
-                              ? "border-transparent"
-                              : "border-white/[0.12] bg-white/[0.02]",
-                          )}
-                          style={
-                            checked
-                              ? { background: s.accent, color: "#0a0e1a" }
-                              : undefined
-                          }
-                        >
-                          {checked && <Check size={9} strokeWidth={3} />}
-                        </span>
-                        {Icon && (
-                          <Icon
-                            size={11}
-                            style={{ color: checked ? s.accent : undefined }}
-                          />
-                        )}
-                        <span className="truncate">{s.shortName}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {pickerSectors.length === 0 && (
-                  <div className="px-1 py-2 text-center text-[11px] text-white/45">
-                    No matches.
+            <SectorPicker
+              sectors={filteredSectors}
+              selectedIds={selectedIds}
+              onToggle={toggleSector}
+              query={pickerQuery}
+              onQueryChange={setPickerQuery}
+              className="flex-1 px-3 py-3"
+            />
+          </aside>
+
+          {/* Chat column */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div
+              ref={scrollRef}
+              className="relative flex-1 overflow-y-auto px-4 py-5 sm:px-8"
+            >
+              <div className="mx-auto w-full max-w-[820px] space-y-3.5">
+                {messages.length === 0 && !isSending && (
+                  <EmptyState
+                    sectors={selectedSectors}
+                    onPick={(q) => {
+                      setDraft(q);
+                      textareaRef.current?.focus();
+                    }}
+                  />
+                )}
+                {messages.map((m, i) => (
+                  <Bubble key={i} message={m} />
+                ))}
+                {isSending && <TypingBubble />}
+                {error && (
+                  <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11.5px] leading-relaxed text-rose-200">
+                    {error}
                   </div>
                 )}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Transcript */}
-        <div
-          ref={scrollRef}
-          className="relative flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-5"
-        >
-          {messages.length === 0 && !isSending && (
-            <EmptyState
-              sectors={selectedSectors}
-              onPick={(q) => {
-                setDraft(q);
-                textareaRef.current?.focus();
-              }}
-            />
-          )}
-          {messages.map((m, i) => (
-            <Bubble key={i} message={m} />
-          ))}
-          {isSending && <TypingBubble />}
-          {error && (
-            <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11.5px] leading-relaxed text-rose-200">
-              {error}
+            <div className="border-t border-white/[0.05] bg-white/[0.015] px-3 py-3 sm:px-6 sm:py-4">
+              <div className="mx-auto w-full max-w-[820px]">
+                <div className="flex items-end gap-2">
+                  <textarea
+                    ref={textareaRef}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder={
+                      selectedSectors.length === 0
+                        ? "Pick sectors first, then ask the Muns agent anything…"
+                        : "Ask the Muns agent about the selected sectors…"
+                    }
+                    rows={2}
+                    className="focus-ring max-h-40 min-h-[48px] flex-1 resize-y rounded-lg border border-white/[0.07] bg-ink-900/60 px-3 py-2 text-[13px] leading-relaxed text-white/90 placeholder:text-white/35"
+                  />
+                  <button
+                    onClick={() => void onSend()}
+                    disabled={!canSend}
+                    className={classNames(
+                      "btn-primary h-[44px] px-4",
+                      !canSend &&
+                        "cursor-not-allowed opacity-50 hover:from-white/[0.12]",
+                    )}
+                    aria-label="Send message"
+                  >
+                    <Send size={12} />
+                    {isSending ? "Sending" : "Send"}
+                  </button>
+                </div>
+                <div className="mt-2 px-1 text-[10.5px] text-white/35">
+                  Muns agent routes through dashboard tools — headlines,
+                  details, article fetch — only for what your question needs.
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Composer */}
-        <div className="border-t border-white/[0.05] bg-white/[0.015] px-3 py-3 sm:px-4">
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={textareaRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder={
-                selectedSectors.length === 0
-                  ? "Pick sectors above, then ask GPT anything…"
-                  : "Ask anything about the selected sectors…"
-              }
-              rows={2}
-              className="focus-ring max-h-40 min-h-[44px] flex-1 resize-y rounded-lg border border-white/[0.07] bg-ink-900/60 px-3 py-2 text-[12.5px] leading-relaxed text-white/90 placeholder:text-white/35"
-            />
-            <button
-              onClick={() => void onSend()}
-              disabled={!canSend}
-              className={classNames(
-                "btn-primary h-[40px]",
-                !canSend && "cursor-not-allowed opacity-50 hover:from-white/[0.12]",
-              )}
-              aria-label="Send message"
-            >
-              <Send size={12} />
-              {isSending ? "Sending" : "Send"}
-            </button>
-          </div>
-          <div className="mt-1.5 px-1 text-[10.5px] text-white/35">
-            GPT routes through dashboard tools — headlines, details, article fetch — only
-            for what your question needs.
-          </div>
+function SectorChips({
+  selected,
+  onToggle,
+  onClearAll,
+}: {
+  selected: SectorMeta[];
+  onToggle: (id: string) => void;
+  onClearAll: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {selected.map((s) => {
+        const Icon = SECTOR_ICONS[s.iconKey];
+        return (
+          <button
+            key={s.id}
+            onClick={() => onToggle(s.id)}
+            title={`Remove ${s.name}`}
+            className="group inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-medium text-white/85 transition hover:text-white"
+            style={{
+              borderColor: `${s.accent}40`,
+              background: `${s.accent}12`,
+            }}
+          >
+            {Icon && <Icon size={9} style={{ color: s.accent }} />}
+            {s.shortName}
+            <X size={9} className="opacity-50 group-hover:opacity-100" />
+          </button>
+        );
+      })}
+      {selected.length > 1 && (
+        <button
+          onClick={onClearAll}
+          className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10.5px] text-white/55 transition hover:border-white/[0.14] hover:text-white"
+        >
+          clear all
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SectorPicker({
+  sectors,
+  selectedIds,
+  onToggle,
+  query,
+  onQueryChange,
+  className,
+}: {
+  sectors: SectorMeta[];
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+  query: string;
+  onQueryChange: (v: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={classNames("flex flex-col overflow-hidden", className)}>
+      <label className="relative mb-2 flex items-center">
+        <Search
+          size={11}
+          className="pointer-events-none absolute left-2 text-white/40"
+        />
+        <input
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
+          placeholder="Filter sectors, companies…"
+          className="focus-ring w-full rounded-md border border-white/[0.06] bg-white/[0.02] py-1.5 pl-6 pr-2 text-[11.5px] text-white/85 placeholder:text-white/35"
+        />
+      </label>
+      <div className="flex-1 overflow-y-auto pr-0.5">
+        <div className="flex flex-col gap-1">
+          {sectors.map((s) => {
+            const Icon = SECTOR_ICONS[s.iconKey];
+            const checked = selectedIds.includes(s.id);
+            return (
+              <button
+                key={s.id}
+                onClick={() => onToggle(s.id)}
+                className={classNames(
+                  "focus-ring flex items-center gap-2 rounded-md border px-2 py-1.5 text-left text-[11.5px] font-medium transition",
+                  checked
+                    ? "text-white"
+                    : "border-white/[0.05] bg-white/[0.015] text-white/70 hover:border-white/[0.14] hover:text-white",
+                )}
+                style={
+                  checked
+                    ? {
+                        borderColor: `${s.accent}55`,
+                        background: `${s.accent}15`,
+                      }
+                    : undefined
+                }
+              >
+                <span
+                  className={classNames(
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded-[3px] border",
+                    checked
+                      ? "border-transparent"
+                      : "border-white/[0.12] bg-white/[0.02]",
+                  )}
+                  style={
+                    checked
+                      ? { background: s.accent, color: "#0a0e1a" }
+                      : undefined
+                  }
+                >
+                  {checked && <Check size={9} strokeWidth={3} />}
+                </span>
+                {Icon && (
+                  <Icon
+                    size={12}
+                    style={{ color: checked ? s.accent : undefined }}
+                  />
+                )}
+                <span className="truncate">{s.shortName}</span>
+              </button>
+            );
+          })}
         </div>
+        {sectors.length === 0 && (
+          <div className="px-1 py-3 text-center text-[11px] text-white/45">
+            No matches.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -464,33 +563,32 @@ function Bubble({ message }: { message: DashboardChatMessage }) {
     >
       <div
         className={classNames(
-          "max-w-[88%] whitespace-pre-wrap rounded-2xl border px-3.5 py-2 text-[12.5px] leading-relaxed",
+          "max-w-[92%] rounded-2xl border px-4 py-2.5 text-[13px] leading-relaxed",
           isUser
-            ? "rounded-br-sm border-accent-sky/30 bg-accent-sky/10 text-white"
-            : "rounded-bl-sm border-white/[0.06] bg-white/[0.025] text-white/85",
+            ? "whitespace-pre-wrap rounded-br-sm border-accent-sky/30 bg-accent-sky/10 text-white"
+            : "rounded-bl-sm border-white/[0.06] bg-white/[0.025] text-white/90",
         )}
       >
         {!isUser && (
           <div className="mb-1 flex items-center gap-1 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-accent-sky">
             <Sparkles size={9} />
-            GPT
+            Muns agent
           </div>
         )}
-        {message.content}
-        {!isUser &&
-          message.toolCalls &&
-          message.toolCalls.length > 0 && <ToolTrail names={message.toolCalls} />}
+        {isUser ? message.content : <Markdown>{message.content}</Markdown>}
+        {!isUser && message.toolCalls && message.toolCalls.length > 0 && (
+          <ToolTrail names={message.toolCalls} />
+        )}
       </div>
     </div>
   );
 }
 
 function ToolTrail({ names }: { names: string[] }) {
-  // Compact summary of which tools the model called, deduped + counted.
   const counted = new Map<string, number>();
   for (const n of names) counted.set(n, (counted.get(n) ?? 0) + 1);
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-1 border-t border-white/[0.05] pt-1.5">
+    <div className="mt-2.5 flex flex-wrap items-center gap-1 border-t border-white/[0.05] pt-2">
       <Wrench size={9} className="text-white/35" />
       <span className="text-[9.5px] uppercase tracking-[0.18em] text-white/35">
         routed via
@@ -553,7 +651,10 @@ function EmptyState({
         `What second-order effects in ${s.name} should we watch?`,
       ];
     }
-    const names = sectors.map((s) => s.shortName).slice(0, 3).join(", ");
+    const names = sectors
+      .map((s) => s.shortName)
+      .slice(0, 3)
+      .join(", ");
     return [
       `Compare the most impactful story in each of ${names}.`,
       `What's the common thread across ${names} this week?`,
@@ -566,19 +667,19 @@ function EmptyState({
     <div className="flex flex-col items-start gap-3 py-2">
       <div className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.02] px-2.5 py-1 text-[10.5px] uppercase tracking-[0.16em] text-accent-sky">
         <Sparkles size={10} />
-        Start a thread
+        Start a thread with the Muns agent
       </div>
-      <p className="text-[12.5px] leading-relaxed text-white/65">
-        Talk to the whole dashboard. Pick any number of sectors above; GPT
-        will route through the headlines, details, and article bodies it
-        needs to answer.
+      <p className="text-[13px] leading-relaxed text-white/65">
+        Talk to the whole dashboard. Pick any number of sectors on the left;
+        the agent will route through the headlines, details, and article
+        bodies it needs to answer.
       </p>
       <div className="flex flex-wrap gap-1.5">
         {suggestions.map((s) => (
           <button
             key={s}
             onClick={() => onPick(s)}
-            className="rounded-full border border-white/[0.07] bg-white/[0.025] px-2.5 py-1 text-left text-[11px] font-medium text-white/75 transition hover:border-white/[0.16] hover:bg-white/[0.05] hover:text-white"
+            className="rounded-full border border-white/[0.07] bg-white/[0.025] px-2.5 py-1 text-left text-[11.5px] font-medium text-white/75 transition hover:border-white/[0.16] hover:bg-white/[0.05] hover:text-white"
           >
             {s}
           </button>
