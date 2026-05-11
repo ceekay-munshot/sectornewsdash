@@ -4,8 +4,8 @@ import { classNames } from "../lib/utils";
 
 interface Props {
   label: string;
-  value: string | number;
-  hint?: string;
+  value: ReactNode;
+  hint?: ReactNode;
   delta?: { value: string; tone?: "up" | "down" | "neutral" };
   icon?: LucideIcon;
   accent?: string; // hex
@@ -22,13 +22,7 @@ export function KPIStatCard({
   help,
 }: Props) {
   return (
-    <div className="glass relative overflow-hidden p-3">
-      <div
-        className="pointer-events-none absolute inset-x-0 -top-px h-px"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${accent}88, transparent)`,
-        }}
-      />
+    <div className="glass p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/45">
@@ -63,7 +57,7 @@ export function KPIStatCard({
         )}
       </div>
       {hint && (
-        <div className="mt-1 line-clamp-2 text-[11px] leading-snug text-white/45">
+        <div className="mt-1 text-[11px] leading-snug text-white/45">
           {hint}
         </div>
       )}

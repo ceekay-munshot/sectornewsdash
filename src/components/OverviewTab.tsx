@@ -2,6 +2,10 @@ import { useMemo } from "react";
 import { Activity, Flame, TrendingUp } from "lucide-react";
 import type { NewsItem, SectorAggregate, SectorMeta } from "../types";
 import { KPIStatCard } from "./KPIStatCard";
+import {
+  CriticalAlertsValue,
+  type CriticalBreakdownRow,
+} from "./CriticalAlertsValue";
 import { SectorHeatmap } from "./SectorHeatmap";
 import { SectorCard } from "./SectorCard";
 import { WatchlistControl } from "./WatchlistControl";
@@ -37,7 +41,6 @@ export function OverviewTab({
   onSelectNews,
 }: Props) {
   const stats = useMemo(() => {
-    const total = filteredNews.length;
     const hottest = aggregates[0];
     const mostBullish = aggregates
       .slice()
@@ -45,17 +48,46 @@ export function OverviewTab({
       .sort((a, b) => b.sentimentScore - a.sentimentScore)[0];
     const criticals = filteredNews.filter((n) => n.urgency === "Critical");
     const critical = criticals.length;
-    // Average impact across critical items only — keeps the card coherent
-    // (an "avg impact" over all news under a "Critical alerts" label was
-    // misleading new readers).
-    const criticalAvgImpact =
-      critical > 0
-        ? (criticals.reduce((s, n) => s + n.impactScore, 0) / critical).toFixed(
-            1
-          )
-        : "—";
-    return { hottest, mostBullish, critical, criticalAvgImpact, total };
-  }, [aggregates, filteredNews]);
+
+    // Per-sector breakdown for the hover popover. Headlines already
+    // come sorted by impact, so the first match per sector is the top
+    // critical headline for that sector.
+    const sectorById = new Map(allSectors.map((s) => [s.id, s]));
+    const buckets = new Map<
+      string,
+      { sector: SectorMeta; count: number; impactSum: number; top: NewsItem }
+    >();
+    for (const n of criticals) {
+      const sector = sectorById.get(n.sector);
+      if (!sector) continue;
+      const cur = buckets.get(sector.id);
+      if (cur) {
+        cur.count += 1;
+        cur.impactSum += n.impactScore;
+      } else {
+        buckets.set(sector.id, {
+          sector,
+          count: 1,
+          impactSum: n.impactScore,
+          top: n,
+        });
+      }
+    }
+    const criticalBreakdown: CriticalBreakdownRow[] = Array.from(
+      buckets.values()
+    )
+      .map((b) => ({
+        sector: b.sector,
+        count: b.count,
+        avgImpact: b.impactSum / b.count,
+        topHeadline: b.top,
+      }))
+      .sort((a, b) =>
+        b.count !== a.count ? b.count - a.count : b.avgImpact - a.avgImpact
+      );
+
+    return { hottest, mostBullish, critical, criticalBreakdown };
+  }, [aggregates, filteredNews, allSectors]);
 
   const watchlistCards = useMemo(() => {
     const order = new Map(visibleSectorIds.map((id, i) => [id, i]));
@@ -73,7 +105,7 @@ export function OverviewTab({
           value={stats.hottest?.sector.shortName ?? "—"}
           hint={
             stats.hottest
-              ? `Heat ${stats.hottest.heatScore} / 100 · ${stats.hottest.newsCount} headlines`
+              ? `Heat ${stats.hottest.heatScore} · ${stats.hottest.newsCount} headlines`
               : "No news under current filters"
           }
           icon={Flame}
@@ -85,7 +117,7 @@ export function OverviewTab({
           value={stats.mostBullish?.sector.shortName ?? "—"}
           hint={
             stats.mostBullish
-              ? `Sentiment ${stats.mostBullish.sentimentScore > 0 ? "+" : ""}${stats.mostBullish.sentimentScore} / 100 · ${stats.mostBullish.newsCount} headlines`
+              ? `Sentiment ${stats.mostBullish.sentimentScore > 0 ? "+" : ""}${stats.mostBullish.sentimentScore} · ${stats.mostBullish.newsCount} headlines`
               : "No positive-skew sector"
           }
           icon={TrendingUp}
@@ -94,10 +126,19 @@ export function OverviewTab({
         />
         <KPIStatCard
           label="Critical alerts"
-          value={`${stats.critical}${stats.total ? ` / ${stats.total}` : ""}`}
+          value={
+            stats.critical > 0 ? (
+              <CriticalAlertsValue
+                count={stats.critical}
+                rows={stats.criticalBreakdown}
+              />
+            ) : (
+              "0"
+            )
+          }
           hint={
             stats.critical
-              ? `Avg impact ${stats.criticalAvgImpact} / 10 (criticals only)`
+              ? `Across ${stats.criticalBreakdown.length} sectors · hover for breakdown`
               : "No Critical-urgency headlines"
           }
           icon={Activity}
