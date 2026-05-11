@@ -5,104 +5,6 @@
 :root {
   color-scheme: dark;
   --bg: #0a0e1a;
-  /* Theme tokens — swapped by `.light` on <html>. Tailwind references
-     these via `rgb(var(--c-*) / <alpha-value>)` in tailwind.config.js,
-     so `text-white/85` etc. flip palette without JSX changes. */
-  --c-white: 255 255 255;
-  --c-ink-950: 7 10 18;
-  --c-ink-900: 10 14 26;
-  --c-ink-850: 13 19 34;
-  --c-ink-800: 17 24 43;
-  --c-ink-750: 22 30 54;
-  --c-ink-700: 27 36 64;
-  --c-ink-600: 34 44 77;
-  --c-ink-500: 44 55 94;
-  --page-bg-from: #070a12;
-  --page-bg-to: #0a0e1a;
-  --page-glow-a: rgba(99, 102, 241, 0.08);
-  --page-glow-b: rgba(20, 184, 166, 0.06);
-  --selection-bg: rgba(125, 211, 252, 0.25);
-  --scroll-thumb: rgba(255, 255, 255, 0.06);
-  --scroll-thumb-hover: rgba(255, 255, 255, 0.12);
-  --grain: rgba(255, 255, 255, 0.012);
-  --grain-blend: overlay;
-}
-
-.light {
-  color-scheme: light;
-  --bg: #f3f5fb;
-  /* In light mode the "white" token flips to near-black so existing
-     `text-white/X` classes read on a light surface. Background and
-     border tints still need explicit alpha boosts further down — the
-     same 0.06 alpha that gives a visible white scrim on dark looks
-     invisible as dark-on-light. */
-  --c-white: 15 23 42;
-  --c-ink-950: 247 248 252;
-  --c-ink-900: 241 243 250;
-  --c-ink-850: 233 237 247;
-  --c-ink-800: 222 228 242;
-  --c-ink-750: 209 216 234;
-  --c-ink-700: 195 204 226;
-  --c-ink-600: 175 187 215;
-  --c-ink-500: 152 167 200;
-  --page-bg-from: #eef1f8;
-  --page-bg-to: #f7f8fc;
-  --page-glow-a: rgba(99, 102, 241, 0.1);
-  --page-glow-b: rgba(20, 184, 166, 0.08);
-  --selection-bg: rgba(99, 102, 241, 0.22);
-  --scroll-thumb: rgba(15, 23, 42, 0.22);
-  --scroll-thumb-hover: rgba(15, 23, 42, 0.36);
-  --grain: rgba(0, 0, 0, 0.025);
-  --grain-blend: multiply;
-}
-
-/* Light-mode alpha boosts. Tints tuned for a dark base (0.04–0.08)
-   render as invisible washes on a light page; we bump them so cards,
-   borders and chrome separations actually read. */
-.light .border-white\/\[0\.04\] { border-color: rgba(15, 23, 42, 0.1); }
-.light .border-white\/\[0\.05\] { border-color: rgba(15, 23, 42, 0.12); }
-.light .border-white\/\[0\.06\] { border-color: rgba(15, 23, 42, 0.13); }
-.light .border-white\/\[0\.07\] { border-color: rgba(15, 23, 42, 0.14); }
-.light .border-white\/\[0\.08\] { border-color: rgba(15, 23, 42, 0.16); }
-.light .border-white\/\[0\.1\]  { border-color: rgba(15, 23, 42, 0.2); }
-.light .border-white\/\[0\.12\] { border-color: rgba(15, 23, 42, 0.22); }
-.light .border-white\/\[0\.14\] { border-color: rgba(15, 23, 42, 0.26); }
-.light .border-white\/\[0\.16\] { border-color: rgba(15, 23, 42, 0.3); }
-.light .border-white\/\[0\.18\] { border-color: rgba(15, 23, 42, 0.34); }
-.light .border-white\/15        { border-color: rgba(15, 23, 42, 0.22); }
-.light .border-white\/20        { border-color: rgba(15, 23, 42, 0.28); }
-.light .border-white\/40        { border-color: rgba(15, 23, 42, 0.42); }
-
-.light .bg-white\/\[0\.012\]    { background-color: rgba(15, 23, 42, 0.02); }
-.light .bg-white\/\[0\.015\]    { background-color: rgba(15, 23, 42, 0.025); }
-.light .bg-white\/\[0\.018\]    { background-color: rgba(15, 23, 42, 0.03); }
-.light .bg-white\/\[0\.02\]     { background-color: rgba(15, 23, 42, 0.04); }
-.light .bg-white\/\[0\.025\]    { background-color: rgba(15, 23, 42, 0.05); }
-.light .bg-white\/\[0\.03\]     { background-color: rgba(15, 23, 42, 0.06); }
-.light .bg-white\/\[0\.035\]    { background-color: rgba(15, 23, 42, 0.07); }
-.light .bg-white\/\[0\.04\]     { background-color: rgba(15, 23, 42, 0.07); }
-.light .bg-white\/\[0\.05\]     { background-color: rgba(15, 23, 42, 0.09); }
-.light .bg-white\/\[0\.06\]     { background-color: rgba(15, 23, 42, 0.1); }
-.light .bg-white\/\[0\.07\]     { background-color: rgba(15, 23, 42, 0.12); }
-.light .bg-white\/\[0\.08\]     { background-color: rgba(15, 23, 42, 0.14); }
-.light .bg-white\/\[0\.09\]     { background-color: rgba(15, 23, 42, 0.16); }
-
-/* Sticky header / filter / popover chrome. In dark these are translucent
-   near-black; in light they need to be translucent near-white, otherwise
-   the variable swap leaves a pale tint that disappears into the page. */
-.light .bg-ink-950\/60 { background-color: rgba(248, 250, 253, 0.78); }
-.light .bg-ink-950\/65 { background-color: rgba(248, 250, 253, 0.82); }
-.light .bg-ink-950\/70 { background-color: rgba(248, 250, 253, 0.84); }
-.light .bg-ink-950\/75 { background-color: rgba(248, 250, 253, 0.86); }
-.light .bg-ink-950\/95 { background-color: rgba(248, 250, 253, 0.95); }
-.light .bg-ink-900\/60 { background-color: rgba(243, 246, 251, 0.78); }
-.light .bg-ink-900\/85 { background-color: rgba(243, 246, 251, 0.88); }
-.light .bg-ink-900\/95 { background-color: rgba(243, 246, 251, 0.95); }
-.light .bg-ink-900\/97 { background-color: rgba(243, 246, 251, 0.96); }
-
-/* Focus ring is white in dark; flip to a darker ring on light. */
-.light .focus-visible\:ring-white\/30:focus-visible {
-  --tw-ring-color: rgba(15, 23, 42, 0.4);
 }
 
 html,
@@ -113,19 +15,19 @@ body,
 
 body {
   background:
-    radial-gradient(1200px 600px at 18% -8%, var(--page-glow-a), transparent 60%),
-    radial-gradient(900px 500px at 92% 0%, var(--page-glow-b), transparent 60%),
-    linear-gradient(180deg, var(--page-bg-from) 0%, var(--page-bg-to) 100%);
+    radial-gradient(1200px 600px at 18% -8%, rgba(99, 102, 241, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 92% 0%, rgba(20, 184, 166, 0.06), transparent 60%),
+    linear-gradient(180deg, #070a12 0%, #0a0e1a 100%);
   background-attachment: fixed;
-  color: rgb(var(--c-white));
+  color: #e6e8f0;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: var(--selection-bg);
-  color: rgb(var(--c-white));
+  background: rgba(125, 211, 252, 0.25);
+  color: #e6e8f0;
 }
 
 /* Scrollbars */
@@ -137,11 +39,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--scroll-thumb);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scroll-thumb-hover);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* Glass card utility */
@@ -150,8 +52,8 @@ body {
     @apply rounded-2xl border border-white/[0.06] bg-white/[0.025] shadow-glass backdrop-blur-md;
     background-image: linear-gradient(
       180deg,
-      rgb(var(--c-white) / 0.045) 0%,
-      rgb(var(--c-white) / 0.012) 100%
+      rgba(255, 255, 255, 0.045) 0%,
+      rgba(255, 255, 255, 0.012) 100%
     );
   }
   .glass-strong {
@@ -179,12 +81,12 @@ body {
   inset: 0;
   background-image: repeating-linear-gradient(
     0deg,
-    var(--grain) 0px,
-    var(--grain) 1px,
+    rgba(255, 255, 255, 0.012) 0px,
+    rgba(255, 255, 255, 0.012) 1px,
     transparent 1px,
     transparent 3px
   );
-  mix-blend-mode: var(--grain-blend);
+  mix-blend-mode: overlay;
   opacity: 0.5;
   z-index: 1;
 }

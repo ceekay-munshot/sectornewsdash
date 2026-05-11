@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { Activity, Flame, TrendingUp } from "lucide-react";
+import { Flame, TrendingUp } from "lucide-react";
 import type { NewsItem, SectorAggregate, SectorMeta } from "../types";
 import { KPIStatCard } from "./KPIStatCard";
 import {
-  CriticalAlertsValue,
+  CriticalAlertsCard,
   type CriticalBreakdownRow,
-} from "./CriticalAlertsValue";
+} from "./CriticalAlertsCard";
 import { SectorHeatmap } from "./SectorHeatmap";
 import { SectorCard } from "./SectorCard";
 import { WatchlistControl } from "./WatchlistControl";
@@ -124,25 +124,9 @@ export function OverviewTab({
           accent="#5EEAD4"
           help={<HelpHint {...MOST_BULLISH_HINT} />}
         />
-        <KPIStatCard
-          label="Critical alerts"
-          value={
-            stats.critical > 0 ? (
-              <CriticalAlertsValue
-                count={stats.critical}
-                rows={stats.criticalBreakdown}
-              />
-            ) : (
-              "0"
-            )
-          }
-          hint={
-            stats.critical
-              ? `Across ${stats.criticalBreakdown.length} sectors · hover for breakdown`
-              : "No Critical-urgency headlines"
-          }
-          icon={Activity}
-          accent="#F59E0B"
+        <CriticalAlertsCard
+          count={stats.critical}
+          rows={stats.criticalBreakdown}
           help={<HelpHint {...CRITICAL_ALERTS_HINT} />}
         />
       </div>
