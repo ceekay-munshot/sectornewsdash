@@ -7,6 +7,8 @@ interface Props {
   syncDone: number;
   syncTotal: number;
   syncCompleted: boolean;
+  syncStartedAt: Date | null;
+  lastSyncAt: Date | null;
   onSync: () => void;
 }
 
@@ -15,6 +17,8 @@ export function Header({
   syncDone,
   syncTotal,
   syncCompleted,
+  syncStartedAt,
+  lastSyncAt,
   onSync,
 }: Props) {
   const [now, setNow] = useState<string>(() => fmt(new Date()));
@@ -47,6 +51,8 @@ export function Header({
             done={syncDone}
             total={syncTotal}
             completed={syncCompleted}
+            startedAt={syncStartedAt}
+            lastSyncAt={lastSyncAt}
             onSync={onSync}
           />
           <div className="chip">
