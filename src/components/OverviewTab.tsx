@@ -8,8 +8,9 @@ import { WatchlistControl } from "./WatchlistControl";
 import { EmptyState } from "./EmptyState";
 import { HelpHint } from "./HelpHint";
 import {
-  HEAT_SCORE_HINT,
-  SECTOR_SENTIMENT_HINT,
+  HOTTEST_SECTOR_HINT,
+  MOST_BULLISH_HINT,
+  CRITICAL_ALERTS_HINT,
 } from "../lib/methodologyHints";
 
 interface Props {
@@ -42,14 +43,18 @@ export function OverviewTab({
       .slice()
       .filter((a) => a.newsCount > 0)
       .sort((a, b) => b.sentimentScore - a.sentimentScore)[0];
-    const critical = filteredNews.filter((n) => n.urgency === "Critical").length;
-    const avgImpact =
-      total > 0
-        ? (filteredNews.reduce((s, n) => s + n.impactScore, 0) / total).toFixed(
+    const criticals = filteredNews.filter((n) => n.urgency === "Critical");
+    const critical = criticals.length;
+    // Average impact across critical items only — keeps the card coherent
+    // (an "avg impact" over all news under a "Critical alerts" label was
+    // misleading new readers).
+    const criticalAvgImpact =
+      critical > 0
+        ? (criticals.reduce((s, n) => s + n.impactScore, 0) / critical).toFixed(
             1
           )
         : "—";
-    return { hottest, mostBullish, critical, avgImpact };
+    return { hottest, mostBullish, critical, criticalAvgImpact, total };
   }, [aggregates, filteredNews]);
 
   const watchlistCards = useMemo(() => {
@@ -64,31 +69,40 @@ export function OverviewTab({
       {/* KPI strip */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KPIStatCard
-          label="Hottest"
+          label="Hottest sector"
           value={stats.hottest?.sector.shortName ?? "—"}
-          hint={stats.hottest ? `Heat ${stats.hottest.heatScore}` : undefined}
+          hint={
+            stats.hottest
+              ? `Heat ${stats.hottest.heatScore} / 100 · ${stats.hottest.newsCount} headlines`
+              : "No news under current filters"
+          }
           icon={Flame}
           accent="#FB7185"
-          help={<HelpHint {...HEAT_SCORE_HINT} />}
+          help={<HelpHint {...HOTTEST_SECTOR_HINT} />}
         />
         <KPIStatCard
-          label="Most bullish"
+          label="Most bullish sector"
           value={stats.mostBullish?.sector.shortName ?? "—"}
           hint={
             stats.mostBullish
-              ? `Sentiment ${stats.mostBullish.sentimentScore > 0 ? "+" : ""}${stats.mostBullish.sentimentScore}`
-              : undefined
+              ? `Sentiment ${stats.mostBullish.sentimentScore > 0 ? "+" : ""}${stats.mostBullish.sentimentScore} / 100 · ${stats.mostBullish.newsCount} headlines`
+              : "No positive-skew sector"
           }
           icon={TrendingUp}
           accent="#5EEAD4"
-          help={<HelpHint {...SECTOR_SENTIMENT_HINT} />}
+          help={<HelpHint {...MOST_BULLISH_HINT} />}
         />
         <KPIStatCard
           label="Critical alerts"
-          value={stats.critical}
-          hint={stats.critical ? `Avg impact ${stats.avgImpact}` : undefined}
+          value={`${stats.critical}${stats.total ? ` / ${stats.total}` : ""}`}
+          hint={
+            stats.critical
+              ? `Avg impact ${stats.criticalAvgImpact} / 10 (criticals only)`
+              : "No Critical-urgency headlines"
+          }
           icon={Activity}
           accent="#F59E0B"
+          help={<HelpHint {...CRITICAL_ALERTS_HINT} />}
         />
       </div>
 
