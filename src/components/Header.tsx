@@ -25,14 +25,19 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-ink-950/75 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-3">
-        <div className="flex items-center gap-3">
-          <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-accent-sky/30 via-accent-violet/20 to-accent-mint/20 ring-1 ring-white/10">
-            <Radar size={18} className="text-white" />
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-2">
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-accent-sky/30 via-accent-violet/20 to-accent-mint/20 ring-1 ring-white/10">
+            <Radar size={16} className="text-white" />
             <span className="pointer-events-none absolute inset-0 animate-pulseSoft rounded-lg bg-accent-sky/10" />
           </div>
-          <div className="font-display text-[14.5px] font-semibold tracking-tight text-white">
-            Sector News Radar
+          <div className="flex flex-col leading-tight">
+            <div className="font-display text-[14px] font-semibold tracking-tight text-white">
+              Sector News Radar
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">
+              Markets · Sentiment · Impact
+            </div>
           </div>
         </div>
 

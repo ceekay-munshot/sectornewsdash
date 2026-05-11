@@ -44,9 +44,18 @@ export function WatchlistControl({
   );
 
   return (
-    <div className="glass flex flex-wrap items-center gap-2 px-3 py-2">
-      <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
-        Watchlist
+    <div className="glass flex flex-wrap items-center gap-2 px-3 py-1.5">
+      <div className="flex items-center gap-2">
+        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+          Watchlist
+        </div>
+        <span className="chip !py-[2px] !text-[10px] tabular-nums">
+          <span className="font-mono text-white/90">{visibleIds.length}</span>
+          <span className="text-white/40">/ {allSectors.length}</span>
+        </span>
+        <span className="hidden text-[11px] text-white/40 sm:inline">
+          Pinned sectors stay at the top of the overview.
+        </span>
       </div>
 
       <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -56,7 +65,7 @@ export function WatchlistControl({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter…"
-            className="focus-ring w-[160px] rounded-lg border border-white/[0.07] bg-white/[0.025] py-1.5 pl-6 pr-2 text-[12px] text-white/85 placeholder:text-white/35"
+            className="focus-ring w-[150px] rounded-lg border border-white/[0.07] bg-white/[0.025] py-1.5 pl-6 pr-2 text-[12px] text-white/85 placeholder:text-white/35"
           />
         </label>
 

@@ -27,8 +27,8 @@ export function FilterBar({ filters, onChange, onClear }: Props) {
     !!filters.query || !!filters.sectorId || !!filters.timeHorizon;
 
   return (
-    <div className="sticky top-[57px] z-20 border-b border-white/[0.05] bg-ink-950/75 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-5 py-2.5">
+    <div className="sticky top-[49px] z-20 border-b border-white/[0.05] bg-ink-950/75 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-2 px-5 py-2">
         <label
           htmlFor={inputId}
           className="relative flex min-w-[220px] flex-1 items-center"
