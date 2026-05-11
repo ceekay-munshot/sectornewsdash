@@ -242,9 +242,11 @@ function Sep() {
  * way the chat does. Cached client-side in localStorage per newsId so
  * re-opens are instant; cached server-side in KV for 30 days.
  *
- * Renders inline with no card chrome, header or controls — the bullets
- * (or the plain source summary while we wait / on failure) take the
- * same spot the original one-line summary used to occupy.
+ * Renders inline with no card chrome. While the request is in flight a
+ * small skeleton-bullet shimmer takes the same slot the bullets will
+ * occupy, so there's no flash of the static one-liner. On failure (or
+ * when the OPENAI_API_KEY is unset) we silently fall back to the plain
+ * `item.summary` paragraph.
  */
 function AIBriefing({
   item,
@@ -256,14 +258,17 @@ function AIBriefing({
   const [summary, setSummary] = useState<NewsSummary | null>(() =>
     loadSummary(item.id),
   );
+  const [loading, setLoading] = useState<boolean>(() => !loadSummary(item.id));
 
   useEffect(() => {
     const cached = loadSummary(item.id);
     if (cached) {
       setSummary(cached);
+      setLoading(false);
       return;
     }
     setSummary(null);
+    setLoading(true);
     const ctrl = new AbortController();
     (async () => {
       try {
@@ -272,41 +277,67 @@ function AIBriefing({
         setSummary(next);
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        // Silent fallback — keep the plain summary visible.
+        // Silent fallback — handled in render branch below.
+      } finally {
+        setLoading(false);
       }
     })();
     return () => ctrl.abort();
   }, [item.id]);
 
-  // While the AI request is in flight (or if it failed) show the static
-  // one-line summary so the panel is never empty. Bullets replace it the
-  // moment they arrive.
-  if (!summary) {
+  if (summary) {
     return (
-      <p className="mt-3 text-[12.5px] leading-relaxed text-white/75">
-        {item.summary}
-      </p>
+      <ul className="mt-3 space-y-1.5">
+        {summary.bullets.map((b, i) => (
+          <li
+            key={i}
+            className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80"
+          >
+            <span
+              className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{
+                background: `rgba(${accentRgb},0.7)`,
+                boxShadow: `0 0 6px rgba(${accentRgb},0.25)`,
+              }}
+            />
+            <span>{b}</span>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (loading) {
+    return (
+      <ul
+        className="mt-3 space-y-2"
+        aria-label="Generating summary"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        {[88, 76, 84, 70].map((w, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span
+              className="mt-[6px] h-1.5 w-1.5 shrink-0 animate-pulseSoft rounded-full"
+              style={{
+                background: `rgba(${accentRgb},0.55)`,
+                animationDelay: `${i * 140}ms`,
+              }}
+            />
+            <span
+              className="block h-2.5 animate-pulseSoft rounded bg-white/[0.06]"
+              style={{ width: `${w}%`, animationDelay: `${i * 140}ms` }}
+            />
+          </li>
+        ))}
+      </ul>
     );
   }
 
   return (
-    <ul className="mt-3 space-y-1.5">
-      {summary.bullets.map((b, i) => (
-        <li
-          key={i}
-          className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80"
-        >
-          <span
-            className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
-            style={{
-              background: `rgba(${accentRgb},0.7)`,
-              boxShadow: `0 0 6px rgba(${accentRgb},0.25)`,
-            }}
-          />
-          <span>{b}</span>
-        </li>
-      ))}
-    </ul>
+    <p className="mt-3 text-[12.5px] leading-relaxed text-white/75">
+      {item.summary}
+    </p>
   );
 }
 
