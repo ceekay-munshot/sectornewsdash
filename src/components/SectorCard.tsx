@@ -82,49 +82,36 @@ export function SectorCard({
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 items-center gap-2 border-t border-white/[0.05] bg-white/[0.012] px-3.5 py-2">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
-            <Flame size={10} />
-            Heat
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div
-              className="font-mono text-[14px] font-semibold leading-none"
-              style={{ color: accent }}
-            >
-              {heat || "—"}
-            </div>
-            <div className="h-1 w-10 overflow-hidden rounded-full bg-white/[0.06]">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${heat}%`,
-                  background: `rgba(${accentRgb}, 0.9)`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-1">
+      <div className="grid grid-cols-3 gap-2 border-t border-white/[0.05] bg-white/[0.012] px-3.5 py-2">
+        <Stat
+          label="Heat"
+          value={heat || "—"}
+          accent={accent}
+          icon={<Flame size={10} />}
+        />
+        <div className="flex flex-col">
           <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
             Sentiment
           </div>
-          {agg.newsCount === 0 ? (
-            <span className="text-[12px] text-white/40">—</span>
-          ) : (
-            <SentimentBadge sentiment={agg.sentiment} size="sm" />
-          )}
+          <div className="mt-1">
+            {agg.newsCount === 0 ? (
+              <span className="text-[12px] text-white/40">—</span>
+            ) : (
+              <SentimentBadge sentiment={agg.sentiment} size="sm" />
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col">
           <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
             Top theme
           </div>
-          {agg.newsCount === 0 ? (
-            <span className="text-[12px] text-white/40">—</span>
-          ) : (
-            <ThemeChip>{agg.topTheme}</ThemeChip>
-          )}
+          <div className="mt-1">
+            {agg.newsCount === 0 ? (
+              <span className="text-[12px] text-white/40">—</span>
+            ) : (
+              <ThemeChip>{agg.topTheme}</ThemeChip>
+            )}
+          </div>
         </div>
       </div>
 
@@ -158,6 +145,33 @@ export function SectorCard({
           View all {agg.newsCount} →
         </button>
       )}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  accent: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
+        {icon}
+        {label}
+      </div>
+      <div
+        className="mt-1 font-mono text-[14px] font-semibold leading-none"
+        style={{ color: accent }}
+      >
+        {value}
+      </div>
     </div>
   );
 }
