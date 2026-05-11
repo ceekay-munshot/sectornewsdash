@@ -31,9 +31,12 @@
 .light {
   color-scheme: light;
   --bg: #f3f5fb;
-  /* In light mode, "white" tints become near-black so subtle
-     surface scrims (`bg-white/[0.025]`) read on a light background. */
-  --c-white: 18 23 42;
+  /* In light mode the "white" token flips to near-black so existing
+     `text-white/X` classes read on a light surface. Background and
+     border tints still need explicit alpha boosts further down — the
+     same 0.06 alpha that gives a visible white scrim on dark looks
+     invisible as dark-on-light. */
+  --c-white: 15 23 42;
   --c-ink-950: 247 248 252;
   --c-ink-900: 241 243 250;
   --c-ink-850: 233 237 247;
@@ -47,10 +50,59 @@
   --page-glow-a: rgba(99, 102, 241, 0.1);
   --page-glow-b: rgba(20, 184, 166, 0.08);
   --selection-bg: rgba(99, 102, 241, 0.22);
-  --scroll-thumb: rgba(18, 23, 42, 0.18);
-  --scroll-thumb-hover: rgba(18, 23, 42, 0.32);
+  --scroll-thumb: rgba(15, 23, 42, 0.22);
+  --scroll-thumb-hover: rgba(15, 23, 42, 0.36);
   --grain: rgba(0, 0, 0, 0.025);
   --grain-blend: multiply;
+}
+
+/* Light-mode alpha boosts. Tints tuned for a dark base (0.04–0.08)
+   render as invisible washes on a light page; we bump them so cards,
+   borders and chrome separations actually read. */
+.light .border-white\/\[0\.04\] { border-color: rgba(15, 23, 42, 0.1); }
+.light .border-white\/\[0\.05\] { border-color: rgba(15, 23, 42, 0.12); }
+.light .border-white\/\[0\.06\] { border-color: rgba(15, 23, 42, 0.13); }
+.light .border-white\/\[0\.07\] { border-color: rgba(15, 23, 42, 0.14); }
+.light .border-white\/\[0\.08\] { border-color: rgba(15, 23, 42, 0.16); }
+.light .border-white\/\[0\.1\]  { border-color: rgba(15, 23, 42, 0.2); }
+.light .border-white\/\[0\.12\] { border-color: rgba(15, 23, 42, 0.22); }
+.light .border-white\/\[0\.14\] { border-color: rgba(15, 23, 42, 0.26); }
+.light .border-white\/\[0\.16\] { border-color: rgba(15, 23, 42, 0.3); }
+.light .border-white\/\[0\.18\] { border-color: rgba(15, 23, 42, 0.34); }
+.light .border-white\/15        { border-color: rgba(15, 23, 42, 0.22); }
+.light .border-white\/20        { border-color: rgba(15, 23, 42, 0.28); }
+.light .border-white\/40        { border-color: rgba(15, 23, 42, 0.42); }
+
+.light .bg-white\/\[0\.012\]    { background-color: rgba(15, 23, 42, 0.02); }
+.light .bg-white\/\[0\.015\]    { background-color: rgba(15, 23, 42, 0.025); }
+.light .bg-white\/\[0\.018\]    { background-color: rgba(15, 23, 42, 0.03); }
+.light .bg-white\/\[0\.02\]     { background-color: rgba(15, 23, 42, 0.04); }
+.light .bg-white\/\[0\.025\]    { background-color: rgba(15, 23, 42, 0.05); }
+.light .bg-white\/\[0\.03\]     { background-color: rgba(15, 23, 42, 0.06); }
+.light .bg-white\/\[0\.035\]    { background-color: rgba(15, 23, 42, 0.07); }
+.light .bg-white\/\[0\.04\]     { background-color: rgba(15, 23, 42, 0.07); }
+.light .bg-white\/\[0\.05\]     { background-color: rgba(15, 23, 42, 0.09); }
+.light .bg-white\/\[0\.06\]     { background-color: rgba(15, 23, 42, 0.1); }
+.light .bg-white\/\[0\.07\]     { background-color: rgba(15, 23, 42, 0.12); }
+.light .bg-white\/\[0\.08\]     { background-color: rgba(15, 23, 42, 0.14); }
+.light .bg-white\/\[0\.09\]     { background-color: rgba(15, 23, 42, 0.16); }
+
+/* Sticky header / filter / popover chrome. In dark these are translucent
+   near-black; in light they need to be translucent near-white, otherwise
+   the variable swap leaves a pale tint that disappears into the page. */
+.light .bg-ink-950\/60 { background-color: rgba(248, 250, 253, 0.78); }
+.light .bg-ink-950\/65 { background-color: rgba(248, 250, 253, 0.82); }
+.light .bg-ink-950\/70 { background-color: rgba(248, 250, 253, 0.84); }
+.light .bg-ink-950\/75 { background-color: rgba(248, 250, 253, 0.86); }
+.light .bg-ink-950\/95 { background-color: rgba(248, 250, 253, 0.95); }
+.light .bg-ink-900\/60 { background-color: rgba(243, 246, 251, 0.78); }
+.light .bg-ink-900\/85 { background-color: rgba(243, 246, 251, 0.88); }
+.light .bg-ink-900\/95 { background-color: rgba(243, 246, 251, 0.95); }
+.light .bg-ink-900\/97 { background-color: rgba(243, 246, 251, 0.96); }
+
+/* Focus ring is white in dark; flip to a darker ring on light. */
+.light .focus-visible\:ring-white\/30:focus-visible {
+  --tw-ring-color: rgba(15, 23, 42, 0.4);
 }
 
 html,
