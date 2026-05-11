@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
-  RefreshCw,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -137,12 +136,8 @@ export function NewsInsightPanel({ item, onClose }: Props) {
             <span className="chip">{item.timeHorizon}</span>
           </div>
 
-          {/* AI-generated bullet briefing */}
-          <AIBriefing
-            item={item}
-            accent={accent}
-            accentRgb={accentRgb}
-          />
+          {/* AI-generated bullet briefing — renders inline as the summary */}
+          <AIBriefing item={item} accentRgb={accentRgb} />
 
           {/* Source row */}
           <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-white/55">
@@ -247,55 +242,46 @@ function Sep() {
  * way the chat does. Cached client-side in localStorage per newsId so
  * re-opens are instant; cached server-side in KV for 30 days.
  *
- * When the AI call fails (or returns nothing usable) we silently render
- * the static `item.summary` as a plain paragraph — identical to the
- * pre-AI look — so the panel never reveals chrome we can't fill.
+ * Renders inline with no card chrome, header or controls — the bullets
+ * (or the plain source summary while we wait / on failure) take the
+ * same spot the original one-line summary used to occupy.
  */
 function AIBriefing({
   item,
-  accent,
   accentRgb,
 }: {
   item: NewsItem;
-  accent: string;
   accentRgb: string;
 }) {
   const [summary, setSummary] = useState<NewsSummary | null>(() =>
     loadSummary(item.id),
   );
-  const [loading, setLoading] = useState<boolean>(() => !loadSummary(item.id));
-  const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
     const cached = loadSummary(item.id);
-    if (cached && refreshTick === 0) {
+    if (cached) {
       setSummary(cached);
-      setLoading(false);
       return;
     }
-    setSummary(refreshTick === 0 ? cached : null);
-    setLoading(true);
+    setSummary(null);
     const ctrl = new AbortController();
     (async () => {
       try {
-        const next = await fetchSummary(item, {
-          refresh: refreshTick > 0,
-          signal: ctrl.signal,
-        });
+        const next = await fetchSummary(item, { signal: ctrl.signal });
         saveSummary(item.id, next);
         setSummary(next);
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        // Silent fallback — the panel will render the plain item.summary.
-      } finally {
-        setLoading(false);
+        // Silent fallback — keep the plain summary visible.
       }
     })();
     return () => ctrl.abort();
-  }, [item.id, refreshTick]);
+  }, [item.id]);
 
-  // No usable AI result — render the plain source summary, no card chrome.
-  if (!loading && !summary) {
+  // While the AI request is in flight (or if it failed) show the static
+  // one-line summary so the panel is never empty. Bullets replace it the
+  // moment they arrive.
+  if (!summary) {
     return (
       <p className="mt-3 text-[12.5px] leading-relaxed text-white/75">
         {item.summary}
@@ -303,77 +289,21 @@ function AIBriefing({
     );
   }
 
-  // Card chrome appears only while the AI is working or when bullets exist.
   return (
-    <section className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.018] px-3.5 py-3">
-      <header className="mb-2 flex items-center gap-1.5">
-        <Sparkles size={11} style={{ color: accent }} />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">
-          AI briefing
-        </span>
-        {loading ? (
-          <span className="ml-1 inline-flex items-center gap-1 text-[10px] text-white/40">
-            <span
-              className="inline-block h-1.5 w-1.5 animate-pulseSoft rounded-full"
-              style={{ background: accent }}
-            />
-            reading source…
-          </span>
-        ) : summary ? (
-          <span className="ml-1 text-[10px] text-white/35">
-            {summary.sourceUsed ? "source-grounded" : "from metadata"}
-          </span>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => setRefreshTick((t) => t + 1)}
-          disabled={loading}
-          title="Regenerate"
-          aria-label="Regenerate briefing"
-          className={classNames(
-            "ml-auto inline-flex h-5 w-5 items-center justify-center rounded-md border border-white/[0.06] bg-white/[0.02] text-white/45 transition hover:border-white/[0.16] hover:text-white",
-            loading && "cursor-not-allowed opacity-40",
-          )}
+    <ul className="mt-3 space-y-1.5">
+      {summary.bullets.map((b, i) => (
+        <li
+          key={i}
+          className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80"
         >
-          <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
-        </button>
-      </header>
-
-      {summary ? (
-        <ul className="space-y-1.5">
-          {summary.bullets.map((b, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80"
-            >
-              <span
-                className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
-                style={{
-                  background: `rgba(${accentRgb},0.7)`,
-                  boxShadow: `0 0 6px rgba(${accentRgb},0.35)`,
-                }}
-              />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <BriefingSkeleton />
-      )}
-    </section>
-  );
-}
-
-function BriefingSkeleton() {
-  return (
-    <ul className="space-y-2">
-      {[92, 78, 86, 70].map((w, i) => (
-        <li key={i} className="flex items-start gap-2">
-          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-white/15" />
           <span
-            className="block h-2.5 animate-pulseSoft rounded bg-white/[0.06]"
-            style={{ width: `${w}%`, animationDelay: `${i * 120}ms` }}
+            className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
+            style={{
+              background: `rgba(${accentRgb},0.7)`,
+              boxShadow: `0 0 6px rgba(${accentRgb},0.25)`,
+            }}
           />
+          <span>{b}</span>
         </li>
       ))}
     </ul>
