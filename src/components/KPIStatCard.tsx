@@ -63,7 +63,7 @@ export function KPIStatCard({
         )}
       </div>
       {hint && (
-        <div className="mt-1.5 line-clamp-1 text-[11px] text-white/45">
+        <div className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-white/45">
           {hint}
         </div>
       )}

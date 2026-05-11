@@ -10,7 +10,11 @@ import { MunsSectorSection } from "./MunsSectorSection";
 import { HelpHint } from "./HelpHint";
 import { NewsSortToggle, type NewsSortMode } from "./NewsSortToggle";
 import { NewsTimeStrip } from "./NewsTimeStrip";
-import { NEWS_RANKING_HINT } from "../lib/methodologyHints";
+import {
+  HEAT_SCORE_HINT,
+  NEWS_RANKING_HINT,
+  SECTOR_SENTIMENT_HINT,
+} from "../lib/methodologyHints";
 
 interface Props {
   aggregate: SectorAggregate;
@@ -87,6 +91,7 @@ export function SectorDetail({
               value={aggregate.heatScore || "—"}
               accent={accent}
               icon={<Flame size={11} />}
+              help={<HelpHint {...HEAT_SCORE_HINT} />}
             />
             <BannerStat
               label="News"
@@ -94,8 +99,9 @@ export function SectorDetail({
               accent={accent}
             />
             <div className="flex flex-col">
-              <div className="text-[9.5px] uppercase tracking-[0.16em] text-white/40">
+              <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
                 Sentiment
+                <HelpHint {...SECTOR_SENTIMENT_HINT} />
               </div>
               <div className="mt-1.5">
                 {aggregate.newsCount > 0 ? (
@@ -176,17 +182,20 @@ function BannerStat({
   value,
   accent,
   icon,
+  help,
 }: {
   label: string;
   value: number | string;
   accent: string;
   icon?: React.ReactNode;
+  help?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-1 text-[9.5px] uppercase tracking-[0.16em] text-white/40">
         {icon}
         {label}
+        {help}
       </div>
       <div
         className="mt-1 font-mono text-[18px] font-semibold leading-none"

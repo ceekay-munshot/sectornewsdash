@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { HelpCircle } from "lucide-react";
 import { classNames } from "../lib/utils";
 
-const POPOVER_WIDTH = 260;
+const POPOVER_WIDTH = 280;
 
 interface Props {
   title: string;
@@ -111,7 +111,7 @@ function Popover({
         </div>
       ) : null}
       {formula ? (
-        <div className="mt-2 break-words rounded-md border border-white/[0.05] bg-white/[0.02] px-2 py-1.5 font-mono text-[10.5px] text-white/75">
+        <div className="mt-2 whitespace-pre-wrap break-words rounded-md border border-white/[0.05] bg-white/[0.02] px-2 py-1.5 font-mono text-[10.5px] leading-[1.45] text-white/75">
           {formula}
         </div>
       ) : null}
