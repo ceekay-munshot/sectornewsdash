@@ -129,19 +129,32 @@ export default function App() {
   const [syncDone, setSyncDone] = useState(0);
   const [syncTotal, setSyncTotal] = useState(0);
   const [syncCompleted, setSyncCompleted] = useState(false);
+  const [syncStartedAt, setSyncStartedAt] = useState<Date | null>(null);
 
   const triggerSyncAll = useCallback(async () => {
     setSyncRunning(true);
     setSyncCompleted(false);
     setSyncDone(0);
+    setSyncStartedAt(new Date());
     await syncAllSectors(setMunsForSector, (d, t) => {
       setSyncDone(d);
       setSyncTotal(t);
     });
     setSyncRunning(false);
     setSyncCompleted(true);
+    setSyncStartedAt(null);
     window.setTimeout(() => setSyncCompleted(false), 4000);
   }, [setMunsForSector]);
+
+  // The most recent per-sector load timestamp. Used by the header to
+  // surface "Last synced X ago" without a separate persisted field.
+  const lastSyncAt = useMemo(() => {
+    let max = 0;
+    for (const v of Object.values(munsBySector)) {
+      if (v.loadedAt > max) max = v.loadedAt;
+    }
+    return max > 0 ? new Date(max) : null;
+  }, [munsBySector]);
 
   // Pool: replace any sector's mock news with its MUNS items when present.
   const livePool = useMemo<NewsItem[]>(() => {
@@ -245,6 +258,8 @@ export default function App() {
         syncDone={syncDone}
         syncTotal={syncTotal}
         syncCompleted={syncCompleted}
+        syncStartedAt={syncStartedAt}
+        lastSyncAt={lastSyncAt}
         onSync={triggerSyncAll}
       />
       <FilterBar
