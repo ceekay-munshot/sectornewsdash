@@ -590,6 +590,51 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
     if (!catalogMap.has(id)) catalogMap.set(id, { id, name: id });
   }
 
+  // SSE response — every event is `data: <json>\n\n`. The worker keeps
+  // running until we close the writer.
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+  const sendEvent = async (obj: unknown) => {
+    try {
+      await writer.write(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+    } catch {
+      // client disconnected — nothing we can do
+    }
+  };
+
+  // Don't await — the SSE response streams while this runs in the background.
+  runDashboardConversation({
+    env,
+    selectedSectorIds,
+    catalogMap,
+    corpus,
+    cleanedHistory,
+    sendEvent,
+  }).finally(() => {
+    writer.close().catch(() => {});
+  });
+
+  return new Response(readable, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-store",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
+interface RunArgs {
+  env: Env;
+  selectedSectorIds: string[];
+  catalogMap: Map<string, { id: string; name: string; shortName?: string }>;
+  corpus: NewsCorpus;
+  cleanedHistory: ChatMessage[];
+  sendEvent: (obj: unknown) => Promise<void>;
+}
+
+async function runDashboardConversation(args: RunArgs): Promise<void> {
+  const { env, selectedSectorIds, catalogMap, corpus, cleanedHistory, sendEvent } = args;
   const systemPrompt = buildDashboardSystemPrompt(
     selectedSectorIds,
     catalogMap,
@@ -598,8 +643,7 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
 
   const model = env.OPENAI_MODEL || DEFAULT_MODEL;
   const tools = buildDashboardTools();
-  // Each entry is either a plain {role, content} OR an assistant turn with
-  // tool_calls / a tool result. We accumulate them across iterations.
+
   type OAIMsg =
     | { role: "system" | "user" | "assistant"; content: string }
     | {
@@ -621,13 +665,10 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
   ];
 
   const toolCallLog: Array<{ name: string; args: unknown; ok: boolean }> = [];
-  // News ids the model touched while answering, with whether we actually
-  // pulled the source body (read=true) or only the analyst metadata.
   const touchedSources = new Map<string, { read: boolean }>();
+  let toolEventCounter = 0;
 
   for (let round = 0; round < DASHBOARD_MAX_TOOL_ROUNDS; round++) {
-    // Force a final answer (no tools) on the last round so the model can't
-    // wander off into another tool call when its budget is gone.
     const isFinalRound = round === DASHBOARD_MAX_TOOL_ROUNDS - 1;
     const body: Record<string, unknown> = {
       model,
@@ -638,6 +679,8 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
       body.tools = tools;
       body.tool_choice = "auto";
     }
+
+    await sendEvent({ type: "phase", phase: "thinking" });
 
     let openaiRes: Response;
     try {
@@ -650,15 +693,20 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
         body: JSON.stringify(body),
       });
     } catch (e) {
-      return jsonError(`OpenAI request failed: ${(e as Error).message}`, 502);
+      await sendEvent({
+        type: "error",
+        message: `OpenAI request failed: ${(e as Error).message}`,
+      });
+      return;
     }
 
     if (!openaiRes.ok) {
       const detail = await openaiRes.text();
-      return jsonError(
-        `OpenAI ${openaiRes.status}: ${detail.slice(0, 500)}`,
-        openaiRes.status >= 500 ? 502 : 400,
-      );
+      await sendEvent({
+        type: "error",
+        message: `OpenAI ${openaiRes.status}: ${detail.slice(0, 500)}`,
+      });
+      return;
     }
 
     const data = (await openaiRes.json()) as {
@@ -675,28 +723,40 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
         finish_reason?: string;
       }>;
     };
-    const choice = data.choices?.[0];
-    const msg = choice?.message;
-    if (!msg) return jsonError("OpenAI returned no message", 502);
+    const msg = data.choices?.[0]?.message;
+    if (!msg) {
+      await sendEvent({ type: "error", message: "OpenAI returned no message" });
+      return;
+    }
 
     const toolCalls = Array.isArray(msg.tool_calls) ? msg.tool_calls : [];
 
     if (toolCalls.length === 0) {
       const content = (msg.content ?? "").trim();
-      if (!content) return jsonError("OpenAI returned empty content", 502);
+      if (!content) {
+        await sendEvent({ type: "error", message: "OpenAI returned empty content" });
+        return;
+      }
+      await sendEvent({ type: "phase", phase: "answering" });
+      // Word-chunked fake-streaming so the answer flows in even though we
+      // didn't ask OpenAI for token streaming. Splitting on whitespace
+      // boundaries keeps markdown intact.
+      const chunks = content.match(/\S+\s*/g) ?? [content];
+      for (const c of chunks) {
+        await sendEvent({ type: "delta", text: c });
+      }
       const sources = collectSources(touchedSources, corpus, catalogMap);
-      return jsonOk({
-        message: { role: "assistant", content },
-        toolCalls: toolCallLog,
+      await sendEvent({
+        type: "done",
+        content,
         sources,
+        toolCalls: toolCallLog,
         model,
         rounds: round + 1,
       });
+      return;
     }
 
-    // Echo the assistant turn including its tool_calls so the API has the
-    // full causal chain on the next iteration. content may legitimately be
-    // null when only tool calls are returned.
     oaiMessages.push({
       role: "assistant",
       content: msg.content ?? null,
@@ -716,6 +776,20 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
       } catch {
         parsedArgs = {};
       }
+      const id = ++toolEventCounter;
+      const startedSummary = summarizeToolStart(
+        tc.function.name,
+        parsedArgs,
+        catalogMap,
+        corpus,
+      );
+      await sendEvent({
+        type: "tool",
+        id,
+        name: tc.function.name,
+        status: "started",
+        summary: startedSummary,
+      });
       const result = await runDashboardTool(
         env,
         tc.function.name,
@@ -728,6 +802,19 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
         ok: !result.error,
       });
       recordTouchedSources(touchedSources, tc.function.name, parsedArgs, result);
+      const finishedSummary = summarizeToolFinish(
+        tc.function.name,
+        parsedArgs,
+        result,
+        corpus,
+      );
+      await sendEvent({
+        type: "tool",
+        id,
+        name: tc.function.name,
+        status: result.error ? "error" : "ok",
+        summary: finishedSummary,
+      });
       oaiMessages.push({
         role: "tool",
         tool_call_id: tc.id,
@@ -736,10 +823,115 @@ async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
     }
   }
 
-  return jsonError(
-    "Model exceeded its tool-call budget without producing an answer.",
-    502,
-  );
+  await sendEvent({
+    type: "error",
+    message: "Model exceeded its tool-call budget without producing an answer.",
+  });
+}
+
+// Short human-readable string describing a tool call as it starts.
+// Shown live in the client's tool trace while the call is in flight.
+function summarizeToolStart(
+  name: string,
+  args: Record<string, unknown>,
+  catalog: Map<string, { id: string; name: string; shortName?: string }>,
+  corpus: NewsCorpus,
+): string {
+  switch (name) {
+    case "list_sectors":
+      return "Listing all sectors";
+    case "list_headlines": {
+      const ids = Array.isArray(args.sectorIds) ? args.sectorIds.filter(
+        (s): s is string => typeof s === "string",
+      ) : [];
+      if (ids.length === 0) return "Listing headlines";
+      if (ids.length === 1)
+        return `Listing headlines in ${catalog.get(ids[0])?.name ?? ids[0]}`;
+      return `Listing headlines across ${ids.length} sectors`;
+    }
+    case "search_news": {
+      const q = typeof args.query === "string" ? args.query : "";
+      return q ? `Searching for “${q}”` : "Searching news";
+    }
+    case "get_news_details": {
+      const ids = Array.isArray(args.ids) ? args.ids.filter(
+        (s): s is string => typeof s === "string",
+      ) : [];
+      if (ids.length === 1) {
+        const n = corpus.byId.get(ids[0]);
+        return n
+          ? `Reading details for “${truncate(n.headline, 60)}”`
+          : "Reading details";
+      }
+      return `Reading details for ${ids.length} stories`;
+    }
+    case "fetch_article": {
+      const id = typeof args.id === "string" ? args.id : "";
+      const n = id ? corpus.byId.get(id) : null;
+      return n
+        ? `Opening source — “${truncate(n.headline, 60)}”`
+        : "Opening source";
+    }
+    case "compare_news": {
+      const ids = Array.isArray(args.ids) ? args.ids.filter(
+        (s): s is string => typeof s === "string",
+      ) : [];
+      return `Comparing ${ids.length} stories`;
+    }
+    default:
+      return name;
+  }
+}
+
+function summarizeToolFinish(
+  name: string,
+  args: Record<string, unknown>,
+  result: ToolResult,
+  corpus: NewsCorpus,
+): string {
+  if (result.error) return "Failed";
+  const p = (result.payload ?? {}) as Record<string, unknown>;
+  switch (name) {
+    case "list_sectors": {
+      const sectors = Array.isArray(p.sectors) ? p.sectors : [];
+      return `Found ${sectors.length} sectors`;
+    }
+    case "list_headlines": {
+      const sectors = Array.isArray(p.sectors) ? p.sectors : [];
+      let total = 0;
+      for (const s of sectors) {
+        const r = s as { returned?: unknown };
+        if (typeof r.returned === "number") total += r.returned;
+      }
+      return `Listed ${total} headlines`;
+    }
+    case "search_news": {
+      const returned = typeof p.returned === "number" ? p.returned : 0;
+      return `Found ${returned} matches`;
+    }
+    case "get_news_details": {
+      const returned = typeof p.returned === "number" ? p.returned : 0;
+      return `Got ${returned} stories`;
+    }
+    case "fetch_article": {
+      const id = typeof args.id === "string" ? args.id : "";
+      const n = id ? corpus.byId.get(id) : null;
+      const ok = typeof p.body === "string" && p.body.length > 0;
+      if (ok) return `Read source · ${n?.source ?? ""}`.trim().replace(/·\s*$/, "");
+      return "Source unavailable";
+    }
+    case "compare_news": {
+      const returned = typeof p.returned === "number" ? p.returned : 0;
+      return `Compared ${returned} stories`;
+    }
+    default:
+      return "Done";
+  }
+}
+
+function truncate(s: string, max: number): string {
+  if (s.length <= max) return s;
+  return s.slice(0, max - 1).trimEnd() + "…";
 }
 
 function buildDashboardSystemPrompt(

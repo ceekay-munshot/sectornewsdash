@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
+  Check,
   Eraser,
   ExternalLink,
   Layers,
@@ -21,6 +22,13 @@ import {
   type DashboardChatMessage,
   type DashboardChatSource,
 } from "../lib/dashboardChat";
+
+interface LiveToolEntry {
+  id: number;
+  name: string;
+  status: "started" | "ok" | "error";
+  summary?: string;
+}
 
 interface Props {
   open: boolean;
@@ -72,6 +80,11 @@ export function DashboardChatPanel({
   const [error, setError] = useState<string | null>(null);
   const [mobilePicker, setMobilePicker] = useState(false);
   const [pickerQuery, setPickerQuery] = useState("");
+  // Live state for the in-flight reply: tokens streamed so far, plus the
+  // tool calls the agent has fired (started/ok/error). Cleared when the
+  // turn finishes and the final message is committed.
+  const [liveContent, setLiveContent] = useState("");
+  const [liveTools, setLiveTools] = useState<LiveToolEntry[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -82,12 +95,13 @@ export function DashboardChatPanel({
     saveDashboardChat({ messages, sectorIds: selectedIds });
   }, [messages, selectedIds]);
 
-  // Pin scroll to the latest message as the transcript grows.
+  // Pin scroll to the latest message as the transcript grows, including
+  // each streaming chunk and each tool event.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages, isSending]);
+  }, [messages, isSending, liveContent, liveTools]);
 
   // Close on Escape, focus input on open.
   useEffect(() => {
@@ -144,6 +158,8 @@ export function DashboardChatPanel({
     setDraft("");
     setError(null);
     setIsSending(true);
+    setLiveContent("");
+    setLiveTools([]);
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
@@ -152,6 +168,25 @@ export function DashboardChatPanel({
         sectors,
         history: next,
         signal: ctrl.signal,
+        onEvent: (ev) => {
+          if (ev.type === "delta") {
+            setLiveContent((prev) => prev + ev.text);
+          } else if (ev.type === "tool") {
+            setLiveTools((prev) => {
+              const idx = prev.findIndex((t) => t.id === ev.id);
+              const entry: LiveToolEntry = {
+                id: ev.id,
+                name: ev.name,
+                status: ev.status,
+                summary: ev.summary,
+              };
+              if (idx === -1) return [...prev, entry];
+              const copy = prev.slice();
+              copy[idx] = entry;
+              return copy;
+            });
+          }
+        },
       });
       setMessages((prev) => [...prev, res.message]);
     } catch (e) {
@@ -162,6 +197,8 @@ export function DashboardChatPanel({
     } finally {
       abortRef.current = null;
       setIsSending(false);
+      setLiveContent("");
+      setLiveTools([]);
     }
   }, [canSend, trimmed, messages, selectedIds, sectors]);
 
@@ -352,7 +389,9 @@ export function DashboardChatPanel({
                 {messages.map((m, i) => (
                   <Bubble key={i} message={m} />
                 ))}
-                {isSending && <TypingBubble />}
+                {isSending && (
+                  <LiveBubble content={liveContent} tools={liveTools} />
+                )}
                 {error && (
                   <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11.5px] leading-relaxed text-rose-200">
                     {error}
@@ -633,15 +672,69 @@ function SourcesButton({ sources }: { sources: DashboardChatSource[] }) {
   );
 }
 
-function TypingBubble() {
+function LiveBubble({
+  content,
+  tools,
+}: {
+  content: string;
+  tools: LiveToolEntry[];
+}) {
+  const hasContent = content.length > 0;
   return (
     <div className="flex w-full justify-start">
-      <div className="flex items-center gap-1 py-1">
-        <Dot delay={0} />
-        <Dot delay={120} />
-        <Dot delay={240} />
+      <div className="max-w-[88%] text-[13px] leading-relaxed text-white/90">
+        {tools.length > 0 && (
+          <ul className="mb-1.5 space-y-0.5">
+            {tools.map((t) => (
+              <ToolTraceRow key={t.id} entry={t} />
+            ))}
+          </ul>
+        )}
+        {hasContent ? (
+          <Markdown>{content}</Markdown>
+        ) : (
+          <div className="flex items-center gap-1 py-0.5">
+            <Dot delay={0} />
+            <Dot delay={120} />
+            <Dot delay={240} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function ToolTraceRow({ entry }: { entry: LiveToolEntry }) {
+  return (
+    <li className="flex items-center gap-2 text-[11.5px] text-white/55">
+      <StatusGlyph status={entry.status} />
+      <span className="truncate">
+        {entry.summary ?? entry.name}
+      </span>
+    </li>
+  );
+}
+
+function StatusGlyph({ status }: { status: LiveToolEntry["status"] }) {
+  if (status === "ok") {
+    return (
+      <span className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-300">
+        <Check size={8} strokeWidth={3} />
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <span className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full bg-rose-400/20 text-rose-300">
+        <X size={8} strokeWidth={3} />
+      </span>
+    );
+  }
+  // started — spinning ring
+  return (
+    <span className="flex h-3 w-3 shrink-0 items-center justify-center">
+      <span className="block h-3 w-3 animate-spin rounded-full border border-white/15 border-t-accent-sky" />
+    </span>
   );
 }
 
