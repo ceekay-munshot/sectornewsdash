@@ -247,8 +247,9 @@ function Sep() {
  * way the chat does. Cached client-side in localStorage per newsId so
  * re-opens are instant; cached server-side in KV for 30 days.
  *
- * Falls back to the static `item.summary` paragraph on error so the
- * panel never feels empty.
+ * When the AI call fails (or returns nothing usable) we silently render
+ * the static `item.summary` as a plain paragraph — identical to the
+ * pre-AI look — so the panel never reveals chrome we can't fill.
  */
 function AIBriefing({
   item,
@@ -263,11 +264,9 @@ function AIBriefing({
     loadSummary(item.id),
   );
   const [loading, setLoading] = useState<boolean>(() => !loadSummary(item.id));
-  const [error, setError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
-    setError(null);
     const cached = loadSummary(item.id);
     if (cached && refreshTick === 0) {
       setSummary(cached);
@@ -285,10 +284,9 @@ function AIBriefing({
         });
         saveSummary(item.id, next);
         setSummary(next);
-        setError(null);
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        setError((e as Error).message || "Could not generate AI summary");
+        // Silent fallback — the panel will render the plain item.summary.
       } finally {
         setLoading(false);
       }
@@ -296,6 +294,16 @@ function AIBriefing({
     return () => ctrl.abort();
   }, [item.id, refreshTick]);
 
+  // No usable AI result — render the plain source summary, no card chrome.
+  if (!loading && !summary) {
+    return (
+      <p className="mt-3 text-[12.5px] leading-relaxed text-white/75">
+        {item.summary}
+      </p>
+    );
+  }
+
+  // Card chrome appears only while the AI is working or when bullets exist.
   return (
     <section className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.018] px-3.5 py-3">
       <header className="mb-2 flex items-center gap-1.5">
@@ -349,26 +357,8 @@ function AIBriefing({
             </li>
           ))}
         </ul>
-      ) : loading ? (
-        <BriefingSkeleton />
       ) : (
-        <div className="space-y-2">
-          <p className="text-[12.5px] leading-relaxed text-white/70">
-            {item.summary}
-          </p>
-          {error ? (
-            <div className="text-[10.5px] text-rose-300/80">
-              Could not generate AI briefing — showing source summary instead.
-              <button
-                type="button"
-                onClick={() => setRefreshTick((t) => t + 1)}
-                className="ml-1 underline-offset-2 hover:underline"
-              >
-                Retry
-              </button>
-            </div>
-          ) : null}
-        </div>
+        <BriefingSkeleton />
       )}
     </section>
   );
