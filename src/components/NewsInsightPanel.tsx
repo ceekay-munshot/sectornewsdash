@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
+  RefreshCw,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -12,6 +13,12 @@ import { SECTOR_ICONS } from "../lib/icons";
 import { ImpactPill, SentimentBadge, ThemeChip, UrgencyBadge } from "./Badges";
 import { classNames, relativeTime } from "../lib/utils";
 import { NewsChatPanel } from "./NewsChatPanel";
+import {
+  fetchSummary,
+  loadSummary,
+  saveSummary,
+  type NewsSummary,
+} from "../lib/newsSummary";
 
 interface Props {
   item: NewsItem | null;
@@ -130,10 +137,12 @@ export function NewsInsightPanel({ item, onClose }: Props) {
             <span className="chip">{item.timeHorizon}</span>
           </div>
 
-          {/* Summary */}
-          <p className="mt-3 text-[12.5px] leading-relaxed text-white/75">
-            {item.summary}
-          </p>
+          {/* AI-generated bullet briefing */}
+          <AIBriefing
+            item={item}
+            accent={accent}
+            accentRgb={accentRgb}
+          />
 
           {/* Source row */}
           <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-white/55">
@@ -230,6 +239,155 @@ export function NewsInsightPanel({ item, onClose }: Props) {
 
 function Sep() {
   return <span className="text-white/15">·</span>;
+}
+
+/**
+ * AI-generated briefing — pulls a 4-5 bullet professional summary from
+ * the Worker (`/api/summary`), which reads the source article the same
+ * way the chat does. Cached client-side in localStorage per newsId so
+ * re-opens are instant; cached server-side in KV for 30 days.
+ *
+ * Falls back to the static `item.summary` paragraph on error so the
+ * panel never feels empty.
+ */
+function AIBriefing({
+  item,
+  accent,
+  accentRgb,
+}: {
+  item: NewsItem;
+  accent: string;
+  accentRgb: string;
+}) {
+  const [summary, setSummary] = useState<NewsSummary | null>(() =>
+    loadSummary(item.id),
+  );
+  const [loading, setLoading] = useState<boolean>(() => !loadSummary(item.id));
+  const [error, setError] = useState<string | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  useEffect(() => {
+    setError(null);
+    const cached = loadSummary(item.id);
+    if (cached && refreshTick === 0) {
+      setSummary(cached);
+      setLoading(false);
+      return;
+    }
+    setSummary(refreshTick === 0 ? cached : null);
+    setLoading(true);
+    const ctrl = new AbortController();
+    (async () => {
+      try {
+        const next = await fetchSummary(item, {
+          refresh: refreshTick > 0,
+          signal: ctrl.signal,
+        });
+        saveSummary(item.id, next);
+        setSummary(next);
+        setError(null);
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return;
+        setError((e as Error).message || "Could not generate AI summary");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => ctrl.abort();
+  }, [item.id, refreshTick]);
+
+  return (
+    <section className="mt-3 rounded-lg border border-white/[0.05] bg-white/[0.018] px-3.5 py-3">
+      <header className="mb-2 flex items-center gap-1.5">
+        <Sparkles size={11} style={{ color: accent }} />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">
+          AI briefing
+        </span>
+        {loading ? (
+          <span className="ml-1 inline-flex items-center gap-1 text-[10px] text-white/40">
+            <span
+              className="inline-block h-1.5 w-1.5 animate-pulseSoft rounded-full"
+              style={{ background: accent }}
+            />
+            reading source…
+          </span>
+        ) : summary ? (
+          <span className="ml-1 text-[10px] text-white/35">
+            {summary.sourceUsed ? "source-grounded" : "from metadata"}
+          </span>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setRefreshTick((t) => t + 1)}
+          disabled={loading}
+          title="Regenerate"
+          aria-label="Regenerate briefing"
+          className={classNames(
+            "ml-auto inline-flex h-5 w-5 items-center justify-center rounded-md border border-white/[0.06] bg-white/[0.02] text-white/45 transition hover:border-white/[0.16] hover:text-white",
+            loading && "cursor-not-allowed opacity-40",
+          )}
+        >
+          <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
+        </button>
+      </header>
+
+      {summary ? (
+        <ul className="space-y-1.5">
+          {summary.bullets.map((b, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2 text-[12.5px] leading-relaxed text-white/80"
+            >
+              <span
+                className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
+                style={{
+                  background: `rgba(${accentRgb},0.7)`,
+                  boxShadow: `0 0 6px rgba(${accentRgb},0.35)`,
+                }}
+              />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+      ) : loading ? (
+        <BriefingSkeleton />
+      ) : (
+        <div className="space-y-2">
+          <p className="text-[12.5px] leading-relaxed text-white/70">
+            {item.summary}
+          </p>
+          {error ? (
+            <div className="text-[10.5px] text-rose-300/80">
+              Could not generate AI briefing — showing source summary instead.
+              <button
+                type="button"
+                onClick={() => setRefreshTick((t) => t + 1)}
+                className="ml-1 underline-offset-2 hover:underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function BriefingSkeleton() {
+  return (
+    <ul className="space-y-2">
+      {[92, 78, 86, 70].map((w, i) => (
+        <li key={i} className="flex items-start gap-2">
+          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-white/15" />
+          <span
+            className="block h-2.5 animate-pulseSoft rounded bg-white/[0.06]"
+            style={{ width: `${w}%`, animationDelay: `${i * 120}ms` }}
+          />
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function Divider() {

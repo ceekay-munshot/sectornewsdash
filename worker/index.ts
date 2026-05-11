@@ -14,6 +14,7 @@ const KV_KEY = "agent-news-by-sector-v1";
 // the page on every keystroke.
 const SOURCE_CACHE_TTL_SECONDS = 60 * 60 * 24 * 30;
 const SOURCE_CACHE_PREFIX = "chat-source:";
+const SUMMARY_CACHE_PREFIX = "news-summary:";
 const SOURCE_FETCH_TIMEOUT_MS = 8000;
 const SOURCE_MAX_CHARS = 12_000;
 const MAX_HISTORY_MESSAGES = 30;
@@ -110,6 +111,16 @@ export default {
       return handleChat(req, env);
     }
 
+    if (url.pathname === "/api/summary") {
+      if (req.method !== "POST") {
+        return new Response("Method Not Allowed", {
+          status: 405,
+          headers: { Allow: "POST" },
+        });
+      }
+      return handleSummary(req, env);
+    }
+
     return env.ASSETS.fetch(req);
   },
 };
@@ -202,6 +213,184 @@ async function handleChat(req: Request, env: Env): Promise<Response> {
     sourceUsed: Boolean(sourceText),
     model,
   });
+}
+
+async function handleSummary(req: Request, env: Env): Promise<Response> {
+  if (!env.OPENAI_API_KEY) {
+    return jsonError(
+      "OpenAI key not configured. Set the OPENAI_API_KEY secret on the Worker.",
+      500,
+    );
+  }
+
+  let payload: { news?: NewsContext; refresh?: boolean };
+  try {
+    payload = await req.json();
+  } catch {
+    return jsonError("Invalid JSON", 400);
+  }
+
+  const news = payload.news;
+  if (!news || typeof news !== "object" || !news.id || !news.headline) {
+    return jsonError("Missing news context", 400);
+  }
+
+  const cacheKey = `${SUMMARY_CACHE_PREFIX}${news.id}`;
+  if (!payload.refresh) {
+    const cached = await env.NEWS_KV.get(cacheKey);
+    if (cached) {
+      try {
+        const obj = JSON.parse(cached);
+        if (
+          obj &&
+          Array.isArray(obj.bullets) &&
+          obj.bullets.length > 0 &&
+          obj.bullets.every((b: unknown) => typeof b === "string")
+        ) {
+          return jsonOk({ ...obj, cached: true });
+        }
+      } catch {
+        // fall through to regenerate
+      }
+    }
+  }
+
+  const sourceText = await getSourceText(env, news);
+  const systemPrompt = buildSummarySystemPrompt(news, sourceText);
+  const model = env.OPENAI_MODEL || DEFAULT_MODEL;
+
+  const openaiBody = {
+    model,
+    temperature: 0.2,
+    response_format: { type: "json_object" as const },
+    messages: [
+      { role: "system", content: systemPrompt },
+      {
+        role: "user",
+        content:
+          'Produce the briefing now. Reply with strict JSON: {"bullets": ["…", "…", "…", "…"]}.',
+      },
+    ],
+  };
+
+  let openaiRes: Response;
+  try {
+    openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(openaiBody),
+    });
+  } catch (e) {
+    return jsonError(`OpenAI request failed: ${(e as Error).message}`, 502);
+  }
+
+  if (!openaiRes.ok) {
+    const detail = await openaiRes.text();
+    return jsonError(
+      `OpenAI ${openaiRes.status}: ${detail.slice(0, 500)}`,
+      openaiRes.status >= 500 ? 502 : 400,
+    );
+  }
+
+  const data = (await openaiRes.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  const content = data.choices?.[0]?.message?.content?.trim() ?? "";
+  if (!content) {
+    return jsonError("OpenAI returned no content", 502);
+  }
+
+  let bullets: string[] = [];
+  try {
+    const parsed = JSON.parse(content);
+    const raw = (parsed as { bullets?: unknown }).bullets;
+    if (Array.isArray(raw)) {
+      bullets = raw
+        .filter((b): b is string => typeof b === "string")
+        .map((b) => b.trim())
+        .filter((b) => b.length > 0)
+        .slice(0, 5);
+    }
+  } catch {
+    // model didn't honor JSON; fall through to error below
+  }
+
+  if (bullets.length < 3) {
+    return jsonError("Model returned an unusable summary", 502);
+  }
+
+  const result = {
+    bullets,
+    model,
+    sourceUsed: Boolean(sourceText),
+  };
+
+  await env.NEWS_KV.put(cacheKey, JSON.stringify(result), {
+    expirationTtl: SOURCE_CACHE_TTL_SECONDS,
+  });
+
+  return jsonOk({ ...result, cached: false });
+}
+
+function buildSummarySystemPrompt(
+  news: NewsContext,
+  sourceText: string | null,
+): string {
+  const lines: string[] = [];
+  lines.push(
+    "You are a senior equity research analyst writing for a buy-side desk.",
+    "Read the news item and the article body, then produce a tight 4–5 bullet professional briefing.",
+    "",
+    "Each bullet must:",
+    "- Be a single, complete sentence in professional, neutral tone.",
+    "- Lead with the most material fact first (what happened, who, where, when).",
+    "- Surface concrete numbers (₹/$ value, MW, tonnes, %, dates, deadlines) when present in the article.",
+    "- Name the specific parties / regulators / companies / projects involved.",
+    "- Cover, across the set: (1) the core fact, (2) the key numbers, (3) the parties / mechanism, (4) immediate market implication, (5) what to watch next.",
+    "",
+    "Rules:",
+    "- Output STRICT JSON: {\"bullets\": [string, string, string, string, (string)]}. No prose outside the JSON.",
+    "- Exactly 4 or 5 bullets — no more, no fewer.",
+    "- Do not repeat the headline verbatim and do not start a bullet with 'The article'.",
+    "- No hedging, no disclaimers, no investment advice, no markdown bullets/asterisks inside strings.",
+    "- If the article body is unavailable, use the metadata to write the best possible briefing and prefix the last bullet with 'Note:' if information is thin.",
+    "",
+    "=== NEWS ITEM ===",
+    `Headline: ${news.headline}`,
+  );
+  if (news.summary) lines.push(`One-line summary: ${news.summary}`);
+  if (news.sector) lines.push(`Sector: ${news.sector}`);
+  if (news.subsector) lines.push(`Subsector: ${news.subsector}`);
+  if (news.theme) lines.push(`Theme: ${news.theme}`);
+  if (news.sentiment) lines.push(`Sentiment: ${news.sentiment}`);
+  if (news.urgency) lines.push(`Urgency: ${news.urgency}`);
+  if (typeof news.impactScore === "number")
+    lines.push(`Impact score (0-10): ${news.impactScore}`);
+  if (news.timeHorizon) lines.push(`Time horizon: ${news.timeHorizon}`);
+  if (news.publishedAt) lines.push(`Published: ${news.publishedAt}`);
+  if (news.source) lines.push(`Source: ${news.source}`);
+  if (news.sourceType) lines.push(`Source type: ${news.sourceType}`);
+  if (typeof news.sourceConfidence === "number")
+    lines.push(`Source confidence: ${news.sourceConfidence}%`);
+  if (news.newsUrl) lines.push(`URL: ${news.newsUrl}`);
+  if (news.affectedCompanies?.length)
+    lines.push(`Affected companies: ${news.affectedCompanies.join(", ")}`);
+  if (news.kpiAffected?.length)
+    lines.push(`KPIs affected: ${news.kpiAffected.join(", ")}`);
+
+  lines.push("", "=== ARTICLE CONTENT ===");
+  if (sourceText) {
+    lines.push(sourceText);
+  } else {
+    lines.push(
+      "(Article body could not be fetched — paywall, JS-rendered page, or network error. Use the metadata above; mark the last bullet 'Note:' if coverage is thin.)",
+    );
+  }
+
+  return lines.join("\n");
 }
 
 async function getSourceText(
