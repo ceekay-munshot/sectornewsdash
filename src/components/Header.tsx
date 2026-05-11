@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Activity, Radar } from "lucide-react";
 import { SyncAllButton } from "./SyncAllButton";
-import { ThemeToggle } from "./ThemeToggle";
 
 interface Props {
   syncRunning: boolean;
@@ -55,7 +54,6 @@ export function Header({
             <span className="hidden sm:inline">Live · {now}</span>
             <span className="sm:hidden">Live</span>
           </div>
-          <ThemeToggle />
         </div>
       </div>
     </header>

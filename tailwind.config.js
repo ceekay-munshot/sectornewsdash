@@ -4,19 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        // `white` and `ink-*` are theme-aware so existing
-        // `text-white/85`, `bg-white/[0.025]`, `border-white/[0.05]`,
-        // `bg-ink-950/75` etc. flip palette when `<html>` gets `.light`.
-        white: "rgb(var(--c-white) / <alpha-value>)",
         ink: {
-          950: "rgb(var(--c-ink-950) / <alpha-value>)",
-          900: "rgb(var(--c-ink-900) / <alpha-value>)",
-          850: "rgb(var(--c-ink-850) / <alpha-value>)",
-          800: "rgb(var(--c-ink-800) / <alpha-value>)",
-          750: "rgb(var(--c-ink-750) / <alpha-value>)",
-          700: "rgb(var(--c-ink-700) / <alpha-value>)",
-          600: "rgb(var(--c-ink-600) / <alpha-value>)",
-          500: "rgb(var(--c-ink-500) / <alpha-value>)",
+          950: "#070A12",
+          900: "#0A0E1A",
+          850: "#0D1322",
+          800: "#11182B",
+          750: "#161E36",
+          700: "#1B2440",
+          600: "#222C4D",
+          500: "#2C375E",
         },
         accent: {
           gold: "#E5C07B",

@@ -4,7 +4,7 @@ import { classNames } from "../lib/utils";
 
 interface Props {
   label: string;
-  value: ReactNode;
+  value: string | number;
   hint?: ReactNode;
   delta?: { value: string; tone?: "up" | "down" | "neutral" };
   icon?: LucideIcon;

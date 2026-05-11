@@ -1,9 +1,11 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { Activity } from "lucide-react";
 import type { NewsItem, SectorMeta } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 
-const POPOVER_WIDTH = 260;
+const POPOVER_WIDTH = 280;
+const ACCENT = "#F59E0B";
 
 export interface CriticalBreakdownRow {
   sector: SectorMeta;
@@ -15,60 +17,81 @@ export interface CriticalBreakdownRow {
 interface Props {
   count: number;
   rows: CriticalBreakdownRow[];
+  help?: ReactNode;
 }
 
 /**
- * KPI value for the Critical Alerts card. Renders the raw count and,
- * on hover, opens a portal popover listing the per-sector breakdown.
+ * Critical Alerts KPI card. Hovering anywhere on the card opens a
+ * portal popover with the per-sector breakdown of critical headlines.
  */
-export function CriticalAlertsValue({ count, rows }: Props) {
-  const ref = useRef<HTMLSpanElement>(null);
+export function CriticalAlertsCard({ count, rows, help }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
   const [anchor, setAnchor] = useState<{
     triggerTop: number;
     triggerBottom: number;
-    left: number;
+    triggerLeft: number;
+    triggerWidth: number;
   } | null>(null);
 
   const show = () => {
     if (!ref.current || rows.length === 0) return;
     const r = ref.current.getBoundingClientRect();
-    const left = Math.max(
-      8,
-      Math.min(window.innerWidth - POPOVER_WIDTH - 8, r.left)
-    );
-    setAnchor({ triggerTop: r.top, triggerBottom: r.bottom, left });
+    setAnchor({
+      triggerTop: r.top,
+      triggerBottom: r.bottom,
+      triggerLeft: r.left,
+      triggerWidth: r.width,
+    });
   };
   const hide = () => setAnchor(null);
 
+  const hint =
+    rows.length > 0
+      ? `Across ${rows.length} sector${rows.length === 1 ? "" : "s"} · hover for breakdown`
+      : "No Critical-urgency headlines";
+
   return (
-    <span
+    <div
       ref={ref}
-      role={rows.length > 0 ? "button" : undefined}
-      tabIndex={rows.length > 0 ? 0 : undefined}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}
       onBlur={hide}
-      className="relative inline-block cursor-default outline-none"
+      tabIndex={rows.length > 0 ? 0 : -1}
+      role={rows.length > 0 ? "button" : undefined}
       aria-label={
         rows.length > 0
-          ? `${count} critical headlines — hover for sector breakdown`
+          ? `${count} critical headlines — focus or hover for sector breakdown`
           : undefined
       }
+      className="glass focus-ring relative p-3 outline-none"
     >
-      {count}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/45">
+            Critical alerts
+          </div>
+          {help}
+        </div>
+        <div
+          className="flex h-6 w-6 items-center justify-center rounded-md"
+          style={{ background: `${ACCENT}1A`, color: ACCENT }}
+        >
+          <Activity size={12} />
+        </div>
+      </div>
+      <div className="mt-1.5 font-display text-[22px] font-semibold leading-none text-white">
+        {count}
+      </div>
+      <div className="mt-1 text-[11px] leading-snug text-white/45">{hint}</div>
+
       {anchor
         ? createPortal(
-            <BreakdownPopover
-              rows={rows}
-              triggerTop={anchor.triggerTop}
-              triggerBottom={anchor.triggerBottom}
-              left={anchor.left}
-            />,
+            <BreakdownPopover rows={rows} {...anchor} />,
             document.body
           )
         : null}
-    </span>
+    </div>
   );
 }
 
@@ -76,15 +99,27 @@ function BreakdownPopover({
   rows,
   triggerTop,
   triggerBottom,
-  left,
+  triggerLeft,
+  triggerWidth,
 }: {
   rows: CriticalBreakdownRow[];
   triggerTop: number;
   triggerBottom: number;
-  left: number;
+  triggerLeft: number;
+  triggerWidth: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [top, setTop] = useState(triggerBottom + 6);
+
+  // Center horizontally against the card, clamped to the viewport.
+  const left = Math.max(
+    8,
+    Math.min(
+      window.innerWidth - POPOVER_WIDTH - 8,
+      triggerLeft + triggerWidth / 2 - POPOVER_WIDTH / 2
+    )
+  );
+
   useLayoutEffect(() => {
     if (!ref.current) return;
     const h = ref.current.offsetHeight;
