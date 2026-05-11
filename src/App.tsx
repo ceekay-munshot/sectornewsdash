@@ -4,6 +4,8 @@ import { FilterBar } from "./components/FilterBar";
 import { OverviewTab } from "./components/OverviewTab";
 import { SectorDetail } from "./components/SectorDetail";
 import { NewsInsightPanel } from "./components/NewsInsightPanel";
+import { DashboardChatButton } from "./components/DashboardChatButton";
+import { DashboardChatPanel } from "./components/DashboardChatPanel";
 import { MOCK_NEWS } from "./data/mockNews";
 import { SECTORS } from "./data/sectors";
 import {
@@ -63,6 +65,7 @@ export default function App() {
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() =>
     loadWatchlist(SECTORS.map((s) => s.id))
   );
+  const [dashboardChatOpen, setDashboardChatOpen] = useState(false);
   // Live agent news per sector. When present, replaces mock news for that
   // sector so aggregates, heatmap, and filters all see the live items.
   // localStorage is the fast cache for instant first paint; KV (via the
@@ -278,6 +281,19 @@ export default function App() {
       </main>
 
       <NewsInsightPanel item={activeNews} onClose={onCloseInsight} />
+
+      <DashboardChatButton
+        onClick={() => setDashboardChatOpen(true)}
+        hidden={dashboardChatOpen || Boolean(activeNews)}
+      />
+      <DashboardChatPanel
+        open={dashboardChatOpen}
+        onClose={() => setDashboardChatOpen(false)}
+        sectors={SECTORS}
+        initialSectorIds={
+          activeSectorId ? [activeSectorId] : watchlistIds
+        }
+      />
     </div>
     </SectorBreakdownProvider>
   );
