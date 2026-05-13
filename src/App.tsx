@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Header } from "./components/Header";
+import { Header, type TopTab } from "./components/Header";
 import { FilterBar } from "./components/FilterBar";
 import { OverviewTab } from "./components/OverviewTab";
 import { SectorDetail } from "./components/SectorDetail";
+import { LogicTab } from "./components/LogicTab";
 import { NewsInsightPanel } from "./components/NewsInsightPanel";
 import { DashboardChatButton } from "./components/DashboardChatButton";
 import { DashboardChatPanel } from "./components/DashboardChatPanel";
@@ -59,6 +60,7 @@ function loadPersistedNews(): Record<string, MunsSectorPayload> {
 
 export default function App() {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  const [topTab, setTopTab] = useState<TopTab>("dashboard");
   const [view, setView] = useState<"overview" | "sector">("overview");
   const [activeSectorId, setActiveSectorId] = useState<string | null>(null);
   const [activeNews, setActiveNews] = useState<NewsItem | null>(null);
@@ -261,15 +263,21 @@ export default function App() {
         syncStartedAt={syncStartedAt}
         lastSyncAt={lastSyncAt}
         onSync={triggerSyncAll}
+        activeTab={topTab}
+        onChangeTab={setTopTab}
       />
-      <FilterBar
-        filters={filters}
-        onChange={setFilters}
-        onClear={() => setFilters(EMPTY_FILTERS)}
-      />
+      {topTab === "dashboard" ? (
+        <FilterBar
+          filters={filters}
+          onChange={setFilters}
+          onClear={() => setFilters(EMPTY_FILTERS)}
+        />
+      ) : null}
 
       <main className="relative z-10 mx-auto w-full max-w-[1760px] px-4 py-2.5 2xl:px-6">
-        {view === "overview" || !activeAggregate ? (
+        {topTab === "logic" ? (
+          <LogicTab />
+        ) : view === "overview" || !activeAggregate ? (
           <OverviewTab
             aggregates={aggregates}
             filteredNews={filteredNews}
