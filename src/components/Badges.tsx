@@ -61,6 +61,32 @@ export function SentimentDot({ sentiment }: { sentiment: Sentiment }) {
   );
 }
 
+const SENT_TAG_LABEL: Record<Sentiment, string> = {
+  Bullish: "BULL",
+  Bearish: "BEAR",
+  Neutral: "NEUT",
+};
+
+/**
+ * Compact 4-letter sentiment tag used in dense news rows. Reads at a
+ * glance without sacrificing scannability — replaces the bare dot.
+ */
+export function SentimentTag({ sentiment }: { sentiment: Sentiment }) {
+  const s = SENT_STYLES[sentiment];
+  return (
+    <span
+      title={sentiment}
+      className={classNames(
+        "inline-flex h-[18px] shrink-0 items-center justify-center rounded-[5px] border px-1.5 font-mono text-[9.5px] font-bold tracking-wider",
+        s.bg,
+        s.text
+      )}
+    >
+      {SENT_TAG_LABEL[sentiment]}
+    </span>
+  );
+}
+
 export function UrgencyBadge({
   urgency,
   size = "md",

@@ -170,6 +170,7 @@ export function SectorDetail({
             selectedId={selectedNewsId}
             emptyTitle={`No news yet for ${sector.shortName}`}
             emptyHint="No items match the current filters."
+            groupByTime={sortMode === "latest"}
           />
         </div>
       )}

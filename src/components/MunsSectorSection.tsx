@@ -113,6 +113,7 @@ export function MunsSectorSection({
         selectedId={selectedNewsId}
         emptyTitle={`No news yet for ${sectorShortName}`}
         emptyHint="Tap Load news to fetch the latest."
+        groupByTime={sortMode === "latest"}
       />
     </div>
   );
