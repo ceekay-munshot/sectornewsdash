@@ -6,6 +6,7 @@
 
 import type { NewsItem, SectorMeta } from "../types";
 import { SECTORS, SECTOR_BY_ID } from "../data/sectors";
+import NSE_COMPANIES from "../data/nse-companies.json";
 
 const KEY = "snr.portfolio.v1";
 
@@ -132,8 +133,38 @@ function parseNumber(s: string): number | null {
 
 // ---- sector mapping ------------------------------------------------------
 
-// Lower-cased lookup of every known sector company → sectorId.
-const COMPANY_TO_SECTOR: Map<string, string> = (() => {
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9&]+/g, "");
+}
+
+interface NseCompanyEntry {
+  name: string;
+  symbol: string;
+  sector_id: string | null;
+}
+
+const NSE_BY_KEY: Map<string, string> = (() => {
+  const m = new Map<string, string>();
+  for (const c of NSE_COMPANIES as NseCompanyEntry[]) {
+    if (!c.sector_id) continue;
+    // index by both full name and ticker symbol
+    const nk = normalize(c.name);
+    if (nk) m.set(nk, c.sector_id);
+    const sk = normalize(c.symbol);
+    if (sk) m.set(sk, c.sector_id);
+    // Also strip common suffixes ("Ltd.", "Limited", "Co.")
+    const trimmedName = c.name
+      .replace(/\b(ltd\.?|limited|co\.|corp\.?|corporation|inc\.?)\b/gi, "")
+      .trim();
+    const tk = normalize(trimmedName);
+    if (tk && tk !== nk) m.set(tk, c.sector_id);
+  }
+  return m;
+})();
+
+// Curated sector → company map from src/data/sectors.ts. Acts as a
+// fallback when a holding isn't in the NSE Nifty 500 snapshot.
+const CURATED_BY_KEY: Map<string, string> = (() => {
   const m = new Map<string, string>();
   for (const s of SECTORS) {
     for (const c of s.companies) {
@@ -143,24 +174,33 @@ const COMPANY_TO_SECTOR: Map<string, string> = (() => {
   return m;
 })();
 
-function normalize(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9&]+/g, "");
-}
-
 /**
- * Best-effort sector mapping for a holding name. Exact match first, then
- * any sector company whose normalized name appears inside the holding
- * (or vice versa) — handles "Maruti Suzuki" ↔ "Maruti" both ways.
+ * Best-effort sector mapping for a holding name. Priority:
+ *   1. Exact match in the NSE Nifty 500 snapshot (by name or ticker)
+ *   2. Exact match in the curated sectors.ts list
+ *   3. Fuzzy substring match across both — handles "Maruti Suzuki" ↔
+ *      "Maruti" both ways
  */
 export function findSectorForCompany(name: string): string | undefined {
   const key = normalize(name);
   if (!key) return undefined;
-  if (COMPANY_TO_SECTOR.has(key)) return COMPANY_TO_SECTOR.get(key);
-  for (const [k, sid] of COMPANY_TO_SECTOR) {
+  if (NSE_BY_KEY.has(key)) return NSE_BY_KEY.get(key);
+  if (CURATED_BY_KEY.has(key)) return CURATED_BY_KEY.get(key);
+  // Fuzzy — prefer NSE matches over curated.
+  for (const [k, sid] of NSE_BY_KEY) {
+    if (k.length < 3) continue;
+    if (k.includes(key) || key.includes(k)) return sid;
+  }
+  for (const [k, sid] of CURATED_BY_KEY) {
+    if (k.length < 3) continue;
     if (k.includes(key) || key.includes(k)) return sid;
   }
   return undefined;
 }
+
+/** Full NSE Nifty 500 list — exposed for quick-pick / autocomplete UIs. */
+export const NSE_COMPANY_LIST: NseCompanyEntry[] =
+  NSE_COMPANIES as NseCompanyEntry[];
 
 // ---- news matching -------------------------------------------------------
 
