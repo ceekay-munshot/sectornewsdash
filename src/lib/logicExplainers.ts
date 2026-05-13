@@ -233,21 +233,27 @@ const MOST_BULLISH: LogicExplainer = {
   range: "Sector pick",
   icon: TrendingUp,
   accent: "#5EEAD4",
-  oneLiner: "Sector whose recent news is most positively skewed.",
+  oneLiner: "Sector with the strongest net bullish energy — depth × breadth.",
   whatIs:
-    "The sector with the highest signed Sentiment Score among sectors that actually have headlines under the current filters. Sectors with zero headlines are skipped — empty is not bullish.",
-  howCalculated: "mostBullish = argmax(sentimentScore) where newsCount > 0",
+    "The sector with the highest Bullish Momentum: a volume-weighted measure of net positive news flow. Picks the sector where bullish items are both numerous and high-impact, instead of the sector that happens to have a pure +100 sentiment score on a tiny sample.",
+  howCalculated:
+    "for each headline n in the sector:\n  if n.sentiment = Bullish:  add  impact × recency × (confidence/100)\n  if n.sentiment = Bearish:  subtract impact × recency × (confidence/100)\n  Neutral items are ignored.\n\nbullishMomentum = round( Σ )\nmostBullish = argmax(bullishMomentum) over sectors\n              with newsCount ≥ 1 and bullishMomentum > 0\n              tiebreak on raw sentimentScore",
   inputs: [
-    { name: "Sentiment score", range: "−100 → +100" },
-    { name: "News count", range: "≥ 1", note: "empty sectors excluded" },
+    { name: "Impact (per bullish/bearish headline)", range: "0 – 10" },
+    { name: "Recency", range: "0.1 – 1.0" },
+    { name: "Source confidence", range: "0 – 100" },
+    { name: "Bullish count", range: "≥ 1", note: "empty / pure-neutral sectors excluded" },
   ],
   interpretation: [
-    { band: "Score ≥ +40", label: "Strongly bullish", meaning: "Wide, consistent positive flow.", tone: "good" },
-    { band: "Score +13 → +39", label: "Bullish",     meaning: "Net positive across the visible headlines.", tone: "good" },
-    { band: "Score ≤ +12", label: "Best of a flat day", meaning: "Even the leader is neutral. Probably nothing really bullish right now.", tone: "info" },
+    { band: "Momentum ≥ 50", label: "Decisive bull run", meaning: "Heavy positive flow with real impact behind it.", tone: "good" },
+    { band: "Momentum 15 → 49", label: "Bullish",        meaning: "Net positive after netting any bearish items.", tone: "good" },
+    { band: "Momentum 1 → 14", label: "Tilting bullish", meaning: "Faintly positive — leader of a quiet day.", tone: "info" },
+    { band: "Momentum ≤ 0", label: "No clean bull",      meaning: "No sector is meaningfully positive right now.", tone: "info" },
   ],
+  example:
+    "Sector A: 11 bullish at avg impact 4 → momentum ≈ 28. Sector B: 19 bullish at avg impact 6, plus 2 bearish at avg impact 5 → momentum ≈ 75. B wins, even if A had a higher pure sentimentScore.",
   whereSeen: ["Overview KPI strip"],
-  related: ["sentiment-score", "bullish"],
+  related: ["sentiment-score", "bullish", "impact"],
 };
 
 const CRITICAL: LogicExplainer = {

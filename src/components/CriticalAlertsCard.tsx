@@ -1,6 +1,6 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Activity } from "lucide-react";
+import { Activity, Sparkles } from "lucide-react";
 import type { NewsItem, SectorMeta } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
 
@@ -17,14 +17,16 @@ export interface CriticalBreakdownRow {
 interface Props {
   count: number;
   rows: CriticalBreakdownRow[];
-  help?: ReactNode;
+  /** Click → open the data-driven Why panel. */
+  onClick?: () => void;
 }
 
 /**
  * Critical Alerts KPI card. Hovering anywhere on the card opens a
  * portal popover with the per-sector breakdown of critical headlines.
+ * Clicking opens the Why panel for a longer rationale.
  */
-export function CriticalAlertsCard({ count, rows, help }: Props) {
+export function CriticalAlertsCard({ count, rows, onClick }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [anchor, setAnchor] = useState<{
     triggerTop: number;
@@ -47,8 +49,10 @@ export function CriticalAlertsCard({ count, rows, help }: Props) {
 
   const hint =
     rows.length > 0
-      ? `Across ${rows.length} sector${rows.length === 1 ? "" : "s"} · hover for breakdown`
+      ? `Across ${rows.length} sector${rows.length === 1 ? "" : "s"} · click for Why`
       : "No Critical-urgency headlines";
+
+  const clickable = Boolean(onClick) && count > 0;
 
   return (
     <div
@@ -57,21 +61,34 @@ export function CriticalAlertsCard({ count, rows, help }: Props) {
       onMouseLeave={hide}
       onFocus={show}
       onBlur={hide}
-      tabIndex={rows.length > 0 ? 0 : -1}
-      role={rows.length > 0 ? "button" : undefined}
-      aria-label={
-        rows.length > 0
-          ? `${count} critical headlines — focus or hover for sector breakdown`
+      onClick={clickable ? onClick : undefined}
+      tabIndex={clickable ? 0 : -1}
+      role={clickable ? "button" : undefined}
+      onKeyDown={
+        clickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
           : undefined
       }
-      className="glass focus-ring relative p-3 outline-none"
+      aria-label={
+        clickable
+          ? `${count} critical headlines — click for explanation`
+          : undefined
+      }
+      className={
+        "glass group focus-ring relative p-3 outline-none" +
+        (clickable
+          ? " cursor-pointer transition hover:-translate-y-[1px] hover:border-white/[0.16]"
+          : "")
+      }
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/45">
-            Critical alerts
-          </div>
-          {help}
+        <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/45">
+          Critical alerts
         </div>
         <div
           className="flex h-6 w-6 items-center justify-center rounded-md"
@@ -84,6 +101,16 @@ export function CriticalAlertsCard({ count, rows, help }: Props) {
         {count}
       </div>
       <div className="mt-1 text-[11px] leading-snug text-white/45">{hint}</div>
+
+      {clickable ? (
+        <span
+          aria-hidden
+          className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full border px-1.5 py-[2px] text-[9.5px] font-medium uppercase tracking-wider opacity-0 transition group-hover:opacity-100"
+          style={{ color: ACCENT, borderColor: `${ACCENT}55` }}
+        >
+          <Sparkles size={9} /> Why
+        </span>
+      ) : null}
 
       {anchor
         ? createPortal(
