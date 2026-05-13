@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { Activity, BookOpen, LayoutDashboard, Radar } from "lucide-react";
+import {
+  Activity,
+  BookOpen,
+  LayoutDashboard,
+  Moon,
+  Radar,
+  Sparkles,
+} from "lucide-react";
 import { SyncAllButton } from "./SyncAllButton";
 import { classNames } from "../lib/utils";
+import type { Theme } from "../App";
 
 export type TopTab = "dashboard" | "logic";
 
@@ -15,6 +23,8 @@ interface Props {
   onSync: () => void;
   activeTab: TopTab;
   onChangeTab: (tab: TopTab) => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
 export function Header({
@@ -27,6 +37,8 @@ export function Header({
   onSync,
   activeTab,
   onChangeTab,
+  theme,
+  onToggleTheme,
 }: Props) {
   const [now, setNow] = useState<string>(() => fmt(new Date()));
   useEffect(() => {
@@ -72,6 +84,7 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <SyncAllButton
             running={syncRunning}
             done={syncDone}
@@ -126,6 +139,33 @@ function TabButton({
     >
       {icon}
       {label}
+    </button>
+  );
+}
+
+function ThemeToggle({
+  theme,
+  onToggle,
+}: {
+  theme: Theme;
+  onToggle: () => void;
+}) {
+  const isAurora = theme === "aurora";
+  const next = isAurora ? "dark" : "aurora";
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={`Switch to ${next} theme`}
+      title={`Switch to ${next} theme`}
+      className={classNames(
+        "focus-ring relative inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg border transition",
+        isAurora
+          ? "border-fuchsia-300/40 bg-gradient-to-br from-fuchsia-400/25 via-violet-400/20 to-cyan-300/20 text-white shadow-[0_0_16px_-2px_rgba(217,70,239,0.55)]"
+          : "border-white/[0.08] bg-white/[0.025] text-white/70 hover:border-white/[0.18] hover:text-white"
+      )}
+    >
+      {isAurora ? <Sparkles size={13} /> : <Moon size={13} />}
     </button>
   );
 }
