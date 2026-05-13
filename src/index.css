@@ -100,3 +100,97 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ========================================================================
+   AURORA THEME
+   Vivid, colour-graded variant. Same dark base so data still reads, but
+   layered with pink / violet / cyan / mint aurora bands and warmer card
+   glow. Toggled via [data-theme="aurora"] on <html> from App.tsx.
+   ======================================================================== */
+
+[data-theme="aurora"] body {
+  background:
+    radial-gradient(900px 620px at 8% -12%, rgba(236, 72, 153, 0.28), transparent 62%),
+    radial-gradient(820px 560px at 96% -6%, rgba(56, 189, 248, 0.24), transparent 62%),
+    radial-gradient(760px 620px at 78% 100%, rgba(167, 139, 250, 0.28), transparent 65%),
+    radial-gradient(620px 520px at 4% 78%, rgba(94, 234, 212, 0.20), transparent 62%),
+    radial-gradient(900px 700px at 50% 40%, rgba(124, 58, 237, 0.10), transparent 70%),
+    linear-gradient(180deg, #0a0820 0%, #100927 55%, #0c0a23 100%);
+}
+
+[data-theme="aurora"] ::selection {
+  background: rgba(236, 72, 153, 0.32);
+  color: #fff;
+}
+
+[data-theme="aurora"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.35), rgba(56, 189, 248, 0.35));
+}
+[data-theme="aurora"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.55), rgba(56, 189, 248, 0.55));
+}
+
+/* Header / sticky surfaces — slightly tinted so they sit on the gradient */
+[data-theme="aurora"] header.sticky,
+[data-theme="aurora"] .sticky {
+  background-color: rgba(14, 8, 32, 0.65);
+}
+
+/* Glass cards: keep the dark translucent body but add a violet halo so
+   cards feel iridescent rather than flat. */
+[data-theme="aurora"] .glass {
+  border-color: rgba(196, 181, 253, 0.16);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(167, 139, 250, 0.025) 100%
+  );
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 0 0 1px rgba(167, 139, 250, 0.10),
+    0 24px 60px -22px rgba(124, 58, 237, 0.55);
+}
+
+[data-theme="aurora"] .glass-strong {
+  border-color: rgba(196, 181, 253, 0.22);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.07) inset,
+    0 0 0 1px rgba(236, 72, 153, 0.10),
+    0 28px 70px -22px rgba(217, 70, 239, 0.45);
+}
+
+[data-theme="aurora"] .chip {
+  border-color: rgba(196, 181, 253, 0.18);
+  background-color: rgba(167, 139, 250, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+[data-theme="aurora"] .btn-ghost {
+  border-color: rgba(196, 181, 253, 0.18);
+  background-color: rgba(167, 139, 250, 0.06);
+}
+[data-theme="aurora"] .btn-ghost:hover {
+  border-color: rgba(236, 72, 153, 0.45);
+  background-color: rgba(236, 72, 153, 0.10);
+  color: #fff;
+}
+
+[data-theme="aurora"] .btn-primary {
+  border-color: rgba(236, 72, 153, 0.45);
+  background-image: linear-gradient(
+    135deg,
+    rgba(236, 72, 153, 0.55) 0%,
+    rgba(167, 139, 250, 0.55) 50%,
+    rgba(56, 189, 248, 0.55) 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 32px -10px rgba(217, 70, 239, 0.55);
+}
+
+/* Soften the scanline so it doesn't fight the gradient */
+[data-theme="aurora"] .grain::after {
+  opacity: 0.18;
+  mix-blend-mode: soft-light;
+}

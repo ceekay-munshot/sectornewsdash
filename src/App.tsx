@@ -44,7 +44,19 @@ const EMPTY_FILTERS: FilterState = {
 };
 
 const NEWS_STORAGE_KEY = "agent-news-by-sector-v1";
+const THEME_STORAGE_KEY = "theme-v1";
 const REMOTE_PUT_DEBOUNCE_MS = 500;
+
+export type Theme = "dark" | "aurora";
+
+function loadTheme(): Theme {
+  try {
+    const raw = localStorage.getItem(THEME_STORAGE_KEY);
+    return raw === "aurora" ? "aurora" : "dark";
+  } catch {
+    return "dark";
+  }
+}
 
 function loadPersistedNews(): Record<string, MunsSectorPayload> {
   try {
@@ -61,8 +73,23 @@ function loadPersistedNews(): Record<string, MunsSectorPayload> {
 export default function App() {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [topTab, setTopTab] = useState<TopTab>("dashboard");
+  const [theme, setTheme] = useState<Theme>(loadTheme);
   const [view, setView] = useState<"overview" | "sector">("overview");
   const [activeSectorId, setActiveSectorId] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {
+      // storage may be disabled — theme just won't persist
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(
+    () => setTheme((t) => (t === "dark" ? "aurora" : "dark")),
+    []
+  );
   const [activeNews, setActiveNews] = useState<NewsItem | null>(null);
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() =>
     loadWatchlist(SECTORS.map((s) => s.id))
@@ -265,6 +292,8 @@ export default function App() {
         onSync={triggerSyncAll}
         activeTab={topTab}
         onChangeTab={setTopTab}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
       {topTab === "dashboard" ? (
         <FilterBar
