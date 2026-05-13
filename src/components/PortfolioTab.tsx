@@ -4,9 +4,10 @@ import {
   Briefcase,
   Edit3,
   Layers,
-  Newspaper,
   Plus,
+  Radio,
   TrendingUp,
+  Target,
   Trash2,
 } from "lucide-react";
 import type { NewsItem, SectorAggregate } from "../types";
@@ -52,9 +53,13 @@ export function PortfolioTab({ livePool, aggregates, onSelectNews }: Props) {
     [holdings, livePool, sectorHeatById]
   );
 
-  const rankedMatchedNews = useMemo(
-    () => rankNewsByImpact(summary.matchedNews),
-    [summary.matchedNews]
+  const rankedDirectHits = useMemo(
+    () => rankNewsByImpact(summary.directHits),
+    [summary.directHits]
+  );
+  const rankedSectorHits = useMemo(
+    () => rankNewsByImpact(summary.sectorHits),
+    [summary.sectorHits]
   );
 
   if (holdings.length === 0) {
@@ -118,25 +123,58 @@ export function PortfolioTab({ livePool, aggregates, onSelectNews }: Props) {
         <ConcentrationCard summary={summary} aggregates={aggregates} />
       </div>
 
-      {/* Filtered news feed */}
+      {/* Direct hits — news naming a specific holding */}
       <div className="space-y-2">
-        <div className="flex items-center gap-1.5 px-1 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-          <Newspaper size={12} className="text-white/60" />
-          <span>
-            Headlines touching your portfolio{" "}
-            <span className="ml-1 text-white/70">
-              {summary.headlineCount}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+            <Target size={12} className="text-rose-300" />
+            <span>
+              Direct hits{" "}
+              <span className="ml-1 text-white/70">
+                {summary.directHits.length}
+              </span>
             </span>
-          </span>
+          </div>
+          <div className="text-[10.5px] text-white/45">
+            News naming one of your holdings
+          </div>
         </div>
         <NewsFeed
-          items={rankedMatchedNews}
+          items={rankedDirectHits}
           limit={30}
           onSelect={onSelectNews}
-          emptyTitle="Nothing on your portfolio today"
-          emptyHint="No headlines under the current scope name any of your holdings."
+          emptyTitle="No direct hits right now"
+          emptyHint="No headlines under the current scope name any of your holdings. Check the sector tape below."
         />
       </div>
+
+      {/* Sector tape — news in your sectors that don't name a specific holding */}
+      {summary.rows.length > 0 ? (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
+              <Radio size={12} className="text-accent-sky" />
+              <span>
+                Your sectors are in play{" "}
+                <span className="ml-1 text-white/70">
+                  {summary.sectorHits.length}
+                </span>
+              </span>
+            </div>
+            <div className="text-[10.5px] text-white/45">
+              News in {summary.rows.length} sector
+              {summary.rows.length === 1 ? "" : "s"} you hold — context, not a direct hit
+            </div>
+          </div>
+          <NewsFeed
+            items={rankedSectorHits}
+            limit={30}
+            onSelect={onSelectNews}
+            emptyTitle="Your sectors are quiet"
+            emptyHint="No headlines in your sectors under the current scope."
+          />
+        </div>
+      ) : null}
 
       <PortfolioEditModal
         open={editOpen}
@@ -205,14 +243,16 @@ function KPIStrip({ summary }: { summary: PortfolioSummary }) {
         sublabel={`across ${summary.rows.length} sector${summary.rows.length === 1 ? "" : "s"}${summary.unmapped.length > 0 ? ` · ${summary.unmapped.length} unmapped` : ""}`}
       />
       <KpiTile
-        label="Headlines today"
-        value={summary.headlineCount}
+        label="Direct hits today"
+        value={summary.directHits.length}
         accent="#FB7185"
-        icon={<Newspaper size={12} />}
+        icon={<Target size={12} />}
         sublabel={
-          summary.headlineCount > 0
-            ? "currently touching your stocks"
-            : "no items touched your holdings"
+          summary.sectorHits.length > 0
+            ? `+ ${summary.sectorHits.length} more in your sectors`
+            : summary.directHits.length > 0
+              ? "headlines naming your stocks"
+              : "no items named your holdings"
         }
       />
     </div>

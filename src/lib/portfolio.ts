@@ -31,8 +31,15 @@ export interface PortfolioSummary {
   rows: PortfolioBreakdownRow[];  // per-sector breakdown
   unmapped: PortfolioHolding[];   // holdings we couldn't tie to a sector
   weightedHeat: number;     // 0..100 weighted by position size (or count)
-  matchedNews: NewsItem[];  // every news item touching a holding
-  headlineCount: number;    // matchedNews.length
+  /** Headlines that name a holding outright. */
+  directHits: NewsItem[];
+  /** Headlines in a sector the user has exposure to, but don't name a
+   *  specific holding — "your sector is in play" tape. */
+  sectorHits: NewsItem[];
+  /** Backward-compat alias: directHits + sectorHits, in that order. */
+  matchedNews: NewsItem[];
+  /** Total of directHits + sectorHits. */
+  headlineCount: number;
 }
 
 // ---- persistence ---------------------------------------------------------
@@ -250,8 +257,19 @@ export function buildPortfolioSummary(
   }
   weightedHeat = totalUsedWeight > 0 ? Math.round(weightedHeat / totalUsedWeight) : 0;
 
-  // 4. Matched news.
-  const matchedNews = livePool.filter((n) => newsTouchesPortfolio(n, holdings));
+  // 4. Matched news — bucketed into direct hits vs sector tape so the UI
+  //    can answer "what hit my stocks?" separately from "what's moving in
+  //    sectors I'm exposed to?".
+  const portfolioSectorIds = new Set(rows.map((r) => r.sectorId));
+  const directHits: NewsItem[] = [];
+  const sectorHits: NewsItem[] = [];
+  for (const n of livePool) {
+    if (newsTouchesPortfolio(n, holdings)) {
+      directHits.push(n);
+    } else if (portfolioSectorIds.has(n.sector)) {
+      sectorHits.push(n);
+    }
+  }
 
   return {
     holdings,
@@ -260,7 +278,9 @@ export function buildPortfolioSummary(
     rows,
     unmapped,
     weightedHeat,
-    matchedNews,
-    headlineCount: matchedNews.length,
+    directHits,
+    sectorHits,
+    matchedNews: [...directHits, ...sectorHits],
+    headlineCount: directHits.length + sectorHits.length,
   };
 }
