@@ -290,7 +290,7 @@ function RowCard({
               {row.badge}
             </div>
           </div>
-          <div className="mt-0.5 line-clamp-3 text-[11.5px] leading-snug text-white/70">
+          <div className="mt-0.5 text-[11.5px] leading-snug text-white/75">
             {row.reason}
           </div>
         </div>

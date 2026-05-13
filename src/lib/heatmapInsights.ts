@@ -29,15 +29,13 @@ export interface HeatmapInsights {
   marketTone: "risk-on" | "neutral" | "risk-off" | "quiet";
 }
 
-const round = (n: number) =>
-  Math.abs(n) >= 10 ? Math.round(n) : Number(n.toFixed(1));
-
 function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: string } {
   // Quiet / no data → reject (silently)
   if (a.newsCount === 0) {
     return {
       bucket: "reject",
-      reason: "No headlines under current filters — stale.",
+      reason:
+        "No fresh news in this view right now — either the filters are hiding things or the sector is genuinely silent today. Re-check after the next sync.",
       badge: "Quiet",
     };
   }
@@ -54,7 +52,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (hot && strongBull && a.sentimentScore > 0) {
     return {
       bucket: "deploy",
-      reason: `Heat ${a.heatScore}, momentum +${round(a.bullishMomentum)}, ${a.bullishCount} bullish vs ${a.bearishCount} bearish — strong directional flow.`,
+      reason:
+        "News flow here is heavy and pointed in one direction — positive. That's the setup where catalyst and consensus are both lined up, so a long position has the wind at its back instead of fighting it.",
       badge: "Bull run",
     };
   }
@@ -62,7 +61,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (warm && cleanBull && a.bullishCount >= 3) {
     return {
       bucket: "deploy",
-      reason: `Heat ${a.heatScore}, ${a.bullishCount} bullish, zero bearish — clean positive setup.`,
+      reason:
+        "There's meaningful activity here and not a single bearish item to fight. A clean tape like this is the lowest-friction way to add exposure — you don't have to time the noise out.",
       badge: "Clean tape",
     };
   }
@@ -70,7 +70,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (hot && strongBear) {
     return {
       bucket: "reject",
-      reason: `Heat ${a.heatScore} but sentiment ${a.sentimentScore > 0 ? "+" : ""}${a.sentimentScore} with ${a.bearishCount} bearish — wrong-side flow.`,
+      reason:
+        "Plenty of news, but the weight of it is bearish — the sector is moving, and moving down. Stay out until the bear cycle clears; right now you'd be buying into the selling.",
       badge: "Heavy red",
     };
   }
@@ -78,7 +79,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (cold) {
     return {
       bucket: "reject",
-      reason: `Heat ${a.heatScore}, only ${a.newsCount} headline${a.newsCount === 1 ? "" : "s"} — too thin to act on.`,
+      reason:
+        "Barely any meaningful news flow here — nothing material is happening, so there's nothing to position around either. Wait for a catalyst before forcing a view.",
       badge: "Thin tape",
     };
   }
@@ -86,7 +88,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (criticalLoad) {
     return {
       bucket: "watch",
-      reason: `${a.criticalCount} Critical alerts — likely a developing story. Read first, position later.`,
+      reason:
+        "A story is breaking right now — several Critical-urgency items at once usually means a developing situation that hasn't stabilised. Read the headlines first, decide direction after.",
       badge: "Headline risk",
     };
   }
@@ -94,7 +97,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (warm && Math.abs(a.sentimentScore) < 12) {
     return {
       bucket: "watch",
-      reason: `Heat ${a.heatScore}, sentiment essentially flat (${a.sentimentScore > 0 ? "+" : ""}${a.sentimentScore}) — story not resolved either way yet.`,
+      reason:
+        "Active flow, but bulls and bears are pretty evenly matched — the sector is in motion, just not in any clear direction yet. Wait for one side to win the next leg before committing.",
       badge: "Tug of war",
     };
   }
@@ -102,7 +106,8 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (warm && a.bullishMomentum > 0) {
     return {
       bucket: "watch",
-      reason: `Heat ${a.heatScore}, leaning bullish (momentum +${round(a.bullishMomentum)}) — building, not yet decisive.`,
+      reason:
+        "Trending positive, but the move is still early — not enough conviction yet to call it a clean setup. Worth keeping on the watchlist; consider sizing in if more bullish catalysts land in the next few days.",
       badge: "Building",
     };
   }
@@ -110,14 +115,16 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   if (warm && a.bullishMomentum < 0) {
     return {
       bucket: "watch",
-      reason: `Heat ${a.heatScore}, momentum ${round(a.bullishMomentum)} — under pressure but not blown out.`,
+      reason:
+        "Leaning negative, but not blown out yet — could be the start of a sell-off, could just be noise. Wait for the next catalyst before deciding whether to step in or step away.",
       badge: "Under pressure",
     };
   }
 
   return {
     bucket: "watch",
-    reason: `Heat ${a.heatScore}, ${a.bullishCount} bull / ${a.bearishCount} bear / ${a.neutralCount} neutral — context only.`,
+    reason:
+      "Mixed, mid-tier flow — nothing here is going to drive a position on its own. Useful as background context for what's going on around it, but not actionable on its own today.",
     badge: "Background",
   };
 }
