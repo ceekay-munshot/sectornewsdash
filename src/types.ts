@@ -108,6 +108,12 @@ export interface SectorAggregate {
   heatScore: number; // 0-100
   sentiment: Sentiment;
   sentimentScore: number; // -100..100
+  bullishMomentum: number; // signed sum of bullish-impact minus bearish-impact
+  bullishCount: number;
+  bearishCount: number;
+  neutralCount: number;
+  criticalCount: number;
+  avgImpact: number; // 0..10
   newsCount: number;
   topTheme: Theme;
   topNews: NewsItem[]; // top 5

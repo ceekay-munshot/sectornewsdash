@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { classNames } from "../lib/utils";
 
@@ -9,7 +10,10 @@ interface Props {
   delta?: { value: string; tone?: "up" | "down" | "neutral" };
   icon?: LucideIcon;
   accent?: string; // hex
-  help?: ReactNode;
+  /** Optional click handler — when present, the whole card becomes a button. */
+  onClick?: () => void;
+  /** Tooltip / aria label for the card-as-button. */
+  whyLabel?: string;
 }
 
 export function KPIStatCard({
@@ -19,16 +23,26 @@ export function KPIStatCard({
   delta,
   icon: Icon,
   accent = "#7DD3FC",
-  help,
+  onClick,
+  whyLabel,
 }: Props) {
+  const clickable = Boolean(onClick);
+  const Tag: any = clickable ? "button" : "div";
+
   return (
-    <div className="glass p-3">
+    <Tag
+      type={clickable ? "button" : undefined}
+      onClick={onClick}
+      aria-label={clickable ? whyLabel ?? `Why? ${label}` : undefined}
+      className={classNames(
+        "glass group relative w-full p-3 text-left",
+        clickable &&
+          "focus-ring transition hover:-translate-y-[1px] hover:border-white/[0.16]"
+      )}
+    >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/45">
-            {label}
-          </div>
-          {help}
+        <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/45">
+          {label}
         </div>
         {Icon && (
           <div
@@ -61,6 +75,16 @@ export function KPIStatCard({
           {hint}
         </div>
       )}
-    </div>
+
+      {clickable ? (
+        <span
+          aria-hidden
+          className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.025] px-1.5 py-[2px] text-[9.5px] font-medium uppercase tracking-wider text-white/55 opacity-0 transition group-hover:opacity-100"
+          style={{ color: accent, borderColor: `${accent}55` }}
+        >
+          <Sparkles size={9} /> Why
+        </span>
+      ) : null}
+    </Tag>
   );
 }

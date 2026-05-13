@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Flame, TrendingUp } from "lucide-react";
 import type { NewsItem, SectorAggregate, SectorMeta } from "../types";
 import { KPIStatCard } from "./KPIStatCard";
@@ -10,12 +10,13 @@ import { SectorHeatmap } from "./SectorHeatmap";
 import { SectorCard } from "./SectorCard";
 import { WatchlistControl } from "./WatchlistControl";
 import { EmptyState } from "./EmptyState";
-import { HelpHint } from "./HelpHint";
+import { WhyPanel } from "./WhyPanel";
 import {
-  HOTTEST_SECTOR_HINT,
-  MOST_BULLISH_HINT,
-  CRITICAL_ALERTS_HINT,
-} from "../lib/methodologyHints";
+  explainCritical,
+  explainHottest,
+  explainMostBullish,
+  type WhyExplanation,
+} from "../lib/whyExplainers";
 
 interface Props {
   aggregates: SectorAggregate[];
@@ -42,10 +43,19 @@ export function OverviewTab({
 }: Props) {
   const stats = useMemo(() => {
     const hottest = aggregates[0];
+    // "Most bullish" picks the sector with the strongest *net bullish
+    // energy* — Σ(impact × recency × confidence) for bullish minus the
+    // same for bearish. This way 19 mid-impact bullish items beat 11
+    // small bullish items even when the latter has a purer +100 score.
+    // Tie-break on raw sentimentScore for stability.
     const mostBullish = aggregates
       .slice()
-      .filter((a) => a.newsCount > 0)
-      .sort((a, b) => b.sentimentScore - a.sentimentScore)[0];
+      .filter((a) => a.newsCount > 0 && a.bullishMomentum > 0)
+      .sort((a, b) =>
+        b.bullishMomentum !== a.bullishMomentum
+          ? b.bullishMomentum - a.bullishMomentum
+          : b.sentimentScore - a.sentimentScore
+      )[0];
     const criticals = filteredNews.filter((n) => n.urgency === "Critical");
     const critical = criticals.length;
 
@@ -96,6 +106,25 @@ export function OverviewTab({
       .sort((a, b) => order.get(a.sector.id)! - order.get(b.sector.id)!);
   }, [aggregates, visibleSectorIds]);
 
+  const [why, setWhy] = useState<WhyExplanation | null>(null);
+  const criticals = useMemo(
+    () => filteredNews.filter((n) => n.urgency === "Critical"),
+    [filteredNews]
+  );
+
+  const openHottestWhy = () => {
+    const w = explainHottest(stats.hottest, aggregates);
+    if (w) setWhy(w);
+  };
+  const openBullishWhy = () => {
+    const w = explainMostBullish(stats.mostBullish, aggregates);
+    if (w) setWhy(w);
+  };
+  const openCriticalWhy = () => {
+    const w = explainCritical(stats.critical, criticals, aggregates);
+    if (w) setWhy(w);
+  };
+
   return (
     <div className="animate-floatIn space-y-2">
       {/* KPI strip */}
@@ -110,26 +139,30 @@ export function OverviewTab({
           }
           icon={Flame}
           accent="#FB7185"
-          help={<HelpHint {...HOTTEST_SECTOR_HINT} />}
+          onClick={stats.hottest ? openHottestWhy : undefined}
+          whyLabel="Why is this the hottest sector?"
         />
         <KPIStatCard
           label="Most bullish sector"
           value={stats.mostBullish?.sector.shortName ?? "—"}
           hint={
             stats.mostBullish
-              ? `Sentiment ${stats.mostBullish.sentimentScore > 0 ? "+" : ""}${stats.mostBullish.sentimentScore} · ${stats.mostBullish.newsCount} headlines`
+              ? `${stats.mostBullish.bullishCount} bullish · momentum +${Math.round(stats.mostBullish.bullishMomentum)}`
               : "No positive-skew sector"
           }
           icon={TrendingUp}
           accent="#5EEAD4"
-          help={<HelpHint {...MOST_BULLISH_HINT} />}
+          onClick={stats.mostBullish ? openBullishWhy : undefined}
+          whyLabel="Why is this the most bullish sector?"
         />
         <CriticalAlertsCard
           count={stats.critical}
           rows={stats.criticalBreakdown}
-          help={<HelpHint {...CRITICAL_ALERTS_HINT} />}
+          onClick={stats.critical > 0 ? openCriticalWhy : undefined}
         />
       </div>
+
+      <WhyPanel open={Boolean(why)} why={why} onClose={() => setWhy(null)} />
 
       {/* Watchlist controls */}
       <WatchlistControl

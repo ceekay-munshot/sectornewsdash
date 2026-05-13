@@ -96,6 +96,27 @@ export function calculateSectorSentiment(news: NewsItem[]): {
 }
 
 /**
+ * calculateBullishMomentum
+ * Volume-aware bullishness: Σ over bullish items of impact × recency ×
+ * confidence, minus the same sum over bearish items. A sector with 19
+ * mid-impact bullish items beats one with 11 small-impact bullish items
+ * even if the latter has a higher pure sentimentScore — which is what
+ * "most bullish" should mean to a human reader.
+ */
+export function calculateBullishMomentum(news: NewsItem[]): number {
+  if (!news.length) return 0;
+  const now = Date.now();
+  let net = 0;
+  for (const n of news) {
+    if (n.sentiment === "Neutral") continue;
+    const r = recencyWeight(n.publishedAt, now);
+    const w = n.impactScore * r * (n.sourceConfidence / 100);
+    net += SENT_TO_SCORE[n.sentiment] * w;
+  }
+  return Math.round(net * 10) / 10;
+}
+
+/**
  * rankNewsByImpact
  * Highest impact + recency + urgency first.
  */
@@ -204,11 +225,32 @@ export function buildSectorAggregates(
     const ranked = rankNewsByImpact(items);
     const heatScore = calculateSectorHeatScore(items);
     const { label, score } = calculateSectorSentiment(items);
+
+    let bullishCount = 0;
+    let bearishCount = 0;
+    let neutralCount = 0;
+    let criticalCount = 0;
+    let impactSum = 0;
+    for (const n of items) {
+      if (n.sentiment === "Bullish") bullishCount += 1;
+      else if (n.sentiment === "Bearish") bearishCount += 1;
+      else neutralCount += 1;
+      if (n.urgency === "Critical") criticalCount += 1;
+      impactSum += n.impactScore;
+    }
+    const avgImpact = items.length ? impactSum / items.length : 0;
+
     out.push({
       sector,
       heatScore,
       sentiment: label,
       sentimentScore: score,
+      bullishMomentum: calculateBullishMomentum(items),
+      bullishCount,
+      bearishCount,
+      neutralCount,
+      criticalCount,
+      avgImpact,
       newsCount: items.length,
       topTheme: topTheme(items),
       topNews: ranked.slice(0, 5),

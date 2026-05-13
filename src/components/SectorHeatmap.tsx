@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { SectorAggregate } from "../types";
 import { SECTOR_ICONS } from "../lib/icons";
@@ -6,6 +6,11 @@ import { classNames, heatToColor, heatTier } from "../lib/utils";
 import { useSectorBreakdown } from "../lib/sectorBreakdown";
 import { HelpHint } from "./HelpHint";
 import { HEAT_SCORE_HINT } from "../lib/methodologyHints";
+import {
+  HeatmapInsightsButton,
+  HeatmapInsightsPanel,
+} from "./HeatmapInsightsPanel";
+import { buildHeatmapInsights } from "../lib/heatmapInsights";
 
 interface Props {
   aggregates: SectorAggregate[];
@@ -22,13 +27,22 @@ const POPOVER_WIDTH = 240;
  * popover with sentiment, top theme and bull/neut/bear breakdown.
  */
 export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
+  const [explainerOpen, setExplainerOpen] = useState(false);
+  const insights = useMemo(
+    () => (explainerOpen ? buildHeatmapInsights(aggregates) : null),
+    [explainerOpen, aggregates]
+  );
+
   return (
     <div className="glass relative overflow-hidden p-3.5">
-      <div className="mb-3 flex items-center gap-1.5 px-0.5">
-        <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
-          Sector heatmap
+      <div className="mb-3 flex items-center justify-between gap-2 px-0.5">
+        <div className="flex items-center gap-1.5">
+          <div className="text-[10.5px] font-medium uppercase tracking-[0.18em] text-white/50">
+            Sector heatmap
+          </div>
+          <HelpHint {...HEAT_SCORE_HINT} />
         </div>
-        <HelpHint {...HEAT_SCORE_HINT} />
+        <HeatmapInsightsButton onClick={() => setExplainerOpen(true)} />
       </div>
 
       <HeatLegend />
@@ -44,6 +58,16 @@ export function SectorHeatmap({ aggregates, onSelect, selectedId }: Props) {
           />
         ))}
       </div>
+
+      <HeatmapInsightsPanel
+        open={explainerOpen}
+        insights={insights}
+        onClose={() => setExplainerOpen(false)}
+        onSelectSector={(id) => {
+          setExplainerOpen(false);
+          onSelect(id);
+        }}
+      />
     </div>
   );
 }
