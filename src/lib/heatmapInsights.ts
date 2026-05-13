@@ -8,9 +8,107 @@
 // Deterministic rules off the same aggregates the dashboard already
 // shows — no LLM call, no extra data fetch.
 
-import type { SectorAggregate } from "../types";
+import type { NewsItem, SectorAggregate } from "../types";
 
 export type Bucket = "deploy" | "watch" | "reject";
+
+// ---- copy helpers ---------------------------------------------------------
+
+const shorten = (t: string, max: number): string => {
+  if (!t) return "";
+  if (t.length <= max) return t;
+  return t.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
+};
+
+const q = (headline: string): string => `“${shorten(headline, 78)}”`;
+
+const themeWord = (t: string): string => (t === "M&A" ? "M&A" : t.toLowerCase());
+
+const pickTop = (items: NewsItem[], pred: (n: NewsItem) => boolean, n = 2) =>
+  items.filter(pred).slice(0, n);
+
+// ---- per-bucket sentence composers ---------------------------------------
+// Every composer leans on the sector's actual top headlines so two
+// sectors in the same bucket read differently — the user's complaint
+// before this was that every "Bull run" row had identical copy.
+
+function bullRunCopy(a: SectorAggregate): string {
+  const bulls = pickTop(a.topNews, (n) => n.sentiment === "Bullish", 2);
+  const theme = themeWord(a.topTheme);
+  if (bulls.length >= 2)
+    return `${a.sector.shortName} is running on ${theme} — ${q(bulls[0].headline)} and ${q(bulls[1].headline)} are the lead catalysts. Heavy positive flow with no offsetting drag; adding exposure here has the wind at its back instead of fighting it.`;
+  if (bulls.length === 1)
+    return `${a.sector.shortName} is being carried by ${theme} — the standout is ${q(bulls[0].headline)}. Catalyst and consensus are both lined up on the same side, which is when a long has the most edge.`;
+  return `${a.sector.shortName} has a stack of bullish items led by ${theme} with no offsetting bears — the kind of setup where adding exposure has minimal friction.`;
+}
+
+function cleanTapeCopy(a: SectorAggregate): string {
+  const bulls = pickTop(a.topNews, (n) => n.sentiment === "Bullish", 2);
+  const theme = themeWord(a.topTheme);
+  if (bulls.length >= 2)
+    return `${a.sector.shortName} is putting up bullish items across ${theme} — ${q(bulls[0].headline)} and ${q(bulls[1].headline)} — with zero bearish headlines on the other side. Clean tape; lowest-friction way to add exposure.`;
+  if (bulls.length === 1)
+    return `${a.sector.shortName} has positive flow in ${theme} led by ${q(bulls[0].headline)}, and no bearish items to fight. Clean tape — straightforward way to size in.`;
+  return `${a.sector.shortName}: bullish flow in ${theme}, no offsetting bears. Clean tape — minimum friction to add exposure.`;
+}
+
+function heavyRedCopy(a: SectorAggregate): string {
+  const bears = pickTop(a.topNews, (n) => n.sentiment === "Bearish", 2);
+  if (bears.length >= 2)
+    return `${a.sector.shortName} is moving, but the wrong way — ${q(bears[0].headline)} and ${q(bears[1].headline)} are dragging it down. Stay out until the bear cycle clears; right now you'd be buying into the selling.`;
+  if (bears.length === 1)
+    return `${a.sector.shortName} is leaning hard negative — driven by items like ${q(bears[0].headline)}. Plenty of flow, but the direction is wrong; better to wait for a turn.`;
+  return `${a.sector.shortName} has heat but its sentiment skews bearish. Wrong-side flow — sit this one out until it turns.`;
+}
+
+function thinTapeCopy(a: SectorAggregate): string {
+  const lead = a.topNews[0]?.headline;
+  if (lead)
+    return `${a.sector.shortName}: only one or two items moving the dial — top of the list is ${q(lead)}. Not enough signal to size a position around; wait for a real catalyst.`;
+  return `${a.sector.shortName}: barely any meaningful news flow. Not enough signal to position; wait for a catalyst before forcing a view.`;
+}
+
+function headlineRiskCopy(a: SectorAggregate): string {
+  const crits = pickTop(a.topNews, (n) => n.urgency === "Critical", 2);
+  if (crits.length >= 2)
+    return `${a.sector.shortName} is in the middle of a breaking story — ${q(crits[0].headline)} and ${q(crits[1].headline)} are the Critical items right now. Read these first; the picture isn't stable enough to position on yet.`;
+  if (crits.length === 1)
+    return `${a.sector.shortName} has an active Critical-urgency item — ${q(crits[0].headline)}. Read it before doing anything; the situation is still developing.`;
+  return `${a.sector.shortName} is sitting on multiple Critical-urgency items. Read them first, decide direction after.`;
+}
+
+function tugOfWarCopy(a: SectorAggregate): string {
+  const bull = a.topNews.find((n) => n.sentiment === "Bullish");
+  const bear = a.topNews.find((n) => n.sentiment === "Bearish");
+  if (bull && bear)
+    return `${a.sector.shortName} has bulls and bears swinging at each other — ${q(bull.headline)} on one side, ${q(bear.headline)} on the other. Active but unresolved; wait for one side to win the next leg.`;
+  return `${a.sector.shortName} has active flow but no clear lean — bulls and bears are about even. Wait for the next catalyst to pick a side.`;
+}
+
+function buildingCopy(a: SectorAggregate): string {
+  const bulls = pickTop(a.topNews, (n) => n.sentiment === "Bullish", 1);
+  if (bulls.length === 1)
+    return `${a.sector.shortName} is tilting positive — ${q(bulls[0].headline)} is the kind of item building the case. Move is early though; watchlist it and size in if more catalysts land in the next few days.`;
+  return `${a.sector.shortName} is drifting positive but it's still early. Watchlist material — size in only if more bullish items appear.`;
+}
+
+function underPressureCopy(a: SectorAggregate): string {
+  const bears = pickTop(a.topNews, (n) => n.sentiment === "Bearish", 1);
+  if (bears.length === 1)
+    return `${a.sector.shortName} is drifting lower on items like ${q(bears[0].headline)}. Not a blow-up yet, but the next catalyst could decide whether to step in or step away.`;
+  return `${a.sector.shortName} is leaning negative but not blown out. Watch the next item carefully — could resolve either way.`;
+}
+
+function backgroundCopy(a: SectorAggregate): string {
+  const lead = a.topNews[0]?.headline;
+  if (lead)
+    return `${a.sector.shortName} has mixed, mid-tier flow — top item is ${q(lead)} but nothing is dominating. Useful as context for what's going on around it; not actionable on its own.`;
+  return `${a.sector.shortName}: mixed signals, nothing decisive. Background context only.`;
+}
+
+function quietCopy(a: SectorAggregate): string {
+  return `${a.sector.shortName}: no fresh news in this view. Either filters are hiding it or the sector is genuinely silent — re-check after the next sync.`;
+}
 
 export interface InsightRow {
   agg: SectorAggregate;
@@ -32,12 +130,7 @@ export interface HeatmapInsights {
 function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: string } {
   // Quiet / no data → reject (silently)
   if (a.newsCount === 0) {
-    return {
-      bucket: "reject",
-      reason:
-        "No fresh news in this view right now — either the filters are hiding things or the sector is genuinely silent today. Re-check after the next sync.",
-      badge: "Quiet",
-    };
+    return { bucket: "reject", reason: quietCopy(a), badge: "Quiet" };
   }
 
   const hot = a.heatScore >= 60;
@@ -49,84 +142,31 @@ function classify(a: SectorAggregate): { bucket: Bucket; reason: string; badge: 
   const strongBear = a.sentimentScore <= -25 || a.bearishCount > a.bullishCount * 2;
   const criticalLoad = a.criticalCount >= 3;
 
-  if (hot && strongBull && a.sentimentScore > 0) {
-    return {
-      bucket: "deploy",
-      reason:
-        "News flow here is heavy and pointed in one direction — positive. That's the setup where catalyst and consensus are both lined up, so a long position has the wind at its back instead of fighting it.",
-      badge: "Bull run",
-    };
-  }
+  if (hot && strongBull && a.sentimentScore > 0)
+    return { bucket: "deploy", reason: bullRunCopy(a), badge: "Bull run" };
 
-  if (warm && cleanBull && a.bullishCount >= 3) {
-    return {
-      bucket: "deploy",
-      reason:
-        "There's meaningful activity here and not a single bearish item to fight. A clean tape like this is the lowest-friction way to add exposure — you don't have to time the noise out.",
-      badge: "Clean tape",
-    };
-  }
+  if (warm && cleanBull && a.bullishCount >= 3)
+    return { bucket: "deploy", reason: cleanTapeCopy(a), badge: "Clean tape" };
 
-  if (hot && strongBear) {
-    return {
-      bucket: "reject",
-      reason:
-        "Plenty of news, but the weight of it is bearish — the sector is moving, and moving down. Stay out until the bear cycle clears; right now you'd be buying into the selling.",
-      badge: "Heavy red",
-    };
-  }
+  if (hot && strongBear)
+    return { bucket: "reject", reason: heavyRedCopy(a), badge: "Heavy red" };
 
-  if (cold) {
-    return {
-      bucket: "reject",
-      reason:
-        "Barely any meaningful news flow here — nothing material is happening, so there's nothing to position around either. Wait for a catalyst before forcing a view.",
-      badge: "Thin tape",
-    };
-  }
+  if (cold)
+    return { bucket: "reject", reason: thinTapeCopy(a), badge: "Thin tape" };
 
-  if (criticalLoad) {
-    return {
-      bucket: "watch",
-      reason:
-        "A story is breaking right now — several Critical-urgency items at once usually means a developing situation that hasn't stabilised. Read the headlines first, decide direction after.",
-      badge: "Headline risk",
-    };
-  }
+  if (criticalLoad)
+    return { bucket: "watch", reason: headlineRiskCopy(a), badge: "Headline risk" };
 
-  if (warm && Math.abs(a.sentimentScore) < 12) {
-    return {
-      bucket: "watch",
-      reason:
-        "Active flow, but bulls and bears are pretty evenly matched — the sector is in motion, just not in any clear direction yet. Wait for one side to win the next leg before committing.",
-      badge: "Tug of war",
-    };
-  }
+  if (warm && Math.abs(a.sentimentScore) < 12)
+    return { bucket: "watch", reason: tugOfWarCopy(a), badge: "Tug of war" };
 
-  if (warm && a.bullishMomentum > 0) {
-    return {
-      bucket: "watch",
-      reason:
-        "Trending positive, but the move is still early — not enough conviction yet to call it a clean setup. Worth keeping on the watchlist; consider sizing in if more bullish catalysts land in the next few days.",
-      badge: "Building",
-    };
-  }
+  if (warm && a.bullishMomentum > 0)
+    return { bucket: "watch", reason: buildingCopy(a), badge: "Building" };
 
-  if (warm && a.bullishMomentum < 0) {
-    return {
-      bucket: "watch",
-      reason:
-        "Leaning negative, but not blown out yet — could be the start of a sell-off, could just be noise. Wait for the next catalyst before deciding whether to step in or step away.",
-      badge: "Under pressure",
-    };
-  }
+  if (warm && a.bullishMomentum < 0)
+    return { bucket: "watch", reason: underPressureCopy(a), badge: "Under pressure" };
 
-  return {
-    bucket: "watch",
-    reason:
-      "Mixed, mid-tier flow — nothing here is going to drive a position on its own. Useful as background context for what's going on around it, but not actionable on its own today.",
-    badge: "Background",
-  };
+  return { bucket: "watch", reason: backgroundCopy(a), badge: "Background" };
 }
 
 export function buildHeatmapInsights(aggregates: SectorAggregate[]): HeatmapInsights {
