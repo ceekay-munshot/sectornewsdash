@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { Activity, Radar } from "lucide-react";
+import { Activity, BookOpen, LayoutDashboard, Radar } from "lucide-react";
 import { SyncAllButton } from "./SyncAllButton";
+import { classNames } from "../lib/utils";
+
+export type TopTab = "dashboard" | "logic";
 
 interface Props {
   syncRunning: boolean;
@@ -10,6 +13,8 @@ interface Props {
   syncStartedAt: Date | null;
   lastSyncAt: Date | null;
   onSync: () => void;
+  activeTab: TopTab;
+  onChangeTab: (tab: TopTab) => void;
 }
 
 export function Header({
@@ -20,6 +25,8 @@ export function Header({
   syncStartedAt,
   lastSyncAt,
   onSync,
+  activeTab,
+  onChangeTab,
 }: Props) {
   const [now, setNow] = useState<string>(() => fmt(new Date()));
   useEffect(() => {
@@ -43,6 +50,25 @@ export function Header({
               Markets · Sentiment · Impact
             </div>
           </div>
+
+          <nav
+            role="tablist"
+            aria-label="Primary view"
+            className="ml-2 flex items-center gap-0.5 rounded-lg border border-white/[0.07] bg-white/[0.02] p-0.5"
+          >
+            <TabButton
+              active={activeTab === "dashboard"}
+              onClick={() => onChangeTab("dashboard")}
+              icon={<LayoutDashboard size={12} />}
+              label="Dashboard"
+            />
+            <TabButton
+              active={activeTab === "logic"}
+              onClick={() => onChangeTab("logic")}
+              icon={<BookOpen size={12} />}
+              label="Logic"
+            />
+          </nav>
         </div>
 
         <div className="flex items-center gap-2">
@@ -72,4 +98,34 @@ function fmt(d: Date) {
     minute: "2-digit",
     hour12: false,
   });
+}
+
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={classNames(
+        "focus-ring inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] font-medium transition",
+        active
+          ? "bg-white/[0.09] text-white shadow-glow"
+          : "text-white/55 hover:bg-white/[0.04] hover:text-white/90"
+      )}
+    >
+      {icon}
+      {label}
+    </button>
+  );
 }
