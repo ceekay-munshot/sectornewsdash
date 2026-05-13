@@ -1,20 +1,25 @@
-// Build src/data/nse-companies.json from a Nifty 500 / NSE equity master
-// CSV. Re-run whenever the upstream list changes:
+// Build src/data/nse-companies.json from every CSV in data/raw/. Re-run
+// any time you add or refresh a source:
 //
-//   npx tsx scripts/build-nse-companies.ts \
-//     --in data/raw/ind_nifty500list.csv \
-//     --out src/data/nse-companies.json
+//   npx tsx scripts/build-nse-companies.ts
 //
-// Default args (no flags) use the paths above.
+// The script reads every *.csv file under data/raw/ and merges them
+// into a single deduped JSON keyed by ticker symbol. Each CSV must
+// have a header row containing "Company Name", "Symbol", and one of
+// "Industry" / "Sector" columns. Order of files doesn't matter; later
+// rows lose to earlier rows on conflict (so put the more-trusted
+// source first alphabetically — e.g. "00-…csv" beats "extras.csv").
 //
-// Why a script and not a runtime fetch: NSE / niftyindices.com aggressively
-// block direct fetches with anti-bot headers. We bundle a periodically
-// refreshed snapshot instead. To refresh: download the latest CSV from
-// niftyindices.com (Index Constituents → Nifty 500), drop it into
-// data/raw/ind_nifty500list.csv, and re-run this script.
+// Why a script and not a runtime fetch: NSE / niftyindices.com block
+// direct fetches with anti-bot headers. We bundle a periodically
+// refreshed snapshot instead. To refresh / extend coverage:
+//   1. Download the latest CSV from niftyindices.com (Index
+//      Constituents → Nifty Total Market / Nifty Smallcap 250 / etc.)
+//   2. Drop it into data/raw/
+//   3. Re-run this script
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 
 // NSE Industry → our sector_id. Where one NSE industry could plausibly
 // map to multiple sectors (FINANCIAL SERVICES → banks vs NBFC; SERVICES
@@ -210,14 +215,14 @@ interface NseCompany {
   sector_id: string | null;
 }
 
-function parseArgs(argv: string[]): { inPath: string; outPath: string } {
-  let inPath = "data/raw/ind_nifty500list.csv";
+function parseArgs(argv: string[]): { inDir: string; outPath: string } {
+  let inDir = "data/raw";
   let outPath = "src/data/nse-companies.json";
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === "--in" && argv[i + 1]) inPath = argv[++i];
+    if (argv[i] === "--in-dir" && argv[i + 1]) inDir = argv[++i];
     else if (argv[i] === "--out" && argv[i + 1]) outPath = argv[++i];
   }
-  return { inPath, outPath };
+  return { inDir, outPath };
 }
 
 function splitCsvLine(line: string): string[] {
@@ -249,25 +254,26 @@ function splitCsvLine(line: string): string[] {
   return out.map((s) => s.trim());
 }
 
-function main() {
-  const { inPath, outPath } = parseArgs(process.argv.slice(2));
-  const text = readFileSync(resolve(inPath), "utf8");
+function processCsvFile(path: string): {
+  companies: NseCompany[];
+  unmappedIndustries: Set<string>;
+} {
+  const text = readFileSync(resolve(path), "utf8");
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (lines.length === 0) {
-    console.error("Empty input");
-    process.exit(1);
-  }
-  // Expect first row = header
+  if (lines.length === 0) return { companies: [], unmappedIndustries: new Set() };
+
   const header = splitCsvLine(lines[0]).map((s) => s.toLowerCase());
-  const nameIdx = header.findIndex((h) => h.includes("company"));
-  const industryIdx = header.findIndex((h) => h.includes("industry"));
-  const symbolIdx = header.findIndex((h) => h.includes("symbol"));
+  const nameIdx = header.findIndex((h) => h.includes("company") || h === "name");
+  const industryIdx = header.findIndex(
+    (h) => h.includes("industry") || h.includes("sector") || h.includes("sector_id")
+  );
+  const symbolIdx = header.findIndex((h) => h.includes("symbol") || h === "ticker");
   if (nameIdx < 0 || symbolIdx < 0) {
-    console.error("Could not locate Company Name / Symbol columns");
-    process.exit(1);
+    console.error(`Skipping ${path}: missing Company / Symbol columns`);
+    return { companies: [], unmappedIndustries: new Set() };
   }
 
-  const out: NseCompany[] = [];
+  const companies: NseCompany[] = [];
   const unmappedIndustries = new Set<string>();
   for (let i = 1; i < lines.length; i++) {
     const cells = splitCsvLine(lines[i]);
@@ -277,19 +283,69 @@ function main() {
     if (!name || !symbol) continue;
 
     const override = SYMBOL_OVERRIDES[symbol.toUpperCase()];
-    const defaultSector = INDUSTRY_TO_SECTOR[industry?.toUpperCase()] ?? null;
-    const sector_id = override ?? defaultSector;
+    // Industry column might either be NSE's text classification or a
+    // pre-mapped sector_id ("auto", "banking" etc.) from a curated
+    // file. Accept both.
+    const lc = industry?.toLowerCase() ?? "";
+    const isDirectSectorId = /^[a-z]{2,12}$/.test(lc);
+    const fromIndustry = INDUSTRY_TO_SECTOR[industry?.toUpperCase()];
+    const sector_id =
+      override ??
+      fromIndustry ??
+      (isDirectSectorId ? lc : null);
     if (!sector_id && industry) unmappedIndustries.add(industry);
-    out.push({ name, symbol, sector_id });
+    companies.push({ name, symbol, sector_id });
   }
+  return { companies, unmappedIndustries };
+}
+
+function main() {
+  const { inDir, outPath } = parseArgs(process.argv.slice(2));
+  const files = readdirSync(resolve(inDir))
+    .filter((f) => f.toLowerCase().endsWith(".csv"))
+    .sort();
+
+  if (files.length === 0) {
+    console.error(`No CSV files found in ${inDir}/`);
+    process.exit(1);
+  }
+
+  // Symbol-keyed dedupe — first-seen wins, so put more-authoritative
+  // files alphabetically first if order matters.
+  const bySymbol = new Map<string, NseCompany>();
+  const allUnmapped = new Set<string>();
+  const perFileCounts: { file: string; count: number; mapped: number }[] = [];
+
+  for (const f of files) {
+    const path = join(inDir, f);
+    const { companies, unmappedIndustries } = processCsvFile(path);
+    let added = 0;
+    let mappedAdded = 0;
+    for (const c of companies) {
+      const key = c.symbol.toUpperCase();
+      if (bySymbol.has(key)) continue;
+      bySymbol.set(key, c);
+      added += 1;
+      if (c.sector_id) mappedAdded += 1;
+    }
+    for (const u of unmappedIndustries) allUnmapped.add(u);
+    perFileCounts.push({ file: f, count: added, mapped: mappedAdded });
+  }
+
+  const out = Array.from(bySymbol.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
   writeFileSync(resolve(outPath), JSON.stringify(out, null, 2) + "\n", "utf8");
   const mapped = out.filter((x) => x.sector_id).length;
   console.log(
-    `Wrote ${out.length} companies (${mapped} mapped, ${out.length - mapped} unmapped) → ${outPath}`
+    `Wrote ${out.length} unique companies (${mapped} mapped, ${out.length - mapped} unmapped) → ${outPath}`
   );
-  if (unmappedIndustries.size > 0) {
-    console.log("Unmapped industries:", Array.from(unmappedIndustries).join(", "));
+  for (const r of perFileCounts) {
+    console.log(`  + ${r.file}: ${r.count} new (${r.mapped} mapped)`);
+  }
+  if (allUnmapped.size > 0) {
+    console.log("Unmapped industries:", Array.from(allUnmapped).join(", "));
   }
 }
 
