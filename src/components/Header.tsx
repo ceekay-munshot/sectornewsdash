@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   BookOpen,
+  Briefcase,
   LayoutDashboard,
   Moon,
   Radar,
@@ -11,7 +12,7 @@ import { SyncAllButton } from "./SyncAllButton";
 import { classNames } from "../lib/utils";
 import type { Theme } from "../App";
 
-export type TopTab = "dashboard" | "logic";
+export type TopTab = "dashboard" | "logic" | "portfolio";
 
 interface Props {
   syncRunning: boolean;
@@ -79,6 +80,12 @@ export function Header({
               onClick={() => onChangeTab("logic")}
               icon={<BookOpen size={12} />}
               label="Logic"
+            />
+            <TabButton
+              active={activeTab === "portfolio"}
+              onClick={() => onChangeTab("portfolio")}
+              icon={<Briefcase size={12} />}
+              label="My portfolio"
             />
           </nav>
         </div>

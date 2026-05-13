@@ -4,6 +4,7 @@ import { FilterBar } from "./components/FilterBar";
 import { OverviewTab } from "./components/OverviewTab";
 import { SectorDetail } from "./components/SectorDetail";
 import { LogicTab } from "./components/LogicTab";
+import { PortfolioTab } from "./components/PortfolioTab";
 import { NewsInsightPanel } from "./components/NewsInsightPanel";
 import { DashboardChatButton } from "./components/DashboardChatButton";
 import { DashboardChatPanel } from "./components/DashboardChatPanel";
@@ -306,6 +307,12 @@ export default function App() {
       <main className="relative z-10 mx-auto w-full max-w-[1760px] px-4 py-2.5 2xl:px-6">
         {topTab === "logic" ? (
           <LogicTab />
+        ) : topTab === "portfolio" ? (
+          <PortfolioTab
+            livePool={livePool}
+            aggregates={aggregates}
+            onSelectNews={onSelectNews}
+          />
         ) : view === "overview" || !activeAggregate ? (
           <OverviewTab
             aggregates={aggregates}
