@@ -126,7 +126,7 @@ export function HeatmapInsightsPanel({
         </div>
 
         {/* Three columns */}
-        <div className="grid flex-1 grid-cols-1 gap-3 overflow-y-auto px-5 pb-5 lg:grid-cols-3">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto px-5 pb-5 lg:grid-cols-3 lg:overflow-hidden">
           <Column
             title="Deploy"
             subtitle="Clean setups to consider sizing into."
@@ -207,13 +207,13 @@ function Column({
   return (
     <div
       className={classNames(
-        "flex flex-col overflow-hidden rounded-xl border bg-white/[0.018]",
+        "flex min-h-0 flex-col overflow-hidden rounded-xl border bg-white/[0.018]",
         t.ring
       )}
       style={{ boxShadow: t.glow }}
     >
       <div className={`h-[3px] w-full bg-gradient-to-r ${t.bar}`} />
-      <div className="flex items-center justify-between gap-2 px-3 pt-3">
+      <div className="flex shrink-0 items-center justify-between gap-2 px-3 pt-3">
         <div className="flex items-center gap-1.5">
           <span
             className={classNames(
@@ -229,11 +229,11 @@ function Column({
           </span>
         </div>
       </div>
-      <div className="px-3 pb-2 pt-1 text-[11px] leading-snug text-white/55">
+      <div className="shrink-0 px-3 pb-2 pt-1 text-[11px] leading-snug text-white/55">
         {subtitle}
       </div>
 
-      <div className="space-y-1.5 px-3 pb-3">
+      <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-3 pb-3">
         {rows.length === 0 ? (
           <div className="rounded-lg border border-white/[0.05] bg-white/[0.012] px-2.5 py-3 text-center text-[11.5px] text-white/45">
             {emptyHint}
