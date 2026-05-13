@@ -47,10 +47,7 @@ export function CriticalAlertsCard({ count, rows, onClick }: Props) {
   };
   const hide = () => setAnchor(null);
 
-  const hint =
-    rows.length > 0
-      ? `Across ${rows.length} sector${rows.length === 1 ? "" : "s"} · click for Why`
-      : "No Critical-urgency headlines";
+  const hint = rows.length === 0 ? "No Critical-urgency headlines" : null;
 
   const clickable = Boolean(onClick) && count > 0;
 
@@ -100,7 +97,9 @@ export function CriticalAlertsCard({ count, rows, onClick }: Props) {
       <div className="mt-1.5 font-display text-[22px] font-semibold leading-none text-white">
         {count}
       </div>
-      <div className="mt-1 text-[11px] leading-snug text-white/45">{hint}</div>
+      {hint ? (
+        <div className="mt-1 text-[11px] leading-snug text-white/45">{hint}</div>
+      ) : null}
 
       {clickable ? (
         <span
