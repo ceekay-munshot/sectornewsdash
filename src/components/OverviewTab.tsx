@@ -132,11 +132,7 @@ export function OverviewTab({
         <KPIStatCard
           label="Hottest sector"
           value={stats.hottest?.sector.shortName ?? "—"}
-          hint={
-            stats.hottest
-              ? `Heat ${stats.hottest.heatScore} · ${stats.hottest.newsCount} headlines`
-              : "No news under current filters"
-          }
+          hint={stats.hottest ? undefined : "No news under current filters"}
           icon={Flame}
           accent="#FB7185"
           onClick={stats.hottest ? openHottestWhy : undefined}
@@ -145,11 +141,7 @@ export function OverviewTab({
         <KPIStatCard
           label="Most bullish sector"
           value={stats.mostBullish?.sector.shortName ?? "—"}
-          hint={
-            stats.mostBullish
-              ? `${stats.mostBullish.bullishCount} bullish · momentum +${Math.round(stats.mostBullish.bullishMomentum)}`
-              : "No positive-skew sector"
-          }
+          hint={stats.mostBullish ? undefined : "No positive-skew sector"}
           icon={TrendingUp}
           accent="#5EEAD4"
           onClick={stats.mostBullish ? openBullishWhy : undefined}
