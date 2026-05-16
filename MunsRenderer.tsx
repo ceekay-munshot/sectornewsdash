@@ -32,8 +32,11 @@ import { toast } from "sonner";
 
 // -------------------- Config --------------------
 
-const MUNS_API_BASE = import.meta.env.VITE_MUNS_API_BASE || "https://devde.muns.io";
-const MUNS_ACCESS_TOKEN = import.meta.env.VITE_MUNS_ACCESS_TOKEN || "";
+// MUNS is called via the same-origin Worker proxy at /api/muns-run.
+// The bearer token lives as a Cloudflare Worker secret (MUNS_ACCESS_TOKEN)
+// and is injected server-side, so it never ships to the browser.
+const MUNS_PROXY_PATH = "/api/muns-run";
+const MUNS_USER_INDEX = 124;
 
 // -------------------- Types --------------------
 
@@ -260,25 +263,16 @@ const sessionKeyForAgent = (agentId: string, scopeKey: string) => `${agentId}::$
 // -------------------- API --------------------
 
 export const runMunsAgent = async (input: RunMunsAgentInput): Promise<RunMunsAgentResult> => {
-  if (!MUNS_ACCESS_TOKEN) {
-    return {
-      ok: false,
-      markdown: "",
-      raw: "",
-      error: "Missing VITE_MUNS_ACCESS_TOKEN.",
-    };
-  }
-
   const payload = {
+    user_index: MUNS_USER_INDEX,
     agent_library_id: input.modelId,
     ...(input.userQuery ? { user_query: input.userQuery } : {}),
     metadata: toMetadata(input.context),
   };
 
-  const response = await fetch(`${MUNS_API_BASE}/agents/run`, {
+  const response = await fetch(MUNS_PROXY_PATH, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${MUNS_ACCESS_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),

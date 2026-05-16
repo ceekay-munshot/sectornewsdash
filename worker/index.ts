@@ -5,7 +5,13 @@ interface Env {
   OPENAI_API_KEY?: string;
   // Optional override; falls back to a sensible default model.
   OPENAI_MODEL?: string;
+  // Set via `npx wrangler secret put MUNS_ACCESS_TOKEN`. Never bake into client.
+  MUNS_ACCESS_TOKEN?: string;
+  // Optional upstream override; falls back to the devde endpoint.
+  MUNS_API_BASE?: string;
 }
+
+const MUNS_DEFAULT_BASE = "https://devde.muns.io";
 
 const KV_KEY = "agent-news-by-sector-v1";
 
@@ -131,6 +137,16 @@ export default {
       return handleDashboardChat(req, env);
     }
 
+    if (url.pathname === "/api/muns-run") {
+      if (req.method !== "POST") {
+        return new Response("Method Not Allowed", {
+          status: 405,
+          headers: { Allow: "POST" },
+        });
+      }
+      return handleMunsRun(req, env);
+    }
+
     return env.ASSETS.fetch(req);
   },
 };
@@ -223,6 +239,51 @@ async function handleChat(req: Request, env: Env): Promise<Response> {
     sourceUsed: Boolean(sourceText),
     model,
   });
+}
+
+async function handleMunsRun(req: Request, env: Env): Promise<Response> {
+  if (!env.MUNS_ACCESS_TOKEN) {
+    return jsonError(
+      "MUNS token not configured. Set the MUNS_ACCESS_TOKEN secret on the Worker.",
+      500,
+    );
+  }
+
+  let body: string;
+  try {
+    body = await req.text();
+    JSON.parse(body);
+  } catch {
+    return jsonError("Invalid JSON", 400);
+  }
+
+  const base = env.MUNS_API_BASE || MUNS_DEFAULT_BASE;
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${base}/agents/run`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.MUNS_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body,
+    });
+  } catch (e) {
+    return jsonError(`MUNS request failed: ${(e as Error).message}`, 502);
+  }
+
+  const headers = new Headers({
+    "Content-Type": upstream.headers.get("Content-Type") ?? "text/plain; charset=utf-8",
+    "Cache-Control": "no-store",
+  });
+  const passthrough = ["x-active-analyst-id", "x-analyst-output-id"];
+  for (const name of passthrough) {
+    const v = upstream.headers.get(name);
+    if (v) headers.set(name, v);
+  }
+  headers.set("Access-Control-Expose-Headers", passthrough.join(", "));
+
+  return new Response(upstream.body, { status: upstream.status, headers });
 }
 
 async function handleSummary(req: Request, env: Env): Promise<Response> {
