@@ -1,20 +1,21 @@
 import type { NewsItem } from "../types";
-import { AGENT_ACCESS_TOKEN, AGENT_API_BASE } from "./agentConfig";
 import { parseMunsAutoNews } from "./munsParse";
 import { munsRowsToNewsItems } from "./munsToNews";
+
+const MUNS_USER_INDEX = 124;
 
 export async function runSectorAgent(
   sectorId: string,
   agentLibraryId: string,
 ): Promise<NewsItem[]> {
   const today = new Date().toISOString().slice(0, 10);
-  const response = await fetch(`${AGENT_API_BASE}/agents/run`, {
+  const response = await fetch("/api/muns-run", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${AGENT_ACCESS_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      user_index: MUNS_USER_INDEX,
       agent_library_id: agentLibraryId,
       metadata: {
         stock_ticker: "JIOFIN",
