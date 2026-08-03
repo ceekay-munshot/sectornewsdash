@@ -1,3 +1,5 @@
+import { bedrockChatCompletion, type OAIChatBody } from "./bedrockChat";
+
 interface Env {
   ASSETS: Fetcher;
   NEWS_KV: KVNamespace;
@@ -9,6 +11,16 @@ interface Env {
   MUNS_ACCESS_TOKEN?: string;
   // Optional upstream override; falls back to the devde endpoint.
   MUNS_API_BASE?: string;
+  // Chat provider toggle. Defaults to "openai" so existing deployments are
+  // unaffected; set to "claude" to route through AWS Bedrock instead. See
+  // worker/bedrockChat.ts — that file + these branches are the entire
+  // Claude path and can be removed together without touching OpenAI logic.
+  LLM_PROVIDER?: "openai" | "claude";
+  // Bedrock bearer API key, used only when LLM_PROVIDER === "claude".
+  // Set via `npx wrangler secret put temp_claude_token`.
+  temp_claude_token?: string;
+  BEDROCK_REGION?: string;
+  BEDROCK_MODEL_ID?: string;
 }
 
 const MUNS_DEFAULT_BASE = "https://devde.muns.io";
@@ -152,7 +164,8 @@ export default {
 };
 
 async function handleChat(req: Request, env: Env): Promise<Response> {
-  if (!env.OPENAI_API_KEY) {
+  const provider = env.LLM_PROVIDER === "claude" ? "claude" : "openai";
+  if (provider === "openai" && !env.OPENAI_API_KEY) {
     return jsonError(
       "OpenAI key not configured. Set the OPENAI_API_KEY secret on the Worker.",
       500,
@@ -206,14 +219,17 @@ async function handleChat(req: Request, env: Env): Promise<Response> {
 
   let openaiRes: Response;
   try {
-    openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(openaiBody),
-    });
+    openaiRes =
+      provider === "claude"
+        ? await bedrockChatCompletion(env, openaiBody)
+        : await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(openaiBody),
+          });
   } catch (e) {
     return jsonError(`OpenAI request failed: ${(e as Error).message}`, 502);
   }
@@ -287,7 +303,8 @@ async function handleMunsRun(req: Request, env: Env): Promise<Response> {
 }
 
 async function handleSummary(req: Request, env: Env): Promise<Response> {
-  if (!env.OPENAI_API_KEY) {
+  const provider = env.LLM_PROVIDER === "claude" ? "claude" : "openai";
+  if (provider === "openai" && !env.OPENAI_API_KEY) {
     return jsonError(
       "OpenAI key not configured. Set the OPENAI_API_KEY secret on the Worker.",
       500,
@@ -346,14 +363,17 @@ async function handleSummary(req: Request, env: Env): Promise<Response> {
 
   let openaiRes: Response;
   try {
-    openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(openaiBody),
-    });
+    openaiRes =
+      provider === "claude"
+        ? await bedrockChatCompletion(env, openaiBody)
+        : await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(openaiBody),
+          });
   } catch (e) {
     return jsonError(`OpenAI request failed: ${(e as Error).message}`, 502);
   }
@@ -594,7 +614,8 @@ interface NewsCorpus {
 }
 
 async function handleDashboardChat(req: Request, env: Env): Promise<Response> {
-  if (!env.OPENAI_API_KEY) {
+  const provider = env.LLM_PROVIDER === "claude" ? "claude" : "openai";
+  if (provider === "openai" && !env.OPENAI_API_KEY) {
     return jsonError(
       "OpenAI key not configured. Set the OPENAI_API_KEY secret on the Worker.",
       500,
@@ -696,6 +717,7 @@ interface RunArgs {
 
 async function runDashboardConversation(args: RunArgs): Promise<void> {
   const { env, selectedSectorIds, catalogMap, corpus, cleanedHistory, sendEvent } = args;
+  const provider = env.LLM_PROVIDER === "claude" ? "claude" : "openai";
   const systemPrompt = buildDashboardSystemPrompt(
     selectedSectorIds,
     catalogMap,
@@ -745,14 +767,17 @@ async function runDashboardConversation(args: RunArgs): Promise<void> {
 
     let openaiRes: Response;
     try {
-      openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+      openaiRes =
+        provider === "claude"
+          ? await bedrockChatCompletion(env, body as OAIChatBody)
+          : await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(body),
+            });
     } catch (e) {
       await sendEvent({
         type: "error",
