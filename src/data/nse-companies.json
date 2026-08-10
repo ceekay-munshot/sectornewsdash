@@ -1,8 +1,18 @@
 [
   {
+    "name": "360 ONE WAM Ltd.",
+    "symbol": "360ONE",
+    "sector_id": "nbfc"
+  },
+  {
     "name": "3M India Ltd.",
     "symbol": "3MINDIA",
     "sector_id": "logistics"
+  },
+  {
+    "name": "Aavas Financiers Ltd.",
+    "symbol": "AAVAS",
+    "sector_id": "nbfc"
   },
   {
     "name": "ABB India Ltd.",
@@ -15,24 +25,14 @@
     "sector_id": "cement"
   },
   {
-    "name": "AIA Engineering Ltd.",
-    "symbol": "AIAENG",
-    "sector_id": "capgoods"
+    "name": "Adani Energy Solutions Ltd.",
+    "symbol": "ADANIENSOL",
+    "sector_id": "power"
   },
   {
-    "name": "APL Apollo Tubes Ltd.",
-    "symbol": "APLAPOLLO",
-    "sector_id": "metals"
-  },
-  {
-    "name": "AU Small Finance Bank Ltd.",
-    "symbol": "AUBANK",
-    "sector_id": "banking"
-  },
-  {
-    "name": "Aavas Financiers Ltd.",
-    "symbol": "AAVAS",
-    "sector_id": "nbfc"
+    "name": "Adani Enterprises Ltd.",
+    "symbol": "ADANIENT",
+    "sector_id": "infra"
   },
   {
     "name": "Adani Green Energy Ltd.",
@@ -50,9 +50,19 @@
     "sector_id": "power"
   },
   {
+    "name": "Adani Total Gas Ltd.",
+    "symbol": "ATGL",
+    "sector_id": "energy"
+  },
+  {
     "name": "Adani Transmission Ltd.",
     "symbol": "ADANITRANS",
     "sector_id": "power"
+  },
+  {
+    "name": "Adani Wilmar Ltd.",
+    "symbol": "AWL",
+    "sector_id": "fmcg"
   },
   {
     "name": "Aditya Birla Capital Ltd.",
@@ -65,6 +75,11 @@
     "sector_id": "retail"
   },
   {
+    "name": "Aditya Birla Real Estate Ltd.",
+    "symbol": "ABREL",
+    "sector_id": "realestate"
+  },
+  {
     "name": "Advanced Enzyme Tech Ltd.",
     "symbol": "ADVENZYMES",
     "sector_id": "fmcg"
@@ -73,6 +88,16 @@
     "name": "Aegis Logistics Ltd.",
     "symbol": "AEGISCHEM",
     "sector_id": "energy"
+  },
+  {
+    "name": "Aether Industries Ltd.",
+    "symbol": "AETHER",
+    "sector_id": "specchem"
+  },
+  {
+    "name": "AIA Engineering Ltd.",
+    "symbol": "AIAENG",
+    "sector_id": "capgoods"
   },
   {
     "name": "Ajanta Pharmaceuticals Ltd.",
@@ -110,14 +135,49 @@
     "sector_id": "auto"
   },
   {
+    "name": "Amara Raja Energy & Mobility Ltd.",
+    "symbol": "ARE&M",
+    "sector_id": "auto"
+  },
+  {
+    "name": "Amber Enterprises India Ltd.",
+    "symbol": "AMBER",
+    "sector_id": "capgoods"
+  },
+  {
     "name": "Ambuja Cements Ltd.",
     "symbol": "AMBUJACEM",
     "sector_id": "cement"
   },
   {
+    "name": "Anand Rathi Wealth Ltd.",
+    "symbol": "ANANDRATHI",
+    "sector_id": "nbfc"
+  },
+  {
     "name": "Andhra Bank",
     "symbol": "ANDHRABANK",
     "sector_id": "banking"
+  },
+  {
+    "name": "Angel One Ltd.",
+    "symbol": "ANGELONE",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "Anupam Rasayan India Ltd.",
+    "symbol": "ANURAS",
+    "sector_id": "specchem"
+  },
+  {
+    "name": "Apar Industries Ltd.",
+    "symbol": "APARINDS",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "APL Apollo Tubes Ltd.",
+    "symbol": "APLAPOLLO",
+    "sector_id": "metals"
   },
   {
     "name": "Apollo Hospitals Enterprise Ltd.",
@@ -150,9 +210,9 @@
     "sector_id": "healthcare"
   },
   {
-    "name": "AstraZenca Pharma India Ltd.",
-    "symbol": "ASTRAZEN",
-    "sector_id": "pharma"
+    "name": "Astra Microwave Products Ltd.",
+    "symbol": "ASTRAMICRO",
+    "sector_id": "defence"
   },
   {
     "name": "Astral Poly Technik Ltd.",
@@ -160,9 +220,19 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "AstraZenca Pharma India Ltd.",
+    "symbol": "ASTRAZEN",
+    "sector_id": "pharma"
+  },
+  {
     "name": "Atul Ltd.",
     "symbol": "ATUL",
     "sector_id": "specchem"
+  },
+  {
+    "name": "AU Small Finance Bank Ltd.",
+    "symbol": "AUBANK",
+    "sector_id": "banking"
   },
   {
     "name": "Aurobindo Pharma Ltd.",
@@ -175,29 +245,19 @@
     "sector_id": "fmcg"
   },
   {
-    "name": "Avenue Supermarts Ltd.",
+    "name": "Avenue Supermarts Ltd. (DMart)",
     "symbol": "DMART",
     "sector_id": "retail"
+  },
+  {
+    "name": "Awfis Space Solutions Ltd.",
+    "symbol": "AWFIS",
+    "sector_id": "realestate"
   },
   {
     "name": "Axis Bank Ltd.",
     "symbol": "AXISBANK",
     "sector_id": "banking"
-  },
-  {
-    "name": "BASF India Ltd.",
-    "symbol": "BASF",
-    "sector_id": "chemicals"
-  },
-  {
-    "name": "BEML Ltd.",
-    "symbol": "BEML",
-    "sector_id": "defence"
-  },
-  {
-    "name": "BSE Ltd.",
-    "symbol": "BSE",
-    "sector_id": "nbfc"
   },
   {
     "name": "Bajaj Auto Ltd.",
@@ -210,9 +270,9 @@
     "sector_id": "fmcg"
   },
   {
-    "name": "Bajaj Electricals Ltd",
+    "name": "Bajaj Electricals Ltd.",
     "symbol": "BAJAJELEC",
-    "sector_id": "fmcg"
+    "sector_id": "capgoods"
   },
   {
     "name": "Bajaj Finance Ltd.",
@@ -227,6 +287,11 @@
   {
     "name": "Bajaj Holdings & Investment Ltd.",
     "symbol": "BAJAJHLDNG",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "Bajaj Housing Finance Ltd.",
+    "symbol": "BAJAJHFL",
     "sector_id": "nbfc"
   },
   {
@@ -265,9 +330,19 @@
     "sector_id": "banking"
   },
   {
+    "name": "BASF India Ltd.",
+    "symbol": "BASF",
+    "sector_id": "chemicals"
+  },
+  {
     "name": "Bata India Ltd.",
     "symbol": "BATAINDIA",
     "sector_id": "fmcg"
+  },
+  {
+    "name": "BEML Ltd.",
+    "symbol": "BEML",
+    "sector_id": "defence"
   },
   {
     "name": "Berger Paints India Ltd.",
@@ -287,7 +362,7 @@
   {
     "name": "Bharat Forge Ltd.",
     "symbol": "BHARATFORG",
-    "sector_id": "capgoods"
+    "sector_id": "auto"
   },
   {
     "name": "Bharat Heavy Electricals Ltd.",
@@ -305,6 +380,11 @@
     "sector_id": "telecom"
   },
   {
+    "name": "Bharti Hexacom Ltd.",
+    "symbol": "BHARTIHEXA",
+    "sector_id": "telecom"
+  },
+  {
     "name": "Bharti Infratel Ltd.",
     "symbol": "INFRATEL",
     "sector_id": "telecom"
@@ -318,6 +398,11 @@
     "name": "Birla Corporation Ltd.",
     "symbol": "BIRLACORPN",
     "sector_id": "cement"
+  },
+  {
+    "name": "Birlasoft Ltd.",
+    "symbol": "BSOFT",
+    "sector_id": "it"
   },
   {
     "name": "Bliss GVS Pharma Ltd.",
@@ -345,6 +430,11 @@
     "sector_id": "textiles"
   },
   {
+    "name": "Borosil Renewables Ltd.",
+    "symbol": "BORORENEW",
+    "sector_id": "renewables"
+  },
+  {
     "name": "Bosch Ltd.",
     "symbol": "BOSCHLTD",
     "sector_id": "auto"
@@ -360,34 +450,24 @@
     "sector_id": "fmcg"
   },
   {
-    "name": "CARE Ratings Ltd.",
-    "symbol": "CARERATING",
-    "sector_id": "nbfc"
-  },
-  {
-    "name": "CCL Products (I) Ltd.",
-    "symbol": "CCL",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "CESC Ltd.",
-    "symbol": "CESC",
-    "sector_id": "power"
-  },
-  {
-    "name": "CG Power and Industrial Solutions Ltd.",
-    "symbol": "CGPOWER",
-    "sector_id": "capgoods"
-  },
-  {
-    "name": "CRISIL Ltd.",
-    "symbol": "CRISIL",
+    "name": "BSE Ltd.",
+    "symbol": "BSE",
     "sector_id": "nbfc"
   },
   {
     "name": "Cadila Healthcare Ltd.",
     "symbol": "CADILAHC",
     "sector_id": "pharma"
+  },
+  {
+    "name": "Campus Activewear Ltd.",
+    "symbol": "CAMPUS",
+    "sector_id": "retail"
+  },
+  {
+    "name": "CAMS Computer Age Management Services Ltd.",
+    "symbol": "CAMS",
+    "sector_id": "nbfc"
   },
   {
     "name": "Can Fin Homes Ltd.",
@@ -410,9 +490,29 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "CARE Ratings Ltd.",
+    "symbol": "CARERATING",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "CarTrade Tech Ltd.",
+    "symbol": "CARTRADE",
+    "sector_id": "it"
+  },
+  {
     "name": "Castrol India Ltd.",
     "symbol": "CASTROLIND",
     "sector_id": "energy"
+  },
+  {
+    "name": "CCL Products (I) Ltd.",
+    "symbol": "CCL",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "CDSL Central Depository Services Ltd.",
+    "symbol": "CDSL",
+    "sector_id": "nbfc"
   },
   {
     "name": "Ceat Ltd.",
@@ -425,11 +525,6 @@
     "sector_id": "banking"
   },
   {
-    "name": "Central Depository Services (India) Ltd.",
-    "symbol": "CDSL",
-    "sector_id": "nbfc"
-  },
-  {
     "name": "Century Plyboards (India) Ltd.",
     "symbol": "CENTURYPLY",
     "sector_id": "fmcg"
@@ -438,6 +533,21 @@
     "name": "Cera Sanitaryware Ltd",
     "symbol": "CERA",
     "sector_id": "infra"
+  },
+  {
+    "name": "CESC Ltd.",
+    "symbol": "CESC",
+    "sector_id": "power"
+  },
+  {
+    "name": "CG Power and Industrial Solutions Ltd.",
+    "symbol": "CGPOWER",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "Chalet Hotels Ltd.",
+    "symbol": "CHALET",
+    "sector_id": "hospitality"
   },
   {
     "name": "Chambal Fertilizers & Chemicals Ltd.",
@@ -470,6 +580,11 @@
     "sector_id": "banking"
   },
   {
+    "name": "Clean Science and Technology Ltd.",
+    "symbol": "CLEAN",
+    "sector_id": "specchem"
+  },
+  {
     "name": "Coal India Ltd.",
     "symbol": "COALINDIA",
     "sector_id": "metals"
@@ -483,6 +598,11 @@
     "name": "Coffee Day Enterprises Ltd.",
     "symbol": "COFFEEDAY",
     "sector_id": "fmcg"
+  },
+  {
+    "name": "Coforge Ltd.",
+    "symbol": "COFORGE",
+    "sector_id": "it"
   },
   {
     "name": "Colgate Palmolive (India) Ltd.",
@@ -515,9 +635,14 @@
     "sector_id": "nbfc"
   },
   {
+    "name": "CRISIL Ltd.",
+    "symbol": "CRISIL",
+    "sector_id": "nbfc"
+  },
+  {
     "name": "Crompton Greaves Consumer Electricals Ltd.",
     "symbol": "CROMPTON",
-    "sector_id": "fmcg"
+    "sector_id": "capgoods"
   },
   {
     "name": "Cummins India Ltd.",
@@ -535,6 +660,16 @@
     "sector_id": "media"
   },
   {
+    "name": "Dabur India Ltd.",
+    "symbol": "DABUR",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "Data Patterns India Ltd.",
+    "symbol": "DATAPATTNS",
+    "sector_id": "defence"
+  },
+  {
     "name": "DCB Bank Ltd.",
     "symbol": "DCBBANK",
     "sector_id": "banking"
@@ -542,16 +677,6 @@
   {
     "name": "DCM Shriram Ltd.",
     "symbol": "DCMSHRIRAM",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "DLF Ltd.",
-    "symbol": "DLF",
-    "sector_id": "realestate"
-  },
-  {
-    "name": "Dabur India Ltd.",
-    "symbol": "DABUR",
     "sector_id": "fmcg"
   },
   {
@@ -568,6 +693,11 @@
     "name": "Delta Corp Ltd.",
     "symbol": "DELTACORP",
     "sector_id": "hospitality"
+  },
+  {
+    "name": "Devyani International Ltd.",
+    "symbol": "DEVYANI",
+    "sector_id": "fmcg"
   },
   {
     "name": "Dewan Housing Finance Corporation Ltd.",
@@ -595,12 +725,22 @@
     "sector_id": "pharma"
   },
   {
-    "name": "Dixon Technologies (India) Ltd.",
+    "name": "Dixon Technologies India Ltd.",
     "symbol": "DIXON",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "DLF Ltd.",
+    "symbol": "DLF",
+    "sector_id": "realestate"
+  },
+  {
+    "name": "Dodla Dairy Ltd.",
+    "symbol": "DODLA",
     "sector_id": "fmcg"
   },
   {
-    "name": "Dr. Lal Path Labs Ltd.",
+    "name": "Dr Lal Path Labs Ltd.",
     "symbol": "LALPATHLAB",
     "sector_id": "healthcare"
   },
@@ -615,9 +755,14 @@
     "sector_id": "agri"
   },
   {
-    "name": "EIH Ltd.",
-    "symbol": "EIHOTEL",
-    "sector_id": "hospitality"
+    "name": "Easy Trip Planners Ltd.",
+    "symbol": "EASEMYTRIP",
+    "sector_id": "it"
+  },
+  {
+    "name": "eClerx Services Ltd.",
+    "symbol": "ECLERX",
+    "sector_id": "it"
   },
   {
     "name": "Edelweiss Financial Services Ltd.",
@@ -628,6 +773,11 @@
     "name": "Eicher Motors Ltd.",
     "symbol": "EICHERMOT",
     "sector_id": "auto"
+  },
+  {
+    "name": "EIH Ltd.",
+    "symbol": "EIHOTEL",
+    "sector_id": "hospitality"
   },
   {
     "name": "Elgi Equipments Ltd.",
@@ -653,6 +803,11 @@
     "name": "Equitas Holdings Ltd.",
     "symbol": "EQUITAS",
     "sector_id": "nbfc"
+  },
+  {
+    "name": "Equitas Small Finance Bank Ltd.",
+    "symbol": "EQUITASBNK",
+    "sector_id": "banking"
   },
   {
     "name": "Eris Lifesciences Ltd.",
@@ -705,9 +860,19 @@
     "sector_id": "it"
   },
   {
+    "name": "Five Star Business Finance Ltd.",
+    "symbol": "FIVESTAR",
+    "sector_id": "nbfc"
+  },
+  {
     "name": "Fortis Healthcare Ltd.",
     "symbol": "FORTIS",
     "sector_id": "healthcare"
+  },
+  {
+    "name": "FSN E-Commerce Ventures Ltd. (Nykaa)",
+    "symbol": "NYKAA",
+    "sector_id": "retail"
   },
   {
     "name": "Future Consumer Ltd.",
@@ -725,29 +890,9 @@
     "sector_id": "retail"
   },
   {
-    "name": "GAIL (India) Ltd.",
+    "name": "GAIL India Ltd.",
     "symbol": "GAIL",
     "sector_id": "energy"
-  },
-  {
-    "name": "GE Power India Ltd.",
-    "symbol": "GEPIL",
-    "sector_id": "capgoods"
-  },
-  {
-    "name": "GE T&D India Ltd.",
-    "symbol": "GET&D",
-    "sector_id": "capgoods"
-  },
-  {
-    "name": "GHCL Ltd.",
-    "symbol": "GHCL",
-    "sector_id": "chemicals"
-  },
-  {
-    "name": "GMR Infrastructure Ltd.",
-    "symbol": "GMRINFRA",
-    "sector_id": "infra"
   },
   {
     "name": "Galaxy Surfactants Ltd.",
@@ -765,9 +910,24 @@
     "sector_id": "infra"
   },
   {
+    "name": "GE Power India Ltd.",
+    "symbol": "GEPIL",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "GE T&D India Ltd.",
+    "symbol": "GET&D",
+    "sector_id": "capgoods"
+  },
+  {
     "name": "General Insurance Corporation of India",
     "symbol": "GICRE",
     "sector_id": "insurance"
+  },
+  {
+    "name": "GHCL Ltd.",
+    "symbol": "GHCL",
+    "sector_id": "chemicals"
   },
   {
     "name": "Gillette India Ltd.",
@@ -785,9 +945,29 @@
     "sector_id": "pharma"
   },
   {
+    "name": "Glenmark Life Sciences Ltd.",
+    "symbol": "GLS",
+    "sector_id": "pharma"
+  },
+  {
     "name": "Glenmark Pharmaceuticals Ltd.",
     "symbol": "GLENMARK",
     "sector_id": "pharma"
+  },
+  {
+    "name": "Global Health Ltd. (Medanta)",
+    "symbol": "MEDANTA",
+    "sector_id": "healthcare"
+  },
+  {
+    "name": "GMR Airports Infrastructure Ltd.",
+    "symbol": "GMRAIRPORT",
+    "sector_id": "infra"
+  },
+  {
+    "name": "GMR Infrastructure Ltd.",
+    "symbol": "GMRINFRA",
+    "sector_id": "infra"
   },
   {
     "name": "Godfrey Phillips India Ltd.",
@@ -813,6 +993,11 @@
     "name": "Godrej Properties Ltd.",
     "symbol": "GODREJPROP",
     "sector_id": "realestate"
+  },
+  {
+    "name": "GR Infraprojects Ltd.",
+    "symbol": "GRINFRA",
+    "sector_id": "infra"
   },
   {
     "name": "Granules India Ltd.",
@@ -900,6 +1085,31 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "Happiest Minds Technologies Ltd.",
+    "symbol": "HAPPSTMNDS",
+    "sector_id": "it"
+  },
+  {
+    "name": "Hathway Cable & Datacom Ltd.",
+    "symbol": "HATHWAY",
+    "sector_id": "media"
+  },
+  {
+    "name": "Hatsun Agro Product Ltd.",
+    "symbol": "HATSUN",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "Havells India Ltd.",
+    "symbol": "HAVELLS",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "HBL Power Systems Ltd.",
+    "symbol": "HBLPOWER",
+    "sector_id": "capgoods"
+  },
+  {
     "name": "HCL Technologies Ltd.",
     "symbol": "HCLTECH",
     "sector_id": "it"
@@ -918,21 +1128,6 @@
     "name": "HDFC Life Insurance Company Ltd.",
     "symbol": "HDFCLIFE",
     "sector_id": "insurance"
-  },
-  {
-    "name": "Hathway Cable & Datacom Ltd.",
-    "symbol": "HATHWAY",
-    "sector_id": "media"
-  },
-  {
-    "name": "Hatsun Agro Product Ltd.",
-    "symbol": "HATSUN",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "Havells India Ltd.",
-    "symbol": "HAVELLS",
-    "sector_id": "fmcg"
   },
   {
     "name": "HeidelbergCement India Ltd.",
@@ -955,7 +1150,7 @@
     "sector_id": "it"
   },
   {
-    "name": "Himachal Fut Com Ltd.",
+    "name": "HFCL Ltd.",
     "symbol": "HFCL",
     "sector_id": "telecom"
   },
@@ -985,6 +1180,11 @@
     "sector_id": "metals"
   },
   {
+    "name": "Hindustan Foods Ltd.",
+    "symbol": "HNDFDS",
+    "sector_id": "fmcg"
+  },
+  {
     "name": "Hindustan Petroleum Corporation Ltd.",
     "symbol": "HINDPETRO",
     "sector_id": "energy"
@@ -1005,7 +1205,7 @@
     "sector_id": "capgoods"
   },
   {
-    "name": "Housing & Urban Development Corporation Ltd.",
+    "name": "Housing & Urban Development Corp Ltd.",
     "symbol": "HUDCO",
     "sector_id": "nbfc"
   },
@@ -1065,29 +1265,9 @@
     "sector_id": "nbfc"
   },
   {
-    "name": "IRB Infrastructure Developers Ltd.",
-    "symbol": "IRB",
-    "sector_id": "infra"
-  },
-  {
-    "name": "IRCON International Ltd.",
-    "symbol": "IRCON",
-    "sector_id": "infra"
-  },
-  {
-    "name": "ITC Ltd.",
-    "symbol": "ITC",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "ITD Cementation India Ltd.",
-    "symbol": "ITDCEM",
-    "sector_id": "infra"
-  },
-  {
-    "name": "ITI Ltd.",
-    "symbol": "ITI",
-    "sector_id": "telecom"
+    "name": "IIFL Finance Ltd.",
+    "symbol": "IIFL",
+    "sector_id": "nbfc"
   },
   {
     "name": "India Cements Ltd.",
@@ -1130,7 +1310,7 @@
     "sector_id": "nbfc"
   },
   {
-    "name": "Indian Hotels Co. Ltd.",
+    "name": "Indian Hotels Co. Ltd. (Taj)",
     "symbol": "INDHOTEL",
     "sector_id": "hospitality"
   },
@@ -1145,8 +1325,13 @@
     "sector_id": "banking"
   },
   {
-    "name": "IndoStar Capital Finance Ltd.",
-    "symbol": "INDOSTAR",
+    "name": "Indian Railway Finance Corp Ltd.",
+    "symbol": "IRFC",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "Indian Renewable Energy Development Agency Ltd.",
+    "symbol": "IREDA",
     "sector_id": "nbfc"
   },
   {
@@ -1155,9 +1340,19 @@
     "sector_id": "pharma"
   },
   {
+    "name": "IndoStar Capital Finance Ltd.",
+    "symbol": "INDOSTAR",
+    "sector_id": "nbfc"
+  },
+  {
     "name": "Indraprastha Gas Ltd.",
     "symbol": "IGL",
     "sector_id": "energy"
+  },
+  {
+    "name": "Indus Towers Ltd.",
+    "symbol": "INDUSTOWER",
+    "sector_id": "telecom"
   },
   {
     "name": "IndusInd Bank Ltd.",
@@ -1205,6 +1400,31 @@
     "sector_id": "pharma"
   },
   {
+    "name": "IRB Infrastructure Developers Ltd.",
+    "symbol": "IRB",
+    "sector_id": "infra"
+  },
+  {
+    "name": "IRCON International Ltd.",
+    "symbol": "IRCON",
+    "sector_id": "infra"
+  },
+  {
+    "name": "ITC Ltd.",
+    "symbol": "ITC",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "ITD Cementation India Ltd.",
+    "symbol": "ITDCEM",
+    "sector_id": "infra"
+  },
+  {
+    "name": "ITI Ltd.",
+    "symbol": "ITI",
+    "sector_id": "telecom"
+  },
+  {
     "name": "J.B. Chemicals & Pharmaceuticals Ltd.",
     "symbol": "JBCHEPHARM",
     "sector_id": "pharma"
@@ -1213,36 +1433,6 @@
     "name": "J.K. Cement Ltd.",
     "symbol": "JKCEMENT",
     "sector_id": "cement"
-  },
-  {
-    "name": "JK Lakshmi Cement Ltd.",
-    "symbol": "JKLAKSHMI",
-    "sector_id": "cement"
-  },
-  {
-    "name": "JK Paper Ltd.",
-    "symbol": "JKPAPER",
-    "sector_id": "capgoods"
-  },
-  {
-    "name": "JK Tyre & Industries Ltd.",
-    "symbol": "JKTYRE",
-    "sector_id": "auto"
-  },
-  {
-    "name": "JM Financial Ltd.",
-    "symbol": "JMFINANCIL",
-    "sector_id": "nbfc"
-  },
-  {
-    "name": "JSW Energy Ltd.",
-    "symbol": "JSWENERGY",
-    "sector_id": "power"
-  },
-  {
-    "name": "JSW Steel Ltd.",
-    "symbol": "JSWSTEEL",
-    "sector_id": "metals"
   },
   {
     "name": "Jagran Prakashan Ltd.",
@@ -1300,9 +1490,49 @@
     "sector_id": "metals"
   },
   {
-    "name": "Jubilant Foodworks Ltd.",
+    "name": "Jio Financial Services Ltd.",
+    "symbol": "JIOFIN",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "JK Lakshmi Cement Ltd.",
+    "symbol": "JKLAKSHMI",
+    "sector_id": "cement"
+  },
+  {
+    "name": "JK Paper Ltd.",
+    "symbol": "JKPAPER",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "JK Tyre & Industries Ltd.",
+    "symbol": "JKTYRE",
+    "sector_id": "auto"
+  },
+  {
+    "name": "JM Financial Ltd.",
+    "symbol": "JMFINANCIL",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "JSW Energy Ltd.",
+    "symbol": "JSWENERGY",
+    "sector_id": "power"
+  },
+  {
+    "name": "JSW Steel Ltd.",
+    "symbol": "JSWSTEEL",
+    "sector_id": "metals"
+  },
+  {
+    "name": "Jubilant FoodWorks Ltd.",
     "symbol": "JUBLFOOD",
     "sector_id": "fmcg"
+  },
+  {
+    "name": "Jubilant Ingrevia Ltd.",
+    "symbol": "JUBLINGREA",
+    "sector_id": "specchem"
   },
   {
     "name": "Jubilant Life Sciences Ltd.",
@@ -1317,31 +1547,6 @@
   {
     "name": "Jyothy Laboratories Ltd.",
     "symbol": "JYOTHYLAB",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "K.P.R. Mill Ltd.",
-    "symbol": "KPRMILL",
-    "sector_id": "textiles"
-  },
-  {
-    "name": "KEI Industries Ltd.",
-    "symbol": "KEI",
-    "sector_id": "capgoods"
-  },
-  {
-    "name": "KIOCL Ltd.",
-    "symbol": "KIOCL",
-    "sector_id": "metals"
-  },
-  {
-    "name": "KNR Constructions Ltd.",
-    "symbol": "KNRCON",
-    "sector_id": "infra"
-  },
-  {
-    "name": "KRBL Ltd.",
-    "symbol": "KRBL",
     "sector_id": "fmcg"
   },
   {
@@ -1380,9 +1585,29 @@
     "sector_id": "infra"
   },
   {
+    "name": "KEI Industries Ltd.",
+    "symbol": "KEI",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "KFin Technologies Ltd.",
+    "symbol": "KFINTECH",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "KIOCL Ltd.",
+    "symbol": "KIOCL",
+    "sector_id": "metals"
+  },
+  {
     "name": "Kirloskar Oil Eng Ltd.",
     "symbol": "KIRLOSENG",
     "sector_id": "capgoods"
+  },
+  {
+    "name": "KNR Constructions Ltd.",
+    "symbol": "KNRCON",
+    "sector_id": "infra"
   },
   {
     "name": "Kolte-Patil Developers Ltd.",
@@ -1395,6 +1620,36 @@
     "sector_id": "banking"
   },
   {
+    "name": "KPIT Technologies Ltd.",
+    "symbol": "KPITTECH",
+    "sector_id": "it"
+  },
+  {
+    "name": "KPR Mill Ltd.",
+    "symbol": "KPRMILL",
+    "sector_id": "textiles"
+  },
+  {
+    "name": "KRBL Ltd.",
+    "symbol": "KRBL",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "Krishna Institute of Medical Sciences Ltd.",
+    "symbol": "KIMS",
+    "sector_id": "healthcare"
+  },
+  {
+    "name": "Krsnaa Diagnostics Ltd.",
+    "symbol": "KRSNAA",
+    "sector_id": "healthcare"
+  },
+  {
+    "name": "KSB Ltd.",
+    "symbol": "KSB",
+    "sector_id": "capgoods"
+  },
+  {
     "name": "L&T Finance Holdings Ltd.",
     "symbol": "L&TFH",
     "sector_id": "nbfc"
@@ -1403,11 +1658,6 @@
     "name": "L&T Technology Services Ltd.",
     "symbol": "LTTS",
     "sector_id": "it"
-  },
-  {
-    "name": "LIC Housing Finance Ltd.",
-    "symbol": "LICHSGFIN",
-    "sector_id": "nbfc"
   },
   {
     "name": "Lakshmi Machine Works Ltd.",
@@ -1435,14 +1685,44 @@
     "sector_id": "pharma"
   },
   {
+    "name": "Laxmi Organic Industries Ltd.",
+    "symbol": "LXCHEM",
+    "sector_id": "specchem"
+  },
+  {
     "name": "Lemon Tree Hotels Ltd.",
     "symbol": "LEMONTREE",
     "sector_id": "hospitality"
   },
   {
+    "name": "LIC Housing Finance Ltd.",
+    "symbol": "LICHSGFIN",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "LIC of India",
+    "symbol": "LICI",
+    "sector_id": "insurance"
+  },
+  {
     "name": "Linde India Ltd.",
     "symbol": "LINDEINDIA",
     "sector_id": "specchem"
+  },
+  {
+    "name": "LTIMindtree Ltd.",
+    "symbol": "LTIM",
+    "sector_id": "it"
+  },
+  {
+    "name": "Lumax Auto Technologies Ltd.",
+    "symbol": "LUMAXTECH",
+    "sector_id": "auto"
+  },
+  {
+    "name": "Lumax Industries Ltd.",
+    "symbol": "LUMAXIND",
+    "sector_id": "auto"
   },
   {
     "name": "Lupin Ltd.",
@@ -1455,24 +1735,9 @@
     "sector_id": "textiles"
   },
   {
-    "name": "MAS Financial Services Ltd.",
-    "symbol": "MASFIN",
-    "sector_id": "nbfc"
-  },
-  {
-    "name": "MMTC Ltd.",
-    "symbol": "MMTC",
-    "sector_id": "logistics"
-  },
-  {
-    "name": "MOIL Ltd.",
-    "symbol": "MOIL",
-    "sector_id": "metals"
-  },
-  {
-    "name": "MRF Ltd.",
-    "symbol": "MRF",
-    "sector_id": "auto"
+    "name": "Macrotech Developers Ltd. (Lodha)",
+    "symbol": "LODHA",
+    "sector_id": "realestate"
   },
   {
     "name": "Magma Fincorp Ltd.",
@@ -1530,6 +1795,11 @@
     "sector_id": "energy"
   },
   {
+    "name": "Mankind Pharma Ltd.",
+    "symbol": "MANKIND",
+    "sector_id": "pharma"
+  },
+  {
     "name": "Marico Ltd.",
     "symbol": "MARICO",
     "sector_id": "fmcg"
@@ -1540,9 +1810,19 @@
     "sector_id": "auto"
   },
   {
+    "name": "MAS Financial Services Ltd.",
+    "symbol": "MASFIN",
+    "sector_id": "nbfc"
+  },
+  {
     "name": "Max Financial Services Ltd.",
     "symbol": "MFSL",
     "sector_id": "insurance"
+  },
+  {
+    "name": "Max Healthcare Institute Ltd.",
+    "symbol": "MAXHEALTH",
+    "sector_id": "healthcare"
   },
   {
     "name": "Max India Ltd.",
@@ -1550,9 +1830,19 @@
     "sector_id": "healthcare"
   },
   {
-    "name": "MindTree Ltd.",
-    "symbol": "MINDTREE",
-    "sector_id": "it"
+    "name": "Mazagon Dock Shipbuilders Ltd.",
+    "symbol": "MAZDOCK",
+    "sector_id": "defence"
+  },
+  {
+    "name": "Metro Brands Ltd.",
+    "symbol": "METROBRAND",
+    "sector_id": "retail"
+  },
+  {
+    "name": "Metropolis Healthcare Ltd.",
+    "symbol": "METROPOLIS",
+    "sector_id": "healthcare"
   },
   {
     "name": "Minda Corporation Ltd.",
@@ -1563,6 +1853,21 @@
     "name": "Minda Industries Ltd.",
     "symbol": "MINDAIND",
     "sector_id": "auto"
+  },
+  {
+    "name": "MindTree Ltd.",
+    "symbol": "MINDTREE",
+    "sector_id": "it"
+  },
+  {
+    "name": "MMTC Ltd.",
+    "symbol": "MMTC",
+    "sector_id": "logistics"
+  },
+  {
+    "name": "MOIL Ltd.",
+    "symbol": "MOIL",
+    "sector_id": "metals"
   },
   {
     "name": "Monsanto India Ltd.",
@@ -1580,9 +1885,24 @@
     "sector_id": "nbfc"
   },
   {
-    "name": "MphasiS Ltd.",
+    "name": "Mphasis Ltd.",
     "symbol": "MPHASIS",
     "sector_id": "it"
+  },
+  {
+    "name": "MRF Ltd.",
+    "symbol": "MRF",
+    "sector_id": "auto"
+  },
+  {
+    "name": "MTAR Technologies Ltd.",
+    "symbol": "MTARTECH",
+    "sector_id": "defence"
+  },
+  {
+    "name": "Multi Commodity Exchange of India Ltd.",
+    "symbol": "MCX",
+    "sector_id": "nbfc"
   },
   {
     "name": "Muthoot Finance Ltd.",
@@ -1590,54 +1910,14 @@
     "sector_id": "nbfc"
   },
   {
-    "name": "NATCO Pharma Ltd.",
-    "symbol": "NATCOPHARM",
-    "sector_id": "pharma"
-  },
-  {
-    "name": "NBCC (India) Ltd.",
-    "symbol": "NBCC",
-    "sector_id": "infra"
-  },
-  {
-    "name": "NCC Ltd.",
-    "symbol": "NCC",
-    "sector_id": "infra"
-  },
-  {
-    "name": "NESCO Ltd.",
-    "symbol": "NESCO",
-    "sector_id": "logistics"
-  },
-  {
-    "name": "NHPC Ltd.",
-    "symbol": "NHPC",
-    "sector_id": "power"
-  },
-  {
-    "name": "NIIT Technologies Ltd.",
-    "symbol": "NIITTECH",
-    "sector_id": "it"
-  },
-  {
-    "name": "NLC India Ltd.",
-    "symbol": "NLCINDIA",
-    "sector_id": "power"
-  },
-  {
-    "name": "NMDC Ltd.",
-    "symbol": "NMDC",
-    "sector_id": "metals"
-  },
-  {
-    "name": "NTPC Ltd.",
-    "symbol": "NTPC",
-    "sector_id": "power"
-  },
-  {
     "name": "Narayana Hrudayalaya Ltd.",
     "symbol": "NH",
     "sector_id": "healthcare"
+  },
+  {
+    "name": "NATCO Pharma Ltd.",
+    "symbol": "NATCOPHARM",
+    "sector_id": "pharma"
   },
   {
     "name": "National Aluminium Co. Ltd.",
@@ -1660,9 +1940,44 @@
     "sector_id": "specchem"
   },
   {
+    "name": "Nazara Technologies Ltd.",
+    "symbol": "NAZARA",
+    "sector_id": "media"
+  },
+  {
+    "name": "NBCC India Ltd.",
+    "symbol": "NBCC",
+    "sector_id": "infra"
+  },
+  {
+    "name": "NCC Ltd.",
+    "symbol": "NCC",
+    "sector_id": "infra"
+  },
+  {
+    "name": "NESCO Ltd.",
+    "symbol": "NESCO",
+    "sector_id": "logistics"
+  },
+  {
     "name": "Network18 Media & Investments Ltd.",
     "symbol": "NETWORK18",
     "sector_id": "media"
+  },
+  {
+    "name": "Newgen Software Technologies Ltd.",
+    "symbol": "NEWGEN",
+    "sector_id": "it"
+  },
+  {
+    "name": "NHPC Ltd.",
+    "symbol": "NHPC",
+    "sector_id": "power"
+  },
+  {
+    "name": "NIIT Technologies Ltd.",
+    "symbol": "NIITTECH",
+    "sector_id": "it"
   },
   {
     "name": "Nilkamal Ltd.",
@@ -1670,12 +1985,27 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "NLC India Ltd.",
+    "symbol": "NLCINDIA",
+    "sector_id": "power"
+  },
+  {
+    "name": "NMDC Ltd.",
+    "symbol": "NMDC",
+    "sector_id": "metals"
+  },
+  {
+    "name": "NTPC Ltd.",
+    "symbol": "NTPC",
+    "sector_id": "power"
+  },
+  {
     "name": "Oberoi Realty Ltd.",
     "symbol": "OBEROIRLTY",
     "sector_id": "realestate"
   },
   {
-    "name": "Oil & Natural Gas Corporation Ltd.",
+    "name": "Oil and Natural Gas Corporation Ltd.",
     "symbol": "ONGC",
     "sector_id": "energy"
   },
@@ -1685,9 +2015,24 @@
     "sector_id": "energy"
   },
   {
+    "name": "Ola Electric Mobility Ltd.",
+    "symbol": "OLAELEC",
+    "sector_id": "ev"
+  },
+  {
+    "name": "Olectra Greentech Ltd.",
+    "symbol": "OLECTRA",
+    "sector_id": "ev"
+  },
+  {
     "name": "Omaxe Ltd.",
     "symbol": "OMAXE",
     "sector_id": "realestate"
+  },
+  {
+    "name": "One 97 Communications Ltd. (Paytm)",
+    "symbol": "PAYTM",
+    "sector_id": "it"
   },
   {
     "name": "Oracle Financial Services Software Ltd.",
@@ -1710,36 +2055,6 @@
     "sector_id": "banking"
   },
   {
-    "name": "PC Jeweller Ltd.",
-    "symbol": "PCJEWELLER",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "PI Industries Ltd.",
-    "symbol": "PIIND",
-    "sector_id": "specchem"
-  },
-  {
-    "name": "PNB Housing Finance Ltd.",
-    "symbol": "PNBHOUSING",
-    "sector_id": "nbfc"
-  },
-  {
-    "name": "PNC Infratech Ltd.",
-    "symbol": "PNCINFRA",
-    "sector_id": "infra"
-  },
-  {
-    "name": "PTC India Ltd.",
-    "symbol": "PTC",
-    "sector_id": "power"
-  },
-  {
-    "name": "PVR Ltd.",
-    "symbol": "PVR",
-    "sector_id": "hospitality"
-  },
-  {
     "name": "Page Industries Ltd.",
     "symbol": "PAGEIND",
     "sector_id": "textiles"
@@ -1747,6 +2062,26 @@
   {
     "name": "Parag Milk Foods Ltd.",
     "symbol": "PARAGMILK",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "Paras Defence and Space Technologies Ltd.",
+    "symbol": "PARAS",
+    "sector_id": "defence"
+  },
+  {
+    "name": "Patanjali Foods Ltd.",
+    "symbol": "PATANJALI",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "PB Fintech Ltd. (Policybazaar)",
+    "symbol": "POLICYBZR",
+    "sector_id": "insurance"
+  },
+  {
+    "name": "PC Jeweller Ltd.",
+    "symbol": "PCJEWELLER",
     "sector_id": "fmcg"
   },
   {
@@ -1765,6 +2100,11 @@
     "sector_id": "pharma"
   },
   {
+    "name": "PG Electroplast Ltd.",
+    "symbol": "PGEL",
+    "sector_id": "capgoods"
+  },
+  {
     "name": "Phillips Carbon Black Ltd.",
     "symbol": "PHILIPCARB",
     "sector_id": "chemicals"
@@ -1775,6 +2115,11 @@
     "sector_id": "realestate"
   },
   {
+    "name": "PI Industries Ltd.",
+    "symbol": "PIIND",
+    "sector_id": "specchem"
+  },
+  {
     "name": "Pidilite Industries Ltd.",
     "symbol": "PIDILITIND",
     "sector_id": "specchem"
@@ -1783,6 +2128,31 @@
     "name": "Piramal Enterprises Ltd.",
     "symbol": "PEL",
     "sector_id": "pharma"
+  },
+  {
+    "name": "PNB Housing Finance Ltd.",
+    "symbol": "PNBHOUSING",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "PNC Infratech Ltd.",
+    "symbol": "PNCINFRA",
+    "sector_id": "infra"
+  },
+  {
+    "name": "Polycab India Ltd.",
+    "symbol": "POLYCAB",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "Polyplex Corporation Ltd.",
+    "symbol": "POLYPLEX",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "Poonawalla Fincorp Ltd.",
+    "symbol": "POONAWALLA",
+    "sector_id": "nbfc"
   },
   {
     "name": "Power Finance Corporation Ltd.",
@@ -1800,9 +2170,24 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "Premier Energies Ltd.",
+    "symbol": "PREMIERENE",
+    "sector_id": "renewables"
+  },
+  {
+    "name": "Premier Explosives Ltd.",
+    "symbol": "PREMEXPLN",
+    "sector_id": "defence"
+  },
+  {
     "name": "Prestige Estates Projects Ltd.",
     "symbol": "PRESTIGE",
     "sector_id": "realestate"
+  },
+  {
+    "name": "Pricol Ltd.",
+    "symbol": "PRICOLLTD",
+    "sector_id": "auto"
   },
   {
     "name": "Prism Johnson Ltd.",
@@ -1820,9 +2205,24 @@
     "sector_id": "fmcg"
   },
   {
+    "name": "PTC India Ltd.",
+    "symbol": "PTC",
+    "sector_id": "power"
+  },
+  {
     "name": "Punjab National Bank",
     "symbol": "PNB",
     "sector_id": "banking"
+  },
+  {
+    "name": "PVR Inox Ltd.",
+    "symbol": "PVRINOX",
+    "sector_id": "hospitality"
+  },
+  {
+    "name": "PVR Ltd.",
+    "symbol": "PVR",
+    "sector_id": "hospitality"
   },
   {
     "name": "Quess Corp Ltd.",
@@ -1830,29 +2230,24 @@
     "sector_id": "logistics"
   },
   {
-    "name": "RBL Bank Ltd.",
-    "symbol": "RBLBANK",
-    "sector_id": "banking"
-  },
-  {
-    "name": "REC Ltd.",
-    "symbol": "RECLTD",
-    "sector_id": "nbfc"
-  },
-  {
-    "name": "RITES Ltd.",
-    "symbol": "RITES",
-    "sector_id": "infra"
-  },
-  {
     "name": "Radico Khaitan Ltd",
     "symbol": "RADICO",
     "sector_id": "fmcg"
   },
   {
+    "name": "Rail Vikas Nigam Ltd.",
+    "symbol": "RVNL",
+    "sector_id": "infra"
+  },
+  {
     "name": "Rain Industries Ltd",
     "symbol": "RAIN",
     "sector_id": "chemicals"
+  },
+  {
+    "name": "Rainbow Children's Medicare Ltd.",
+    "symbol": "RAINBOW",
+    "sector_id": "healthcare"
   },
   {
     "name": "Rajesh Exports Ltd.",
@@ -1878,6 +2273,16 @@
     "name": "Raymond Ltd.",
     "symbol": "RAYMOND",
     "sector_id": "textiles"
+  },
+  {
+    "name": "RBL Bank Ltd.",
+    "symbol": "RBLBANK",
+    "sector_id": "banking"
+  },
+  {
+    "name": "REC Ltd.",
+    "symbol": "RECLTD",
+    "sector_id": "nbfc"
   },
   {
     "name": "Redington (India) Ltd.",
@@ -1925,9 +2330,29 @@
     "sector_id": "power"
   },
   {
+    "name": "ReNew Energy Global Ltd.",
+    "symbol": "RENEW",
+    "sector_id": "renewables"
+  },
+  {
     "name": "Repco Home Finance Ltd.",
     "symbol": "REPCOHOME",
     "sector_id": "nbfc"
+  },
+  {
+    "name": "RITES Ltd.",
+    "symbol": "RITES",
+    "sector_id": "infra"
+  },
+  {
+    "name": "Rossari Biotech Ltd.",
+    "symbol": "ROSSARI",
+    "sector_id": "specchem"
+  },
+  {
+    "name": "RR Kabel Ltd.",
+    "symbol": "RRKABEL",
+    "sector_id": "capgoods"
   },
   {
     "name": "Rupa & Company Ltd.",
@@ -1940,34 +2365,19 @@
     "sector_id": "fmcg"
   },
   {
-    "name": "SBI Life Insurance Company Ltd.",
-    "symbol": "SBILIFE",
-    "sector_id": "insurance"
-  },
-  {
-    "name": "SJVN Ltd.",
-    "symbol": "SJVN",
-    "sector_id": "power"
-  },
-  {
-    "name": "SKF India Ltd.",
-    "symbol": "SKFINDIA",
-    "sector_id": "capgoods"
-  },
-  {
-    "name": "SREI Infrastructure Finance Ltd.",
-    "symbol": "SREINFRA",
-    "sector_id": "nbfc"
-  },
-  {
-    "name": "SRF Ltd.",
-    "symbol": "SRF",
-    "sector_id": "specchem"
-  },
-  {
     "name": "Sadbhav Engineering Ltd.",
     "symbol": "SADBHAV",
     "sector_id": "infra"
+  },
+  {
+    "name": "SAIL Steel Authority of India Ltd.",
+    "symbol": "SAIL",
+    "sector_id": "metals"
+  },
+  {
+    "name": "Samvardhana Motherson International Ltd.",
+    "symbol": "MOTHERSON",
+    "sector_id": "auto"
   },
   {
     "name": "Sanofi India Ltd.",
@@ -1975,14 +2385,44 @@
     "sector_id": "pharma"
   },
   {
+    "name": "Sansera Engineering Ltd.",
+    "symbol": "SANSERA",
+    "sector_id": "auto"
+  },
+  {
+    "name": "Sapphire Foods India Ltd.",
+    "symbol": "SAPPHIRE",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "Saregama India Ltd.",
+    "symbol": "SAREGAMA",
+    "sector_id": "media"
+  },
+  {
+    "name": "SBI Cards & Payment Services Ltd.",
+    "symbol": "SBICARD",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "SBI Life Insurance Company Ltd.",
+    "symbol": "SBILIFE",
+    "sector_id": "insurance"
+  },
+  {
     "name": "Schaeffler India Ltd.",
     "symbol": "SCHAEFFLER",
-    "sector_id": "capgoods"
+    "sector_id": "auto"
   },
   {
     "name": "Security and Intelligence Services (India) Ltd.",
     "symbol": "SIS",
     "sector_id": "logistics"
+  },
+  {
+    "name": "Servotech Power Systems Ltd.",
+    "symbol": "SERVOTECH",
+    "sector_id": "ev"
   },
   {
     "name": "Shankara Building Products Ltd.",
@@ -2035,13 +2475,23 @@
     "sector_id": "nbfc"
   },
   {
-    "name": "Siemens Ltd.",
+    "name": "Siemens Energy India Ltd.",
     "symbol": "SIEMENS",
     "sector_id": "capgoods"
   },
   {
     "name": "Sintex Plastics Technology Ltd.",
     "symbol": "SPTL",
+    "sector_id": "capgoods"
+  },
+  {
+    "name": "SJVN Ltd.",
+    "symbol": "SJVN",
+    "sector_id": "power"
+  },
+  {
+    "name": "SKF India Ltd.",
+    "symbol": "SKFINDIA",
     "sector_id": "capgoods"
   },
   {
@@ -2055,6 +2505,11 @@
     "sector_id": "specchem"
   },
   {
+    "name": "Sona BLW Precision Forgings Ltd.",
+    "symbol": "SONACOMS",
+    "sector_id": "auto"
+  },
+  {
     "name": "Sonata Software Ltd.",
     "symbol": "SONATSOFTW",
     "sector_id": "it"
@@ -2065,9 +2520,24 @@
     "sector_id": "banking"
   },
   {
+    "name": "SREI Infrastructure Finance Ltd.",
+    "symbol": "SREINFRA",
+    "sector_id": "nbfc"
+  },
+  {
+    "name": "SRF Ltd.",
+    "symbol": "SRF",
+    "sector_id": "specchem"
+  },
+  {
     "name": "Star Cement Ltd.",
     "symbol": "STARCEMENT",
     "sector_id": "cement"
+  },
+  {
+    "name": "Star Health and Allied Insurance Co. Ltd.",
+    "symbol": "STARHEALTH",
+    "sector_id": "insurance"
   },
   {
     "name": "State Bank of India",
@@ -2075,9 +2545,9 @@
     "sector_id": "banking"
   },
   {
-    "name": "Steel Authority of India Ltd.",
-    "symbol": "SAIL",
-    "sector_id": "metals"
+    "name": "Sterling and Wilson Renewable Energy Ltd.",
+    "symbol": "SWSOLAR",
+    "sector_id": "renewables"
   },
   {
     "name": "Sterlite Technologies Ltd.",
@@ -2140,6 +2610,11 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "Suryoday Small Finance Bank Ltd.",
+    "symbol": "SURYODAY",
+    "sector_id": "banking"
+  },
+  {
     "name": "Suven Life Sciences Ltd.",
     "symbol": "SUVEN",
     "sector_id": "pharma"
@@ -2170,31 +2645,6 @@
     "sector_id": "pharma"
   },
   {
-    "name": "TCNS Clothing Co. Ltd.",
-    "symbol": "TCNSBRANDS",
-    "sector_id": "textiles"
-  },
-  {
-    "name": "TTK Prestige Ltd.",
-    "symbol": "TTKPRESTIG",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "TV Today Network Ltd.",
-    "symbol": "TVTODAY",
-    "sector_id": "media"
-  },
-  {
-    "name": "TV18 Broadcast Ltd.",
-    "symbol": "TV18BRDCST",
-    "sector_id": "media"
-  },
-  {
-    "name": "TVS Motor Company Ltd.",
-    "symbol": "TVSMOTOR",
-    "sector_id": "auto"
-  },
-  {
     "name": "Take Solutions Ltd.",
     "symbol": "TAKE",
     "sector_id": "it"
@@ -2215,9 +2665,19 @@
     "sector_id": "fmcg"
   },
   {
+    "name": "Tata Communications Ltd.",
+    "symbol": "TATACOMM",
+    "sector_id": "telecom"
+  },
+  {
     "name": "Tata Consultancy Services Ltd.",
     "symbol": "TCS",
     "sector_id": "it"
+  },
+  {
+    "name": "Tata Consumer Products Ltd.",
+    "symbol": "TATACONSUM",
+    "sector_id": "fmcg"
   },
   {
     "name": "Tata Elxsi Ltd.",
@@ -2255,6 +2715,21 @@
     "sector_id": "metals"
   },
   {
+    "name": "Tata Technologies Ltd.",
+    "symbol": "TATATECH",
+    "sector_id": "it"
+  },
+  {
+    "name": "Tatva Chintan Pharma Chem Ltd.",
+    "symbol": "TATVA",
+    "sector_id": "specchem"
+  },
+  {
+    "name": "TCNS Clothing Co. Ltd.",
+    "symbol": "TCNSBRANDS",
+    "sector_id": "textiles"
+  },
+  {
     "name": "Teamlease Services Ltd.",
     "symbol": "TEAMLEASE",
     "sector_id": "logistics"
@@ -2263,6 +2738,11 @@
     "name": "Tech Mahindra Ltd.",
     "symbol": "TECHM",
     "sector_id": "it"
+  },
+  {
+    "name": "Tejas Networks Ltd.",
+    "symbol": "TEJASNET",
+    "sector_id": "telecom"
   },
   {
     "name": "The New India Assurance Company Ltd.",
@@ -2330,8 +2810,28 @@
     "sector_id": "capgoods"
   },
   {
+    "name": "TTK Prestige Ltd.",
+    "symbol": "TTKPRESTIG",
+    "sector_id": "fmcg"
+  },
+  {
     "name": "Tube Investments of India Ltd.",
     "symbol": "TIINDIA",
+    "sector_id": "auto"
+  },
+  {
+    "name": "TV Today Network Ltd.",
+    "symbol": "TVTODAY",
+    "sector_id": "media"
+  },
+  {
+    "name": "TV18 Broadcast Ltd.",
+    "symbol": "TV18BRDCST",
+    "sector_id": "media"
+  },
+  {
+    "name": "TVS Motor Company Ltd.",
+    "symbol": "TVSMOTOR",
     "sector_id": "auto"
   },
   {
@@ -2345,14 +2845,14 @@
     "sector_id": "capgoods"
   },
   {
-    "name": "UPL Ltd.",
-    "symbol": "UPL",
-    "sector_id": "agri"
-  },
-  {
     "name": "Ujjivan Financial Services Ltd.",
     "symbol": "UJJIVAN",
     "sector_id": "nbfc"
+  },
+  {
+    "name": "Ujjivan Small Finance Bank Ltd.",
+    "symbol": "UJJIVANSFB",
+    "sector_id": "banking"
   },
   {
     "name": "UltraTech Cement Ltd.",
@@ -2375,9 +2875,19 @@
     "sector_id": "fmcg"
   },
   {
+    "name": "Uno Minda Ltd.",
+    "symbol": "UNOMINDA",
+    "sector_id": "auto"
+  },
+  {
+    "name": "UPL Ltd.",
+    "symbol": "UPL",
+    "sector_id": "agri"
+  },
+  {
     "name": "V-Guard Industries Ltd.",
     "symbol": "VGUARD",
-    "sector_id": "fmcg"
+    "sector_id": "capgoods"
   },
   {
     "name": "V-Mart Retail Ltd.",
@@ -2387,16 +2897,6 @@
   {
     "name": "V.I.P. Industries Ltd.",
     "symbol": "VIPIND",
-    "sector_id": "fmcg"
-  },
-  {
-    "name": "VRL Logistics Ltd.",
-    "symbol": "VRLLOG",
-    "sector_id": "logistics"
-  },
-  {
-    "name": "VST Industries Ltd.",
-    "symbol": "VSTIND",
     "sector_id": "fmcg"
   },
   {
@@ -2425,6 +2925,11 @@
     "sector_id": "fmcg"
   },
   {
+    "name": "Vedant Fashions Ltd.",
+    "symbol": "MANYAVAR",
+    "sector_id": "retail"
+  },
+  {
     "name": "Vedanta Ltd.",
     "symbol": "VEDL",
     "sector_id": "metals"
@@ -2433,6 +2938,11 @@
     "name": "Venky's (India) Ltd.",
     "symbol": "VENKEYS",
     "sector_id": "fmcg"
+  },
+  {
+    "name": "Vijaya Diagnostic Centre Ltd.",
+    "symbol": "VIJAYA",
+    "sector_id": "healthcare"
   },
   {
     "name": "Vinati Organics Ltd.",
@@ -2450,6 +2960,21 @@
     "sector_id": "fmcg"
   },
   {
+    "name": "VRL Logistics Ltd.",
+    "symbol": "VRLLOG",
+    "sector_id": "logistics"
+  },
+  {
+    "name": "VST Industries Ltd.",
+    "symbol": "VSTIND",
+    "sector_id": "fmcg"
+  },
+  {
+    "name": "Waaree Energies Ltd.",
+    "symbol": "WAAREEENER",
+    "sector_id": "renewables"
+  },
+  {
     "name": "WABCO India Ltd.",
     "symbol": "WABCOINDIA",
     "sector_id": "auto"
@@ -2463,6 +2988,11 @@
     "name": "Welspun India Ltd.",
     "symbol": "WELSPUNIND",
     "sector_id": "textiles"
+  },
+  {
+    "name": "Westlife Foodworld Ltd.",
+    "symbol": "WESTLIFE",
+    "sector_id": "fmcg"
   },
   {
     "name": "Whirlpool of India Ltd.",
@@ -2480,6 +3010,11 @@
     "sector_id": "pharma"
   },
   {
+    "name": "Yatra Online Ltd.",
+    "symbol": "YATRA",
+    "sector_id": "it"
+  },
+  {
     "name": "Yes Bank Ltd.",
     "symbol": "YESBANK",
     "sector_id": "banking"
@@ -2490,18 +3025,23 @@
     "sector_id": "media"
   },
   {
+    "name": "Zen Technologies Ltd.",
+    "symbol": "ZENTEC",
+    "sector_id": "defence"
+  },
+  {
     "name": "Zensar Technolgies Ltd.",
     "symbol": "ZENSARTECH",
+    "sector_id": "it"
+  },
+  {
+    "name": "Zomato Ltd.",
+    "symbol": "ZOMATO",
     "sector_id": "it"
   },
   {
     "name": "Zydus Wellness Ltd.",
     "symbol": "ZYDUSWELL",
     "sector_id": "fmcg"
-  },
-  {
-    "name": "eClerx Services Ltd.",
-    "symbol": "ECLERX",
-    "sector_id": "it"
   }
 ]
